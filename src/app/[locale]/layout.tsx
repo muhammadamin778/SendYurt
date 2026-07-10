@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Manrope } from "next/font/google";
+import { Lora, Manrope } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -7,16 +7,18 @@ import { routing } from "@/i18n/routing";
 import { Providers } from "@/components/Providers";
 import "../globals.css";
 
-// Inter and Manrope both ship full Cyrillic subsets, so Uzbek Latin and
-// Uzbek/Russian Cyrillic render from the same faces.
-const inter = Inter({
-  subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"],
+// Type pairing: Manrope (a warm, confident sans) carries the UI; Lora (a
+// calligraphy-rooted serif) gives headings craft character. Both ship full
+// Cyrillic subsets, so Uzbek Latin and Uzbek/Russian Cyrillic render from
+// the same faces.
+const manrope = Manrope({
+  subsets: ["latin", "cyrillic", "cyrillic-ext"],
   variable: "--font-body",
   display: "swap",
 });
 
-const manrope = Manrope({
-  subsets: ["latin", "cyrillic", "cyrillic-ext"],
+const lora = Lora({
+  subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"],
   variable: "--font-display",
   display: "swap",
 });
@@ -48,7 +50,7 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={`${inter.variable} ${manrope.variable}`}>
+    <html lang={locale} className={`${manrope.variable} ${lora.variable}`}>
       <body className="min-h-screen">
         <NextIntlClientProvider messages={messages}>
           <Providers>{children}</Providers>

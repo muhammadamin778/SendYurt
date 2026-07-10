@@ -3,6 +3,7 @@ import { setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { PublicHeader } from "@/components/PublicHeader";
 import { YurtMark } from "@/components/Logo";
+import { SuzaniDivider } from "@/components/ornament/Suzani";
 
 function FeatureCard({
   title,
@@ -42,12 +43,13 @@ function Landing() {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="bg-ikat bg-sand-50">
+        <section className="bg-girih bg-sand-50">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:py-24 text-center">
             <YurtMark className="mx-auto h-14 w-14" />
-            <h1 className="mx-auto mt-6 max-w-2xl font-display text-4xl font-extrabold tracking-tight text-samarkand-950 sm:text-5xl text-balance">
+            <h1 className="mx-auto mt-6 max-w-2xl font-display text-4xl font-bold tracking-tight text-samarkand-950 sm:text-5xl text-balance">
               {t("heroTitle")}
             </h1>
+            <SuzaniDivider className="mx-auto mt-5 h-5 w-52 text-terracotta-400" />
             <p className="mx-auto mt-4 max-w-xl text-lg text-sand-900">
               {t("heroSubtitle")}
             </p>
@@ -108,7 +110,7 @@ function Landing() {
         </section>
 
         {/* How it works */}
-        <section className="bg-samarkand-900 bg-ikat-light">
+        <section className="bg-samarkand-900 bg-girih-light">
           <div className="mx-auto max-w-6xl px-4 py-16">
             <h2 className="text-center font-display text-2xl font-bold text-white sm:text-3xl">
               {t("howTitle")}

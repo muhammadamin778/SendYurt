@@ -137,7 +137,7 @@ export default async function TrustPage({
         </Alert>
       )}
 
-      <Card accent className="p-6 sm:p-8">
+      <Card accent className="bg-girih p-6 sm:p-8">
         <div className="flex flex-col items-center gap-6 sm:flex-row sm:gap-10">
           <ScoreDial
             score={result.score}

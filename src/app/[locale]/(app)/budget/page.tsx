@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Card } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import {
   AddGoalButton,
@@ -176,9 +177,9 @@ export default async function BudgetPage({
         </div>
         <SetBudgetForm period={period} />
         {categories.length === 0 ? (
-          <Card className="mt-4 p-8 text-center text-sm text-sand-800">
-            {t("allocations.empty")}
-          </Card>
+          <div className="mt-4">
+            <EmptyState>{t("allocations.empty")}</EmptyState>
+          </div>
         ) : (
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {categories.map((c) => {
@@ -239,9 +240,18 @@ export default async function BudgetPage({
         </div>
         <AddGoalForm />
         {goals.length === 0 ? (
-          <Card className="mt-4 p-8 text-center text-sm text-sand-800">
-            {t("goals.empty")}
-          </Card>
+          <div className="mt-4">
+            <EmptyState
+              icon={
+                <svg viewBox="0 0 24 24" className="h-8 w-8 text-samarkand-300" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+                  <circle cx="12" cy="12" r="8" />
+                  <circle cx="12" cy="12" r="3.5" />
+                </svg>
+              }
+            >
+              {t("goals.empty")}
+            </EmptyState>
+          </div>
         ) : (
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {goals.map((g) => {
@@ -293,9 +303,18 @@ export default async function BudgetPage({
           </p>
         )}
         {transactions.length === 0 ? (
-          <Card className="mt-4 p-8 text-center text-sm text-sand-800">
-            {t("transactions.empty")}
-          </Card>
+          <div className="mt-4">
+            <EmptyState
+              icon={
+                <svg viewBox="0 0 24 24" className="h-8 w-8 text-samarkand-300" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+                  <rect x="3" y="6" width="18" height="13" rx="2" />
+                  <path d="M3 10h18M7 15h4" strokeLinecap="round" />
+                </svg>
+              }
+            >
+              {t("transactions.empty")}
+            </EmptyState>
+          </div>
         ) : (
           <Card className="mt-4 divide-y divide-sand-100">
             {transactions.map((tx) => {

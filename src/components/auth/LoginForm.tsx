@@ -55,11 +55,11 @@ export function LoginForm() {
   }
 
   return (
-    <Card accent className="p-6 sm:p-8">
-      <h1 className="font-display text-2xl font-bold text-samarkand-950">
+    <Card shape="arch" className="p-6 pt-12 sm:p-8 sm:pt-14">
+      <h1 className="text-center font-display text-2xl font-bold text-samarkand-950">
         {t("loginTitle")}
       </h1>
-      <p className="mt-1 text-sm text-sand-800">{t("loginSubtitle")}</p>
+      <p className="mt-1 text-center text-sm text-sand-800">{t("loginSubtitle")}</p>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4" noValidate>
         {error && <Alert kind="error">{error}</Alert>}

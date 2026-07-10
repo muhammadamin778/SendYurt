@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
@@ -69,7 +69,7 @@ export function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <Card accent className="p-6 sm:p-8">
+      <Card shape="arch" className="p-6 pt-12 sm:p-8 sm:pt-14">
         <h1 className="font-display text-2xl font-bold text-samarkand-950">
           {t("resetTitle")}
         </h1>
@@ -87,7 +87,7 @@ export function ResetPasswordForm() {
   }
 
   return (
-    <Card accent className="p-6 sm:p-8">
+    <Card shape="arch" className="p-6 pt-12 sm:p-8 sm:pt-14">
       <h1 className="font-display text-2xl font-bold text-samarkand-950">
         {t("resetTitle")}
       </h1>
@@ -153,3 +153,4 @@ export function ResetPasswordForm() {
     </Card>
   );
 }
+

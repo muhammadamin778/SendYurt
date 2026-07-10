@@ -2,6 +2,7 @@ import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Card } from "@/components/ui/Card";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { SuzaniDivider } from "@/components/ornament/Suzani";
 import { currentPeriod, getMonthSummary } from "@/lib/budget-data";
 import { formatMoney } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
@@ -171,6 +172,7 @@ export default async function DashboardPage({
           {household ? `${household.name} · ` : ""}
           {t(isSender ? "subtitleSender" : "subtitleReceiver")}
         </p>
+        <SuzaniDivider className="mt-3 h-4 w-44 text-terracotta-300" />
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">{cards}</div>

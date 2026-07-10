@@ -13,8 +13,9 @@ export function ScoreDial({
   const c = 2 * Math.PI * r;
   const filled = (clamped / 100) * c;
 
+  // Lapis for strong, zardoʻzi gold for growing, clay for early.
   const tone =
-    clamped >= 75 ? "#1a7d81" : clamped >= 50 ? "#b19262" : "#cf4e20";
+    clamped >= 75 ? "#2f5096" : clamped >= 50 ? "#a67c28" : "#cf4e20";
 
   return (
     <div className="relative inline-flex items-center justify-center">

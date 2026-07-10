@@ -9,6 +9,11 @@
   body {
     @apply bg-sand-50 text-ink font-sans;
   }
+
+  /* Craft-serif headings get a touch more air than default. */
+  .font-display {
+    letter-spacing: -0.01em;
+  }
 }
 
 @layer utilities {
@@ -16,10 +21,20 @@
     text-wrap: balance;
   }
 
-  /* Subtle ikat-inspired zigzag motif, used sparingly as a section
-     background. Encoded inline so it needs no asset request. */
+  /* Girih-inspired star lattice (madrasa tilework geometry): two rotated
+     squares forming an eight-point star, tiled at whisper opacity. Encoded
+     inline so it costs no request. Use on section backgrounds only —
+     never behind dense content. */
+  .bg-girih {
+    background-image: url("data:image/svg+xml,%3Csvg width='96' height='96' viewBox='0 0 96 96' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%232f5096' stroke-opacity='0.05' stroke-width='1.5'%3E%3Crect x='24' y='24' width='48' height='48'/%3E%3Crect x='24' y='24' width='48' height='48' transform='rotate(45 48 48)'/%3E%3Cpath d='M48 0v24M48 72v24M0 48h24M72 48h24'/%3E%3C/g%3E%3C/svg%3E");
+  }
+  .bg-girih-light {
+    background-image: url("data:image/svg+xml,%3Csvg width='96' height='96' viewBox='0 0 96 96' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.05' stroke-width='1.5'%3E%3Crect x='24' y='24' width='48' height='48'/%3E%3Crect x='24' y='24' width='48' height='48' transform='rotate(45 48 48)'/%3E%3Cpath d='M48 0v24M48 72v24M0 48h24M72 48h24'/%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* Ikat zigzag kept for smaller accent bands. */
   .bg-ikat {
-    background-image: url("data:image/svg+xml,%3Csvg width='56' height='28' viewBox='0 0 56 28' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 21 14 7l14 14L42 7l14 14' fill='none' stroke='%23186367' stroke-opacity='0.07' stroke-width='6'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg width='56' height='28' viewBox='0 0 56 28' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 21 14 7l14 14L42 7l14 14' fill='none' stroke='%232f5096' stroke-opacity='0.06' stroke-width='6'/%3E%3C/svg%3E");
   }
   .bg-ikat-light {
     background-image: url("data:image/svg+xml,%3Csvg width='56' height='28' viewBox='0 0 56 28' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 21 14 7l14 14L42 7l14 14' fill='none' stroke='%23ffffff' stroke-opacity='0.06' stroke-width='6'/%3E%3C/svg%3E");

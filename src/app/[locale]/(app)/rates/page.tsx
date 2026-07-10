@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Alert } from "@/components/ui/Alert";
 import { Card } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { RateForm } from "@/components/rates/RateForm";
 import { formatMoney, formatNumber } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
@@ -51,7 +52,7 @@ async function QuoteList({
   const t = await getTranslations("rates");
 
   if (quotes.length === 0) {
-    return <Alert kind="info">{t("empty")}</Alert>;
+    return <EmptyState>{t("empty")}</EmptyState>;
   }
 
   const best = quotes[0];

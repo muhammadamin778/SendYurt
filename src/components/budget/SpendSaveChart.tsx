@@ -60,9 +60,9 @@ export function SpendSaveChart({ points }: { points: ChartPoint[] }) {
             }}
           />
           <Legend wrapperStyle={{ fontSize: 13 }} />
-          <Bar dataKey={t("income")} fill="#b19262" radius={[4, 4, 0, 0]} />
+          <Bar dataKey={t("income")} fill="#bc9432" radius={[4, 4, 0, 0]} />
           <Bar dataKey={t("spent")} fill="#cf4e20" radius={[4, 4, 0, 0]} />
-          <Bar dataKey={t("saved")} fill="#1a7d81" radius={[4, 4, 0, 0]} />
+          <Bar dataKey={t("saved")} fill="#2f5096" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
