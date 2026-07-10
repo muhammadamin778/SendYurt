@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { deleteTransaction } from "@/app/actions/budget";
+import { toast } from "@/components/ui/toast";
 
 export function DeleteTransactionButton({ id }: { id: string }) {
   const t = useTranslations("budget");
@@ -21,7 +22,12 @@ export function DeleteTransactionButton({ id }: { id: string }) {
         setBusy(true);
         const result = await deleteTransaction(id);
         setBusy(false);
-        if (result.ok) router.refresh();
+        if (result.ok) {
+          toast(t("toast.deleted"));
+          router.refresh();
+        } else {
+          toast(t("form.errorGeneric"), "error");
+        }
       }}
       className="rounded p-1.5 text-sand-500 hover:bg-terracotta-50 hover:text-terracotta-700 disabled:opacity-50"
     >

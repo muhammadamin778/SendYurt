@@ -5,6 +5,7 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Providers } from "@/components/Providers";
+import { Toaster } from "@/components/ui/Toaster";
 import "../globals.css";
 
 // Type pairing: Manrope (a warm, confident sans) carries the UI; Lora (a
@@ -53,7 +54,10 @@ export default async function LocaleLayout({
     <html lang={locale} className={`${manrope.variable} ${lora.variable}`}>
       <body className="min-h-screen">
         <NextIntlClientProvider messages={messages}>
-          <Providers>{children}</Providers>
+          <Providers>
+            {children}
+            <Toaster />
+          </Providers>
         </NextIntlClientProvider>
       </body>
     </html>

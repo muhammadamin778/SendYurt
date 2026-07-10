@@ -1,4 +1,7 @@
-// Server-safe SVG donut dial for the 0–100 Trust Score.
+import { CountUp } from "@/components/ui/CountUp";
+
+// Server-safe SVG donut dial for the 0–100 Trust Score; the number
+// counts up client-side on reveal.
 export function ScoreDial({
   score,
   label,
@@ -34,8 +37,8 @@ export function ScoreDial({
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-display text-5xl font-extrabold" style={{ color: tone }}>
-          {clamped}
+        <span className="font-display text-5xl font-bold" style={{ color: tone }}>
+          <CountUp value={clamped} />
         </span>
         {sublabel && <span className="mt-1 text-xs text-sand-700">{sublabel}</span>}
       </div>

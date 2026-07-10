@@ -9,6 +9,7 @@ import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { toast } from "@/components/ui/toast";
 import { CATEGORIES } from "@/lib/categories";
 import { useBudgetUi } from "./store";
 
@@ -78,6 +79,7 @@ export function TransactionForm() {
     setAmount("");
     setNote("");
     setPanel("none");
+    toast(t("toast.saved"));
     router.refresh();
   }
 

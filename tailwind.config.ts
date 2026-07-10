@@ -96,6 +96,20 @@ const config: Config = {
         // Iwan arch: pointed-oval top used on portal-shaped surfaces.
         arch: "9rem 9rem 0.75rem 0.75rem",
       },
+      keyframes: {
+        "toast-in": {
+          from: { opacity: "0", transform: "translateY(8px) scale(0.97)" },
+          to: { opacity: "1", transform: "translateY(0) scale(1)" },
+        },
+        "page-in": {
+          from: { opacity: "0", transform: "translateY(6px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+      },
+      animation: {
+        "toast-in": "toast-in 200ms ease-out",
+        "page-in": "page-in 280ms ease-out",
+      },
     },
   },
   plugins: [],

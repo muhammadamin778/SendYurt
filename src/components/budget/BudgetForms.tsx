@@ -3,11 +3,12 @@
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import { addSavingsGoal, contributeToGoal, setBudget } from "@/app/actions/budget";
+import { addSavingsGoal, setBudget } from "@/app/actions/budget";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { toast } from "@/components/ui/toast";
 import { CATEGORIES } from "@/lib/categories";
 import { useBudgetUi } from "./store";
 
@@ -56,6 +57,7 @@ export function SetBudgetForm({ period }: { period: string }) {
     }
     setAmount("");
     setPanel("none");
+    toast(t("toast.budgetSet", { category: t(`categories.${category}`) }));
     router.refresh();
   }
 
@@ -138,6 +140,7 @@ export function AddGoalForm() {
       setFormError(t("form.errorGeneric"));
       return;
     }
+    toast(t("toast.goalCreated", { goal: name.trim() }));
     setName("");
     setTarget("");
     setTargetDate("");
@@ -188,46 +191,3 @@ export function AddGoalForm() {
   );
 }
 
-export function ContributeForm({ goalId }: { goalId: string }) {
-  const t = useTranslations("budget");
-  const router = useRouter();
-  const [amount, setAmount] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  async function onSubmit(e: FormEvent) {
-    e.preventDefault();
-    const value = parseAmount(amount);
-    if (!Number.isFinite(value) || value <= 0) {
-      setError(t("form.errorAmount"));
-      return;
-    }
-    setError(null);
-    setSubmitting(true);
-    const result = await contributeToGoal({ goalId, amount: value });
-    setSubmitting(false);
-    if (!result.ok) {
-      setError(t("form.errorGeneric"));
-      return;
-    }
-    setAmount("");
-    router.refresh();
-  }
-
-  return (
-    <form onSubmit={onSubmit} className="mt-3 flex items-start gap-2" noValidate>
-      <Input
-        label={t("goals.contribute")}
-        inputMode="decimal"
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-        error={error ?? undefined}
-        placeholder="100 000"
-        className="flex-1 [&_label]:sr-only"
-      />
-      <Button type="submit" variant="secondary" loading={submitting} className="shrink-0">
-        {t("goals.contributeButton")}
-      </Button>
-    </form>
-  );
-}

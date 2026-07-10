@@ -202,6 +202,13 @@
       "errorDate": "Please pick a valid date.",
       "errorGeneric": "Couldn't save. Please try again."
     },
+    "toast": {
+      "saved": "Transaction saved.",
+      "deleted": "Transaction removed.",
+      "budgetSet": "Budget for {category} updated.",
+      "goalCreated": "Goal \"{goal}\" created — good luck!",
+      "contributed": "Added to \"{goal}\"."
+    },
     "deleteTransaction": "Delete transaction",
     "deleteConfirm": "Remove this transaction? This can't be undone.",
     "categories": {

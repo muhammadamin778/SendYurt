@@ -7,10 +7,10 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import {
   AddGoalButton,
   AddGoalForm,
-  ContributeForm,
   EditBudgetButton,
   SetBudgetForm,
 } from "@/components/budget/BudgetForms";
+import { GoalCard } from "@/components/budget/GoalCard";
 import { DeleteTransactionButton } from "@/components/budget/DeleteTransactionButton";
 import { SpendSaveChart } from "@/components/budget/SpendSaveChart";
 import {
@@ -254,33 +254,18 @@ export default async function BudgetPage({
           </div>
         ) : (
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            {goals.map((g) => {
-              const pct = g.targetAmount > 0 ? (g.currentAmount / g.targetAmount) * 100 : 0;
-              return (
-                <Card key={g.id} accent={pct >= 100} className="p-5">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <h3 className="font-semibold text-ink">{g.name}</h3>
-                    <span className="text-sm font-bold text-samarkand-800">
-                      {Math.min(100, Math.round(pct))}%
-                    </span>
-                  </div>
-                  <ProgressBar
-                    className="mt-3"
-                    value={g.currentAmount}
-                    max={g.targetAmount}
-                    label={g.name}
-                  />
-                  <p className="mt-2 text-xs text-sand-700">
-                    {formatMoney(g.currentAmount, "UZS", currentLocale)} /{" "}
-                    {formatMoney(g.targetAmount, "UZS", currentLocale)}
-                    {g.targetDate && (
-                      <> · {t("goals.by", { date: formatDate(g.targetDate, currentLocale) })}</>
-                    )}
-                  </p>
-                  {pct < 100 && <ContributeForm goalId={g.id} />}
-                </Card>
-              );
-            })}
+            {goals.map((g) => (
+              <GoalCard
+                key={g.id}
+                goal={{
+                  id: g.id,
+                  name: g.name,
+                  targetAmount: g.targetAmount,
+                  currentAmount: g.currentAmount,
+                  targetDateIso: g.targetDate?.toISOString() ?? null,
+                }}
+              />
+            ))}
           </div>
         )}
       </section>

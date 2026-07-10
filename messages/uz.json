@@ -202,6 +202,13 @@
       "errorDate": "Iltimos, toʻgʻri sana tanlang.",
       "errorGeneric": "Saqlab boʻlmadi. Qaytadan urinib koʻring."
     },
+    "toast": {
+      "saved": "Amaliyot saqlandi.",
+      "deleted": "Amaliyot oʻchirildi.",
+      "budgetSet": "{category} uchun byudjet yangilandi.",
+      "goalCreated": "\"{goal}\" maqsadi yaratildi. Yoʻl boʻlsin!",
+      "contributed": "\"{goal}\" maqsadiga qoʻshildi."
+    },
     "deleteTransaction": "Amaliyotni oʻchirish",
     "deleteConfirm": "Bu amaliyot oʻchirilsinmi? Buni ortga qaytarib boʻlmaydi.",
     "categories": {
