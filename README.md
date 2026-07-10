@@ -41,6 +41,11 @@ npx prisma db seed         # providers + demo household with 9 months history
 npm run dev                # http://localhost:3000
 ```
 
+### Tests
+
+`npm test` runs the Vitest unit suite (40 tests) covering the trust-score
+engine, rate quote math, the rate limiter, validators and helpers.
+
 ### Demo logins (seeded, safe to use live on stage)
 
 | Role | Email | Password |
