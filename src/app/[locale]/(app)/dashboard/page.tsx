@@ -178,17 +178,24 @@ export default async function DashboardPage({
       <div className="grid gap-4 md:grid-cols-3">{cards}</div>
 
       {household && (
-        <Card className="bg-ikat p-5">
-          <h2 className="font-display text-lg font-bold text-samarkand-950">
-            {t("inviteTitle")}
-          </h2>
-          <p className="mt-1 text-sm text-sand-800">
-            {t("inviteBody")}
-          </p>
-          <code className="mt-3 inline-block rounded-lg bg-samarkand-50 px-4 py-2 font-mono text-lg font-bold tracking-widest text-samarkand-800">
-            {household.inviteCode}
-          </code>
-        </Card>
+        <Link href="/household" className="group block">
+          <Card className="bg-ikat p-5 transition-shadow group-hover:shadow-lg">
+            <h2 className="font-display text-lg font-bold text-samarkand-950">
+              {t("inviteTitle")}
+            </h2>
+            <p className="mt-1 text-sm text-sand-800">
+              {t("inviteBody")}
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <code className="inline-block rounded-lg bg-samarkand-50 px-4 py-2 font-mono text-lg font-bold tracking-widest text-samarkand-800">
+                {household.inviteCode}
+              </code>
+              <span className="text-sm font-semibold text-samarkand-700 group-hover:underline">
+                {t("manageHousehold")} →
+              </span>
+            </div>
+          </Card>
+        </Link>
       )}
     </div>
   );

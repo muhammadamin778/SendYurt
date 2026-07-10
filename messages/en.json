@@ -224,7 +224,60 @@
       "other": "Other"
     }
   },
+  "household": {
+    "title": "Family household",
+    "subtitle": "Everyone who shares this budget and builds this history together.",
+    "membersTitle": "Members ({count})",
+    "you": "(you)",
+    "roleSender": "Sends from abroad",
+    "roleReceiver": "At home",
+    "joined": "Joined {date}",
+    "inviteTitle": "Invite a family member",
+    "inviteBody": "Share this code with a relative — they enter it during registration and join this household with full access to the shared budget.",
+    "inviteHint": "Anyone with the code can join. Share it only within the family.",
+    "copy": "Copy code",
+    "copied": "Invite code copied.",
+    "copyFailed": "Couldn't copy — please select and copy it manually."
+  },
   "trust": {
+    "timeline": {
+      "title": "Twelve months at a glance",
+      "subtitle": "When money arrived home — steady months are what build your consistency.",
+      "ariaLabel": "Monthly remittance timeline",
+      "legendArrived": "Money arrived",
+      "legendMissed": "No transfer",
+      "tooltipArrived": "{month}: transfer arrived",
+      "tooltipMissed": "{month}: no transfer"
+    },
+    "milestones": {
+      "title": "Family milestones",
+      "subtitle": "Quiet marks of steady work — earned, never bought.",
+      "firstTransfer": {
+        "title": "First transfer",
+        "earned": "The journey has begun.",
+        "locked": "Waiting for the first transfer home."
+      },
+      "streak3": {
+        "title": "Three steady months",
+        "earned": "Three months in a row — a rhythm is forming.",
+        "locked": "Send three consecutive months to earn this."
+      },
+      "streak6": {
+        "title": "Six steady months",
+        "earned": "Half a year of reliability.",
+        "locked": "Six consecutive months of transfers earns this."
+      },
+      "steadySaver": {
+        "title": "Steady saver",
+        "earned": "Setting something aside, month after month.",
+        "locked": "Save three months in a row to earn this."
+      },
+      "goalReached": {
+        "title": "Goal reached",
+        "earned": "A family goal, fully funded.",
+        "locked": "Fill a savings goal to the top."
+      }
+    },
     "title": "Family Trust Score",
     "subtitle": "A transparent picture of your family's financial habits — built from regular transfers, steady amounts and saving. Not a credit score: a habit you grow together.",
     "demoBadge": "Demo data",
@@ -287,6 +340,7 @@
     "inviteTitle": "Invite your family",
     "inviteBody": "Share this code so relatives can join your household:",
     "quickRates": "Compare transfer routes",
+    "manageHousehold": "Manage family",
     "cards": {
       "rates": {
         "title": "Best route today",

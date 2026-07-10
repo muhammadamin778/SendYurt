@@ -224,7 +224,60 @@
       "other": "Boshqa"
     }
   },
+  "household": {
+    "title": "Oilaviy xonadon",
+    "subtitle": "Ushbu byudjetni birga yuritayotgan va tarixni birga qurayotganlar.",
+    "membersTitle": "Aʼzolar ({count})",
+    "you": "(siz)",
+    "roleSender": "Chet eldan yuboradi",
+    "roleReceiver": "Uyda",
+    "joined": "Qoʻshilgan sana: {date}",
+    "inviteTitle": "Oila aʼzosini taklif qilish",
+    "inviteBody": "Bu kodni qarindoshingizga ulashing — roʻyxatdan oʻtishda kiritsa, umumiy byudjetga toʻliq kirish huquqi bilan xonadonga qoʻshiladi.",
+    "inviteHint": "Kodga ega har kim qoʻshila oladi. Uni faqat oila ichida ulashing.",
+    "copy": "Kodni nusxalash",
+    "copied": "Taklif kodi nusxalandi.",
+    "copyFailed": "Nusxalab boʻlmadi — uni qoʻlda belgilab nusxalang."
+  },
   "trust": {
+    "timeline": {
+      "title": "Oʻn ikki oy bir qarashda",
+      "subtitle": "Uyga pul qachon kelgani — barqaror oylar muntazamlikni shakllantiradi.",
+      "ariaLabel": "Oylik oʻtkazmalar jadvali",
+      "legendArrived": "Pul kelgan",
+      "legendMissed": "Oʻtkazma boʻlmagan",
+      "tooltipArrived": "{month}: oʻtkazma kelgan",
+      "tooltipMissed": "{month}: oʻtkazma boʻlmagan"
+    },
+    "milestones": {
+      "title": "Oilaviy marralar",
+      "subtitle": "Barqaror mehnatning kamtarona belgilari — faqat mehnat bilan olinadi.",
+      "firstTransfer": {
+        "title": "Birinchi oʻtkazma",
+        "earned": "Yoʻl boshlandi.",
+        "locked": "Uyga birinchi oʻtkazma kutilmoqda."
+      },
+      "streak3": {
+        "title": "Uch barqaror oy",
+        "earned": "Uch oy ketma-ket — marom shakllanmoqda.",
+        "locked": "Uch oy ketma-ket yuboring."
+      },
+      "streak6": {
+        "title": "Olti barqaror oy",
+        "earned": "Yarim yillik ishonchlilik.",
+        "locked": "Olti oy ketma-ket oʻtkazma shu marrani ochadi."
+      },
+      "steadySaver": {
+        "title": "Barqaror jamgʻaruvchi",
+        "earned": "Oydan-oyga jamgʻarilmoqda.",
+        "locked": "Uch oy ketma-ket jamgʻaring."
+      },
+      "goalReached": {
+        "title": "Maqsadga erishildi",
+        "earned": "Oilaviy maqsad toʻliq jamgʻarildi.",
+        "locked": "Jamgʻarma maqsadini toʻldiring."
+      }
+    },
     "title": "Oilaviy ishonch bali",
     "subtitle": "Oilangiz moliyaviy odatlarining shaffof manzarasi — muntazam oʻtkazmalar, barqaror summalar va jamgʻarishdan yigʻiladi. Bu kredit reytingi emas: birgalikda oʻstiriladigan odat.",
     "demoBadge": "Demo maʼlumot",
@@ -287,6 +340,7 @@
     "inviteTitle": "Oilangizni taklif qiling",
     "inviteBody": "Qarindoshlaringiz xonadonga qoʻshilishi uchun ushbu kodni ulashing:",
     "quickRates": "Oʻtkazma yoʻllarini solishtirish",
+    "manageHousehold": "Oilani boshqarish",
     "cards": {
       "rates": {
         "title": "Bugungi eng yaxshi yoʻl",

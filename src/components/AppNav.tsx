@@ -9,7 +9,11 @@ const ITEMS = [
   { href: "/rates", key: "rates" },
   { href: "/budget", key: "budget" },
   { href: "/trust", key: "trust" },
+  { href: "/household", key: "household" },
 ] as const;
+
+/** The bottom tab bar keeps the four primary destinations. */
+const MOBILE_ITEMS = ITEMS.slice(0, 4);
 
 function NavIcon({ name, className }: { name: string; className?: string }) {
   const cls = clsx("h-5 w-5", className);
@@ -41,6 +45,14 @@ function NavIcon({ name, className }: { name: string; className?: string }) {
         <svg viewBox="0 0 24 24" className={cls} fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
           <path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z" strokeLinecap="round" strokeLinejoin="round" />
           <path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    case "household":
+      // Simplified yurt-lattice (kerege) mark for the family circle.
+      return (
+        <svg viewBox="0 0 24 24" className={cls} fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+          <rect x="4" y="6" width="16" height="12" rx="2" />
+          <path d="M4 9l8 6 8-6M4 15l8-6 8 6" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       );
     default:
@@ -87,7 +99,7 @@ export function MobileNav() {
       className="fixed inset-x-0 bottom-0 z-40 border-t border-sand-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden"
     >
       <ul className="grid grid-cols-4">
-        {ITEMS.map((item) => {
+        {MOBILE_ITEMS.map((item) => {
           const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
             <li key={item.href}>

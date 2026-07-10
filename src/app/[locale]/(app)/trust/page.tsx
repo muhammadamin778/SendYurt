@@ -3,8 +3,14 @@ import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Alert } from "@/components/ui/Alert";
 import { Card } from "@/components/ui/Card";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { Milestones } from "@/components/trust/Milestones";
+import {
+  RemittanceTimeline,
+  type TimelineMonth,
+} from "@/components/trust/RemittanceTimeline";
 import { ScoreDial } from "@/components/trust/ScoreDial";
 import { formatDate } from "@/lib/format";
+import { computeMilestones, type Milestone } from "@/lib/milestones";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import {
@@ -31,14 +37,22 @@ async function getScoreWithSnapshot(householdId: string): Promise<{
   result: TrustScoreResult;
   calculatedAt: Date;
   hasDemoData: boolean;
+  timeline: TimelineMonth[];
+  milestones: Milestone[];
 }> {
   const since = new Date();
   since.setUTCMonth(since.getUTCMonth() - 13);
 
-  const transactions = await prisma.transaction.findMany({
-    where: { householdId, status: "COMPLETED", date: { gte: since } },
-    select: { type: true, amount: true, date: true, isDemo: true },
-  });
+  const [transactions, goals] = await Promise.all([
+    prisma.transaction.findMany({
+      where: { householdId, status: "COMPLETED", date: { gte: since } },
+      select: { type: true, amount: true, date: true, isDemo: true },
+    }),
+    prisma.savingsGoal.findMany({
+      where: { householdId },
+      select: { currentAmount: true, targetAmount: true },
+    }),
+  ]);
 
   const result = computeTrustScore(
     transactions.map((t) => ({
@@ -72,10 +86,40 @@ async function getScoreWithSnapshot(householdId: string): Promise<{
     calculatedAt = snapshot.calculatedAt;
   }
 
+  // Last 12 calendar months of remittance arrivals, oldest first.
+  const byMonth = new Map<string, number>();
+  for (const tx of transactions) {
+    if (tx.type !== "REMITTANCE") continue;
+    const key = `${tx.date.getUTCFullYear()}-${String(tx.date.getUTCMonth() + 1).padStart(2, "0")}`;
+    byMonth.set(key, (byMonth.get(key) ?? 0) + tx.amount.toNumber());
+  }
+  const now = new Date();
+  const timeline: TimelineMonth[] = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
+    const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+    timeline.push({
+      key,
+      monthStartIso: d.toISOString(),
+      amountUzs: byMonth.get(key) ?? null,
+      isCurrent: i === 0,
+    });
+  }
+
+  const milestones = computeMilestones(
+    transactions.map((t) => ({ type: t.type, date: t.date })),
+    goals.map((g) => ({
+      currentAmount: g.currentAmount.toNumber(),
+      targetAmount: g.targetAmount.toNumber(),
+    })),
+  );
+
   return {
     result,
     calculatedAt,
     hasDemoData: transactions.some((t) => t.isDemo),
+    timeline,
+    milestones,
   };
 }
 
@@ -117,9 +161,8 @@ export default async function TrustPage({
   const t = await getTranslations("trust");
   const currentLocale = await getLocale();
 
-  const { result, calculatedAt, hasDemoData } = await getScoreWithSnapshot(
-    user.householdId,
-  );
+  const { result, calculatedAt, hasDemoData, timeline, milestones } =
+    await getScoreWithSnapshot(user.householdId);
   const tips = improvementTips(result);
 
   return (
@@ -162,6 +205,26 @@ export default async function TrustPage({
           </div>
         </div>
       </Card>
+
+      <section aria-label={t("timeline.title")}>
+        <h2 className="font-display text-lg font-bold text-samarkand-950">
+          {t("timeline.title")}
+        </h2>
+        <p className="mt-1 text-sm text-sand-800">{t("timeline.subtitle")}</p>
+        <Card className="mt-4 p-5">
+          <RemittanceTimeline months={timeline} />
+        </Card>
+      </section>
+
+      <section aria-label={t("milestones.title")}>
+        <h2 className="font-display text-lg font-bold text-samarkand-950">
+          {t("milestones.title")}
+        </h2>
+        <p className="mt-1 text-sm text-sand-800">{t("milestones.subtitle")}</p>
+        <div className="mt-4">
+          <Milestones milestones={milestones} />
+        </div>
+      </section>
 
       <section aria-label={t("factorsTitle")}>
         <h2 className="font-display text-lg font-bold text-samarkand-950">
