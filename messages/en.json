@@ -95,7 +95,17 @@
     "errorHouseholdNameShort": "Please name your household.",
     "errorInviteCodeFormat": "The invite code is 8 characters long.",
     "errorEmailTaken": "An account with this email already exists.",
-    "errorInviteCodeInvalid": "We couldn't find a household with that code. Please check it with your family."
+    "errorInviteCodeInvalid": "We couldn't find a household with that code. Please check it with your family.",
+    "errorRateLimited": "Too many attempts. Please wait a little and try again.",
+    "errorPasswordMismatch": "The passwords don't match.",
+    "resetTitle": "Choose a new password",
+    "resetSubtitle": "Pick a strong password you haven't used before.",
+    "newPassword": "New password",
+    "confirmPassword": "Repeat new password",
+    "resetButton": "Save new password",
+    "resetDone": "Your password has been changed. You can log in with it now.",
+    "errorResetTokenInvalid": "This reset link has expired or was already used. Please request a new one.",
+    "errorResetTokenMissing": "This page needs the reset link from your email. Please open it from there, or request a new link."
   },
   "rates": {
     "title": "Rate & route finder",

@@ -36,7 +36,11 @@ export function LoginForm() {
         redirect: false,
       });
       if (res?.error) {
-        setError(t("errorInvalidCredentials"));
+        setError(
+          res.error === "rate_limited"
+            ? t("errorRateLimited")
+            : t("errorInvalidCredentials"),
+        );
         setSubmitting(false);
         return;
       }

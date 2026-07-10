@@ -106,7 +106,9 @@ export function RegisterForm() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        if (data.error === "email_taken") {
+        if (res.status === 429) {
+          setFormError(t("errorRateLimited"));
+        } else if (data.error === "email_taken") {
           setFieldErrors({ email: t("errorEmailTaken") });
         } else if (data.error === "invalid_invite_code") {
           setFieldErrors({ inviteCode: t("errorInviteCodeInvalid") });

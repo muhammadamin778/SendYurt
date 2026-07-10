@@ -8,7 +8,7 @@ const intlMiddleware = createIntlMiddleware(routing);
 // Path segments (after the locale prefix) that require a session.
 const PROTECTED = ["dashboard", "budget", "rates", "trust", "household"];
 // Auth pages a logged-in user should be bounced away from.
-const AUTH_PAGES = ["login", "register", "forgot-password"];
+const AUTH_PAGES = ["login", "register", "forgot-password", "reset-password"];
 
 function firstSegmentAfterLocale(pathname: string): string {
   const parts = pathname.split("/").filter(Boolean);

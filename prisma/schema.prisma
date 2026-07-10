@@ -41,6 +41,21 @@ model User {
   household        Household     @relation(fields: [householdId], references: [id])
   sentTransactions Transaction[] @relation("SentTransactions")
   receivedTransactions Transaction[] @relation("ReceivedTransactions")
+  passwordResetTokens PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id String @id @default(cuid())
+  userId String
+  // sha256 of the raw token — the raw value only ever lives in the email link
+  tokenHash String @unique
+  expiresAt DateTime
+  usedAt DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model RemittanceProvider {

@@ -2,10 +2,19 @@ import { NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { clientIp, LIMITS, rateLimit } from "@/lib/rate-limit";
 import { registerSchema } from "@/lib/validators";
 import { generateInviteCode } from "@/lib/invite-code";
 
 export async function POST(req: Request) {
+  const limit = rateLimit(`register:ip:${clientIp(req.headers)}`, LIMITS.register);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "rate_limited" },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } },
+    );
+  }
+
   let body: unknown;
   try {
     body = await req.json();

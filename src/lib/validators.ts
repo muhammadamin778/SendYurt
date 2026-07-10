@@ -38,6 +38,15 @@ export const registerSchema = z
     }
   });
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().toLowerCase().email().max(254),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(32).max(128),
+  password: passwordSchema,
+});
+
 export const loginSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
   password: z.string().min(1),

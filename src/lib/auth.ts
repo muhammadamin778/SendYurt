@@ -2,7 +2,16 @@ import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, clearAttempts, LIMITS, recordAttempt } from "@/lib/rate-limit";
 import { loginSchema } from "@/lib/validators";
+
+function requestIp(headers: Record<string, string | string[] | undefined> | undefined): string {
+  const fwd = headers?.["x-forwarded-for"];
+  const first = Array.isArray(fwd) ? fwd[0] : fwd;
+  if (first) return first.split(",")[0].trim();
+  const real = headers?.["x-real-ip"];
+  return (Array.isArray(real) ? real[0] : real) ?? "unknown";
+}
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -22,9 +31,22 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         const parsed = loginSchema.safeParse(credentials);
         if (!parsed.success) return null;
+
+        // Throttle by account and by source IP. Only failed attempts
+        // consume budget; a successful login clears the account's counter.
+        // The thrown message becomes the error code the login form maps to
+        // a "try again later" message.
+        const emailKey = `login:email:${parsed.data.email}`;
+        const ipKey = `login:ip:${requestIp(req?.headers)}`;
+        if (
+          !checkRateLimit(emailKey, LIMITS.login).allowed ||
+          !checkRateLimit(ipKey, LIMITS.login).allowed
+        ) {
+          throw new Error("rate_limited");
+        }
 
         const user = await prisma.user.findUnique({
           where: { email: parsed.data.email },
@@ -35,7 +57,12 @@ export const authOptions: NextAuthOptions = {
           user?.passwordHash ??
           "$2a$12$C6UzMDM.H6dfI/f/IKcEeO7ZJf5nqYFDqMbF1sB4FBW9jXvXW3u1u";
         const valid = await compare(parsed.data.password, hash);
-        if (!user || !valid) return null;
+        if (!user || !valid) {
+          recordAttempt(emailKey);
+          recordAttempt(ipKey);
+          return null;
+        }
+        clearAttempts(emailKey);
 
         return {
           id: user.id,

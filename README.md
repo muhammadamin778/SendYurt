@@ -86,6 +86,17 @@ the demo household with fresh, current-dated history.
 - **Login is enumeration-safe**: a dummy bcrypt compare runs when the
   email doesn't exist, and the forgot-password flow answers identically
   for known and unknown emails.
+- **Password reset is real**: single-use, sha256-hashed tokens with a
+  1-hour TTL (`PasswordResetToken`), a concurrency-safe claim, and a
+  pluggable mail transport (`src/lib/mailer.ts` — logs the link in dev,
+  swap in Resend/SES/SMTP for production without touching callers).
+- **Auth endpoints are rate limited** (`src/lib/rate-limit.ts`): login
+  counts only *failed* attempts (5 per 15 min per account and per IP,
+  cleared on success); register, forgot- and reset-password consume per
+  request. In-memory store — swap for Redis/Upstash when scaling
+  horizontally.
+- **Security headers** (X-Frame-Options DENY, nosniff, referrer and
+  permissions policies) are set globally in `next.config.mjs`.
 - **Trust Score snapshots** are persisted (`TrustScoreSnapshot`) whenever
   the score changes or ages past 24h, giving households an auditable
   history while the number itself is always recomputed from the ledger.
@@ -93,7 +104,10 @@ the demo household with fresh, current-dated history.
 ## Known limitations (honest list)
 
 - Exchange rates and provider fees are **sample data** (labeled in the UI).
-- Forgot-password is a placeholder — no email is sent yet.
-- No rate limiting on auth endpoints yet; add (e.g. Upstash) before real traffic.
+- Password-reset emails aren't delivered yet — the flow is complete, but
+  `src/lib/mailer.ts` needs a real transport (Resend/SES/SMTP) wired in.
+- Rate limiting is in-memory (per instance); move to Redis/Upstash for
+  multi-instance deployments.
+- No CSP header yet (Next inline scripts make a strict CSP non-trivial).
 - `next dev` and `next build` share `.next` by default; use
   `NEXT_DIST_DIR=.next-prod npm run build` to build while dev is running.

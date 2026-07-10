@@ -8,23 +8,48 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 
-// Placeholder flow: no reset email is sent yet. We deliberately show the
-// same confirmation regardless of whether the email exists, so the form
-// can't be used to probe for registered accounts once it goes live.
+// Shows the same confirmation whether or not the email exists, so the
+// form can't be used to probe for registered accounts. In development the
+// API returns the reset link directly (no mail transport yet) and we
+// surface it for manual testing.
 export function ForgotPasswordForm() {
   const t = useTranslations("auth");
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [devResetUrl, setDevResetUrl] = useState<string | null>(null);
 
-  function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       setError(t("errorInvalidEmail"));
       return;
     }
-    setSent(true);
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      if (res.status === 429) {
+        setError(t("errorRateLimited"));
+        return;
+      }
+      if (!res.ok) {
+        setError(t("errorGeneric"));
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
+      if (data.devResetUrl) setDevResetUrl(data.devResetUrl);
+      setSent(true);
+    } catch {
+      setError(t("errorGeneric"));
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -37,6 +62,14 @@ export function ForgotPasswordForm() {
       {sent ? (
         <div className="mt-6 space-y-4">
           <Alert kind="success">{t("forgotSent")}</Alert>
+          {devResetUrl && (
+            <Alert kind="info">
+              <span className="font-semibold">dev:</span>{" "}
+              <a href={devResetUrl} className="break-all underline">
+                {devResetUrl}
+              </a>
+            </Alert>
+          )}
           <Link
             href="/login"
             className="block text-center text-sm font-semibold text-samarkand-700 hover:underline"
@@ -56,7 +89,7 @@ export function ForgotPasswordForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <Button type="submit" full>
+          <Button type="submit" full loading={submitting}>
             {t("forgotButton")}
           </Button>
           <Link

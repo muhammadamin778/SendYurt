@@ -95,7 +95,17 @@
     "errorHouseholdNameShort": "Iltimos, xonadonga nom bering.",
     "errorInviteCodeFormat": "Taklif kodi 8 ta belgidan iborat.",
     "errorEmailTaken": "Bu email bilan hisob allaqachon mavjud.",
-    "errorInviteCodeInvalid": "Bu kod bilan xonadon topilmadi. Oilangiz bilan tekshirib koʻring."
+    "errorInviteCodeInvalid": "Bu kod bilan xonadon topilmadi. Oilangiz bilan tekshirib koʻring.",
+    "errorRateLimited": "Urinishlar juda koʻp. Biroz kutib, qaytadan urinib koʻring.",
+    "errorPasswordMismatch": "Parollar mos kelmadi.",
+    "resetTitle": "Yangi parol tanlang",
+    "resetSubtitle": "Ilgari ishlatmagan kuchli parol tanlang.",
+    "newPassword": "Yangi parol",
+    "confirmPassword": "Yangi parolni takrorlang",
+    "resetButton": "Yangi parolni saqlash",
+    "resetDone": "Parolingiz oʻzgartirildi. Endi u bilan kirishingiz mumkin.",
+    "errorResetTokenInvalid": "Bu tiklash havolasi muddati oʻtgan yoki allaqachon ishlatilgan. Yangisini soʻrang.",
+    "errorResetTokenMissing": "Bu sahifa emaildagi tiklash havolasini talab qiladi. Uni oʻsha yerdan oching yoki yangi havola soʻrang."
   },
   "rates": {
     "title": "Kurs va yoʻnalish qidiruvi",
