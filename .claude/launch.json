@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "sendyurt-dev",
+      "cwd": "D:\\My code\\sendyurt",
+      "runtimeExecutable": "D:\\tools\\node\\npm.cmd",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000
+    }
+  ]
+}

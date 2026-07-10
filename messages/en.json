@@ -1,0 +1,302 @@
+{
+  "common": {
+    "language": "Language",
+    "logIn": "Log in",
+    "register": "Sign up",
+    "logOut": "Log out",
+    "loading": "Loading…",
+    "cancel": "Cancel",
+    "save": "Save",
+    "add": "Add",
+    "close": "Close",
+    "sampleData": "Sample data",
+    "demoData": "Demo data"
+  },
+  "nav": {
+    "dashboard": "Home",
+    "rates": "Rate finder",
+    "budget": "Budget",
+    "trust": "Trust score",
+    "household": "Family"
+  },
+  "landing": {
+    "heroTitle": "Send money home the smart way",
+    "heroSubtitle": "SendYurt helps families split between Uzbekistan and abroad compare transfer routes, budget together, and build financial credibility — side by side.",
+    "ctaPrimary": "Get started — it's free",
+    "ctaSecondary": "I already have an account",
+    "featuresTitle": "One home for your family's money",
+    "rates": {
+      "title": "Find the best route",
+      "body": "Compare what your family actually receives across providers — fees and exchange margins included, not just the sticker price."
+    },
+    "budget": {
+      "title": "Budget together",
+      "body": "Senders and receivers see the same picture: spending by category, savings goals, and progress you build as one family."
+    },
+    "trust": {
+      "title": "Build financial trust",
+      "body": "Regular transfers and steady saving become a transparent Trust Score your family can grow month by month."
+    },
+    "howTitle": "How SendYurt works",
+    "how1Title": "Create your family circle",
+    "how1Body": "Register as a sender abroad or a receiver at home, and connect through one shared household with a simple invite code.",
+    "how2Title": "Compare before you send",
+    "how2Body": "See fees, exchange rates and delivery time side by side, sorted by what actually arrives in soʻm.",
+    "how3Title": "Grow together",
+    "how3Body": "Track spending, reach savings goals, and watch your family's Trust Score grow with every consistent month.",
+    "footerNote": "Built with care for families between homes."
+  },
+  "auth": {
+    "loginTitle": "Welcome back",
+    "loginSubtitle": "Log in to your family's SendYurt.",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot your password?",
+    "loginButton": "Log in",
+    "noAccount": "New to SendYurt?",
+    "registerLink": "Create an account",
+    "registerTitle": "Join SendYurt",
+    "registerSubtitle": "A few details and your family is connected.",
+    "roleQuestion": "Where are you in the family?",
+    "roleSenderTitle": "I send money home",
+    "roleSenderBody": "I work abroad and support my family in Uzbekistan.",
+    "roleReceiverTitle": "I receive at home",
+    "roleReceiverBody": "I'm in Uzbekistan, managing the family budget.",
+    "name": "Full name",
+    "passwordHint": "At least 8 characters, with a letter and a number.",
+    "passwordStrength": {
+      "weak": "Weak password",
+      "fair": "Fair password",
+      "strong": "Strong password"
+    },
+    "householdQuestion": "Your family household",
+    "householdCreateTitle": "Start a new one",
+    "householdCreateBody": "Be the first — invite your family after.",
+    "householdJoinTitle": "Join my family",
+    "householdJoinBody": "I have an invite code from a relative.",
+    "householdName": "Household name",
+    "householdNamePlaceholder": "e.g. Karimov family",
+    "inviteCode": "Invite code",
+    "inviteCodeHint": "The 8-character code from your family member.",
+    "registerButton": "Create account",
+    "haveAccount": "Already have an account?",
+    "loginLink": "Log in",
+    "forgotTitle": "Reset your password",
+    "forgotSubtitle": "Tell us your email and we'll send you a reset link.",
+    "forgotSent": "If that email is registered with us, a reset link is on its way. Please check your inbox.",
+    "forgotButton": "Send reset link",
+    "backToLogin": "Back to log in",
+    "errorMissingFields": "Please enter your email and password.",
+    "errorInvalidCredentials": "That email or password doesn't match. Please try again.",
+    "errorGeneric": "Something went wrong on our side. Please try again.",
+    "errorNameShort": "Please enter your name.",
+    "errorInvalidEmail": "Please enter a valid email address.",
+    "errorPasswordWeak": "Password must be at least 8 characters and include a letter and a number.",
+    "errorHouseholdNameShort": "Please name your household.",
+    "errorInviteCodeFormat": "The invite code is 8 characters long.",
+    "errorEmailTaken": "An account with this email already exists.",
+    "errorInviteCodeInvalid": "We couldn't find a household with that code. Please check it with your family."
+  },
+  "rates": {
+    "title": "Rate & route finder",
+    "subtitle": "See what your family actually receives — not just the advertised fee.",
+    "sampleBadge": "Sample rates",
+    "sampleNote": "live provider integration is pending. Mid-market reference: 1 {currency} ≈ {rate} UZS.",
+    "amountLabel": "You send",
+    "currencyLabel": "Currency",
+    "compareButton": "Compare routes",
+    "errorAmountPositive": "Please enter an amount greater than zero.",
+    "errorAmountTooLarge": "That amount is too large for a single transfer.",
+    "empty": "No providers support this currency yet. Try another one.",
+    "resultsLabel": "Transfer options",
+    "bestValue": "Best for your family",
+    "familyReceives": "Family receives",
+    "vsBest": "vs. best route",
+    "youSend": "You send",
+    "fees": "Fees",
+    "exchangeRate": "Exchange rate",
+    "marginNote": "{margin}% off mid-market",
+    "received": "Received in soʻm",
+    "speedMinutes": "Within minutes",
+    "speedHours": "~{hours} hours",
+    "speedDays": "~{days} day(s)"
+  },
+  "budget": {
+    "title": "Family budget",
+    "subtitle": "One shared picture of the money you earn, spend and save.",
+    "monthNav": "Month navigation",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "summaryLabel": "Month summary",
+    "summary": {
+      "income": "Came in",
+      "spent": "Spent",
+      "saved": "Set aside"
+    },
+    "chart": {
+      "title": "Last 6 months: spend vs. save",
+      "ariaLabel": "Bar chart of monthly income, spending and savings",
+      "income": "Income",
+      "spent": "Spent",
+      "saved": "Saved"
+    },
+    "allocations": {
+      "title": "Category budgets",
+      "edit": "Set a limit",
+      "monthlyLimit": "Monthly limit",
+      "empty": "No budgets yet for this month. Set a limit for a category to start tracking.",
+      "noLimit": "No limit set for this category.",
+      "over": "Over budget by {amount}"
+    },
+    "goals": {
+      "title": "Savings goals",
+      "add": "New goal",
+      "empty": "No savings goals yet. Start one — even a small, steady amount adds up.",
+      "name": "Goal name",
+      "namePlaceholder": "e.g. Toʻy fund",
+      "target": "Target amount",
+      "targetDate": "Target date (optional)",
+      "by": "by {date}",
+      "contribute": "Add to this goal (UZS)",
+      "contributeButton": "Add",
+      "errorName": "Please give the goal a name."
+    },
+    "transactions": {
+      "title": "Transactions",
+      "empty": "Nothing recorded this month yet. Add your first transaction above.",
+      "demoBadge": "Demo data",
+      "demoNote": "Rows marked this way come from the seeded demo history.",
+      "type": {
+        "INCOME": "Income",
+        "REMITTANCE": "Transfer from abroad",
+        "EXPENSE": "Expense",
+        "SAVINGS": "Savings deposit"
+      }
+    },
+    "form": {
+      "addTransaction": "Add transaction",
+      "close": "Close",
+      "typeLabel": "Transaction type",
+      "kind": {
+        "EXPENSE": "Expense",
+        "INCOME": "Income"
+      },
+      "amount": "Amount",
+      "category": "Category",
+      "date": "Date",
+      "note": "Note (optional)",
+      "notePlaceholder": "e.g. bazaar shopping",
+      "save": "Save",
+      "cancel": "Cancel",
+      "errorAmount": "Please enter a valid amount greater than zero.",
+      "errorDate": "Please pick a valid date.",
+      "errorGeneric": "Couldn't save. Please try again."
+    },
+    "deleteTransaction": "Delete transaction",
+    "deleteConfirm": "Remove this transaction? This can't be undone.",
+    "categories": {
+      "food": "Food & bazaar",
+      "utilities": "Utilities",
+      "education": "Education",
+      "health": "Health",
+      "transport": "Transport",
+      "household": "Household",
+      "clothing": "Clothing",
+      "celebrations": "Celebrations & gifts",
+      "debt": "Debt payments",
+      "other": "Other"
+    }
+  },
+  "trust": {
+    "title": "Family Trust Score",
+    "subtitle": "A transparent picture of your family's financial habits — built from regular transfers, steady amounts and saving. Not a credit score: a habit you grow together.",
+    "demoBadge": "Demo data",
+    "demoNote": "this score is calculated from the seeded sample history so you can see how it works.",
+    "outOf100": "out of 100",
+    "calculatedAt": "Calculated {date}",
+    "provisional": "provisional — less than 3 months of history",
+    "verdict": {
+      "strong": "Strong and steady",
+      "growing": "Growing well",
+      "early": "Just getting started"
+    },
+    "explainer": "The score combines three habits over the last 12 months: how regularly money arrives from abroad, how steady the amounts are, and whether the family sets something aside. Every factor below shows the exact numbers behind it.",
+    "factorsTitle": "What makes up your score",
+    "weight": "{percent}% of the score",
+    "factors": {
+      "consistency": {
+        "title": "Transfer consistency",
+        "explanation": "Money arrived in {active} of the last {total} months. Regular monthly transfers are the strongest signal of reliability."
+      },
+      "stability": {
+        "title": "Amount stability",
+        "explanation": "Monthly transfer amounts varied by about {variation}% around their average. Steadier amounts make the family budget easier to plan."
+      },
+      "savings": {
+        "title": "Savings habit",
+        "explanation": "The family set money aside in {months} of {total} months, saving about {rate}% of what came in. Even small, regular deposits count."
+      }
+    },
+    "tipsTitle": "How to improve it",
+    "tips": {
+      "keepGoing": {
+        "title": "Keep building your history",
+        "body": "The score becomes reliable after 3 months of activity. Keep logging transfers and savings — it will settle quickly."
+      },
+      "consistency": {
+        "title": "Send on a rhythm, not just when possible",
+        "body": "A transfer every month — even a smaller one — raises your consistency more than occasional large ones. Pick a day of the month and stick to it."
+      },
+      "stability": {
+        "title": "Even out the amounts",
+        "body": "If earnings swing, consider sending a steady base amount monthly and topping up in good months. Predictable amounts help the family plan."
+      },
+      "savings": {
+        "title": "Make saving automatic",
+        "body": "Set a small fixed deposit to a savings goal right after each transfer arrives — before spending starts. Aim for 10% of what comes in."
+      },
+      "maintain": {
+        "title": "Keep doing what you're doing",
+        "body": "Your habits are strong across the board. Maintain the rhythm and your score will stay high — and your history will show it."
+      }
+    },
+    "disclaimer": "The Trust Score is an internal SendYurt indicator to help families build healthy money habits and document their reliability. It is not a credit rating and is never shared without your consent."
+  },
+  "dashboard": {
+    "title": "Home",
+    "greeting": "Welcome, {name}",
+    "subtitleSender": "Here's the best way to support your family today.",
+    "subtitleReceiver": "Here's how your family is doing this month.",
+    "inviteTitle": "Invite your family",
+    "inviteBody": "Share this code so relatives can join your household:",
+    "quickRates": "Compare transfer routes",
+    "cards": {
+      "rates": {
+        "title": "Best route today",
+        "teaser": "Sending {amount} home? Right now {provider} delivers the most:",
+        "sample": "Sample rates — live integration pending",
+        "cta": "Compare all routes"
+      },
+      "budget": {
+        "title": "This month",
+        "income": "Came in",
+        "spent": "Spent",
+        "saved": "Set aside",
+        "cta": "Open the budget"
+      },
+      "trust": {
+        "title": "Trust Score",
+        "hint": "Grows with regular transfers and steady saving.",
+        "cta": "See the breakdown"
+      }
+    }
+  },
+  "errors": {
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "The page you're looking for doesn't exist or has moved.",
+    "errorTitle": "Something went wrong",
+    "errorBody": "An unexpected error occurred on our side. Your data is safe.",
+    "retry": "Try again",
+    "goHome": "Go to the home page"
+  }
+}

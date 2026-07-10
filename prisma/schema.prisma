@@ -1,0 +1,133 @@
+// SendYurt data model.
+// Local dev runs on SQLite; the schema deliberately avoids SQLite-only or
+// Postgres-only constructs so switching `provider` to "postgresql" for
+// deployment requires no model changes. Enums are not supported by SQLite,
+// so role/status/type fields are strings constrained by zod at the app
+// boundary (see src/lib/validators.ts).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Household {
+  id         String   @id @default(cuid())
+  name       String
+  inviteCode String   @unique
+  createdAt  DateTime @default(now())
+
+  users        User[]
+  transactions Transaction[]
+  budgets      Budget[]
+  savingsGoals SavingsGoal[]
+  trustScores  TrustScoreSnapshot[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  // "SENDER" | "RECEIVER" — validated in app code (SQLite has no enums)
+  role         String
+  name         String
+  languagePref String   @default("uz")
+  householdId  String
+  createdAt    DateTime @default(now())
+
+  household        Household     @relation(fields: [householdId], references: [id])
+  sentTransactions Transaction[] @relation("SentTransactions")
+  receivedTransactions Transaction[] @relation("ReceivedTransactions")
+}
+
+model RemittanceProvider {
+  id                 String  @id @default(cuid())
+  name               String
+  slug               String  @unique
+  // Flat fee charged in the source currency
+  baseFee            Decimal @default(0)
+  // Percentage fee on the send amount, e.g. 1.5 means 1.5%
+  percentFee         Decimal @default(0)
+  // Margin the provider takes off the mid-market rate, e.g. 2.0 means 2%
+  exchangeRateMargin Decimal @default(0)
+  transferSpeedHours Int     @default(24)
+  // Comma-separated ISO codes of supported source currencies, e.g. "USD,RUB,KZT"
+  sourceCurrencies   String
+
+  transactions Transaction[]
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  householdId String
+  // "REMITTANCE" (money sent home) | "EXPENSE" | "INCOME" | "SAVINGS"
+  type        String
+  // Nullable: only remittances have sender/receiver/provider
+  senderId    String?
+  receiverId  String?
+  providerId  String?
+  amount      Decimal
+  currency    String   @default("UZS")
+  // For remittances: the original send-side amount and currency
+  sourceAmount   Decimal?
+  sourceCurrency String?
+  // Budget category slug for EXPENSE rows (see src/lib/categories.ts)
+  category    String?
+  note        String?
+  date        DateTime
+  // "PENDING" | "COMPLETED" | "FAILED"
+  status      String   @default("COMPLETED")
+  // True for rows created by the seed script (demo history is labeled in the UI)
+  isDemo      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  household Household           @relation(fields: [householdId], references: [id])
+  sender    User?               @relation("SentTransactions", fields: [senderId], references: [id])
+  receiver  User?               @relation("ReceivedTransactions", fields: [receiverId], references: [id])
+  provider  RemittanceProvider? @relation(fields: [providerId], references: [id])
+
+  @@index([householdId, date])
+  @@index([householdId, type])
+}
+
+model Budget {
+  id              String  @id @default(cuid())
+  householdId     String
+  category        String
+  amountAllocated Decimal
+  // Month the allocation applies to, formatted "YYYY-MM"
+  period          String
+
+  household Household @relation(fields: [householdId], references: [id])
+
+  @@unique([householdId, category, period])
+}
+
+model SavingsGoal {
+  id            String    @id @default(cuid())
+  householdId   String
+  name          String
+  targetAmount  Decimal
+  currentAmount Decimal   @default(0)
+  targetDate    DateTime?
+  createdAt     DateTime  @default(now())
+
+  household Household @relation(fields: [householdId], references: [id])
+}
+
+model TrustScoreSnapshot {
+  id                String   @id @default(cuid())
+  householdId       String
+  score             Int
+  consistencyFactor Int
+  stabilityFactor   Int
+  savingsFactor     Int
+  calculatedAt      DateTime @default(now())
+
+  household Household @relation(fields: [householdId], references: [id])
+
+  @@index([householdId, calculatedAt])
+}

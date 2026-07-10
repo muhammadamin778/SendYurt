@@ -1,0 +1,302 @@
+{
+  "common": {
+    "language": "Til",
+    "logIn": "Kirish",
+    "register": "Roʻyxatdan oʻtish",
+    "logOut": "Chiqish",
+    "loading": "Yuklanmoqda…",
+    "cancel": "Bekor qilish",
+    "save": "Saqlash",
+    "add": "Qoʻshish",
+    "close": "Yopish",
+    "sampleData": "Namunaviy maʼlumot",
+    "demoData": "Demo maʼlumot"
+  },
+  "nav": {
+    "dashboard": "Bosh sahifa",
+    "rates": "Kurs qidiruvi",
+    "budget": "Byudjet",
+    "trust": "Ishonch bali",
+    "household": "Oila"
+  },
+  "landing": {
+    "heroTitle": "Uyga pul yuborishning aqlli yoʻli",
+    "heroSubtitle": "SendYurt Oʻzbekistondagi va chet eldagi oila aʼzolariga pul oʻtkazma yoʻllarini solishtirish, birgalikda byudjet yuritish va moliyaviy ishonchni mustahkamlashga yordam beradi.",
+    "ctaPrimary": "Boshlash — bepul",
+    "ctaSecondary": "Hisobim bor",
+    "featuresTitle": "Oilangiz pullari uchun yagona maskan",
+    "rates": {
+      "title": "Eng qulay yoʻlni toping",
+      "body": "Turli xizmatlar orqali oilangiz qoʻliga aslida qancha pul yetib borishini solishtiring — komissiya va kurs farqi ham hisobda."
+    },
+    "budget": {
+      "title": "Birgalikda byudjet yuriting",
+      "body": "Yuboruvchi ham, qabul qiluvchi ham bir xil manzarani koʻradi: toifalar boʻyicha xarajatlar, jamgʻarma maqsadlari va oilaviy natijalar."
+    },
+    "trust": {
+      "title": "Moliyaviy ishonchni mustahkamlang",
+      "body": "Muntazam oʻtkazmalar va barqaror jamgʻarish oilangizning shaffof Ishonch baliga aylanadi va oydan-oyga oshib boradi."
+    },
+    "howTitle": "SendYurt qanday ishlaydi",
+    "how1Title": "Oila davrangizni yarating",
+    "how1Body": "Chet eldagi yuboruvchi yoki uydagi qabul qiluvchi sifatida roʻyxatdan oʻting va oddiy taklif kodi orqali bitta oilaga birlashing.",
+    "how2Title": "Yuborishdan oldin solishtiring",
+    "how2Body": "Komissiya, kurs va yetkazish muddatini yonma-yon koʻring — soʻmda aslida qancha yetib borishi boʻyicha saralangan.",
+    "how3Title": "Birga oʻsing",
+    "how3Body": "Xarajatlarni kuzating, jamgʻarma maqsadlariga erishing va har bir barqaror oy bilan oilangizning Ishonch bali oshishini koʻring.",
+    "footerNote": "Ikki uy orasidagi oilalar uchun mehr bilan yaratilgan."
+  },
+  "auth": {
+    "loginTitle": "Xush kelibsiz",
+    "loginSubtitle": "Oilangizning SendYurt sahifasiga kiring.",
+    "email": "Email",
+    "password": "Parol",
+    "forgotPassword": "Parolni unutdingizmi?",
+    "loginButton": "Kirish",
+    "noAccount": "SendYurtʼda yangimisiz?",
+    "registerLink": "Hisob yarating",
+    "registerTitle": "SendYurtʼga qoʻshiling",
+    "registerSubtitle": "Bir necha maʼlumot — va oilangiz bogʻlanadi.",
+    "roleQuestion": "Oilada qaysi tarafdasiz?",
+    "roleSenderTitle": "Men uyga pul yuboraman",
+    "roleSenderBody": "Chet elda ishlayman va Oʻzbekistondagi oilamni qoʻllab-quvvatlayman.",
+    "roleReceiverTitle": "Men uyda qabul qilaman",
+    "roleReceiverBody": "Oʻzbekistondaman, oila byudjetini yuritaman.",
+    "name": "Toʻliq ism",
+    "passwordHint": "Kamida 8 ta belgi, harf va raqam bilan.",
+    "passwordStrength": {
+      "weak": "Zaif parol",
+      "fair": "Oʻrtacha parol",
+      "strong": "Kuchli parol"
+    },
+    "householdQuestion": "Oilaviy xonadoningiz",
+    "householdCreateTitle": "Yangisini boshlash",
+    "householdCreateBody": "Birinchi boʻling — keyin oilani taklif qiling.",
+    "householdJoinTitle": "Oilamga qoʻshilish",
+    "householdJoinBody": "Qarindoshimdan taklif kodim bor.",
+    "householdName": "Xonadon nomi",
+    "householdNamePlaceholder": "masalan, Karimovlar oilasi",
+    "inviteCode": "Taklif kodi",
+    "inviteCodeHint": "Oila aʼzongizdan olingan 8 belgili kod.",
+    "registerButton": "Hisob yaratish",
+    "haveAccount": "Hisobingiz bormi?",
+    "loginLink": "Kirish",
+    "forgotTitle": "Parolni tiklash",
+    "forgotSubtitle": "Emailingizni kiriting — tiklash havolasini yuboramiz.",
+    "forgotSent": "Agar bu email roʻyxatdan oʻtgan boʻlsa, tiklash havolasi yoʻlda. Pochtangizni tekshiring.",
+    "forgotButton": "Havola yuborish",
+    "backToLogin": "Kirishga qaytish",
+    "errorMissingFields": "Iltimos, email va parolni kiriting.",
+    "errorInvalidCredentials": "Email yoki parol notoʻgʻri. Qaytadan urinib koʻring.",
+    "errorGeneric": "Bizda xatolik yuz berdi. Iltimos, qaytadan urinib koʻring.",
+    "errorNameShort": "Iltimos, ismingizni kiriting.",
+    "errorInvalidEmail": "Iltimos, toʻgʻri email manzil kiriting.",
+    "errorPasswordWeak": "Parol kamida 8 ta belgidan iborat boʻlib, harf va raqamni oʻz ichiga olishi kerak.",
+    "errorHouseholdNameShort": "Iltimos, xonadonga nom bering.",
+    "errorInviteCodeFormat": "Taklif kodi 8 ta belgidan iborat.",
+    "errorEmailTaken": "Bu email bilan hisob allaqachon mavjud.",
+    "errorInviteCodeInvalid": "Bu kod bilan xonadon topilmadi. Oilangiz bilan tekshirib koʻring."
+  },
+  "rates": {
+    "title": "Kurs va yoʻnalish qidiruvi",
+    "subtitle": "Reklamadagi komissiya emas — oilangiz qoʻliga aslida qancha yetib borishini koʻring.",
+    "sampleBadge": "Namunaviy kurslar",
+    "sampleNote": "jonli integratsiya hali ulanmagan. Oʻrtacha bozor kursi: 1 {currency} ≈ {rate} soʻm.",
+    "amountLabel": "Yuboriladigan summa",
+    "currencyLabel": "Valyuta",
+    "compareButton": "Yoʻllarni solishtirish",
+    "errorAmountPositive": "Iltimos, noldan katta summa kiriting.",
+    "errorAmountTooLarge": "Bu summa bitta oʻtkazma uchun juda katta.",
+    "empty": "Bu valyutani hozircha hech bir xizmat qoʻllab-quvvatlamaydi. Boshqasini tanlab koʻring.",
+    "resultsLabel": "Oʻtkazma variantlari",
+    "bestValue": "Oilangiz uchun eng foydali",
+    "familyReceives": "Oila oladi",
+    "vsBest": "eng yaxshi yoʻlga nisbatan",
+    "youSend": "Siz yuborasiz",
+    "fees": "Komissiya",
+    "exchangeRate": "Ayirboshlash kursi",
+    "marginNote": "bozor kursidan {margin}% past",
+    "received": "Soʻmda qabul qilinadi",
+    "speedMinutes": "Bir necha daqiqada",
+    "speedHours": "~{hours} soat",
+    "speedDays": "~{days} kun"
+  },
+  "budget": {
+    "title": "Oila byudjeti",
+    "subtitle": "Topilgan, sarflangan va jamgʻarilgan pulning yagona oilaviy manzarasi.",
+    "monthNav": "Oylar boʻyicha yurish",
+    "prevMonth": "Oldingi oy",
+    "nextMonth": "Keyingi oy",
+    "summaryLabel": "Oy xulosasi",
+    "summary": {
+      "income": "Kirim",
+      "spent": "Sarflandi",
+      "saved": "Jamgʻarildi"
+    },
+    "chart": {
+      "title": "Soʻnggi 6 oy: xarajat va jamgʻarma",
+      "ariaLabel": "Oylik kirim, xarajat va jamgʻarma ustunli diagrammasi",
+      "income": "Kirim",
+      "spent": "Xarajat",
+      "saved": "Jamgʻarma"
+    },
+    "allocations": {
+      "title": "Toifalar boʻyicha byudjet",
+      "edit": "Chegara qoʻyish",
+      "monthlyLimit": "Oylik chegara",
+      "empty": "Bu oy uchun hali byudjet yoʻq. Kuzatishni boshlash uchun biror toifaga chegara qoʻying.",
+      "noLimit": "Bu toifa uchun chegara qoʻyilmagan.",
+      "over": "Byudjetdan {amount} oshib ketdi"
+    },
+    "goals": {
+      "title": "Jamgʻarma maqsadlari",
+      "add": "Yangi maqsad",
+      "empty": "Hali jamgʻarma maqsadi yoʻq. Boshlang — oz-ozdan yigʻilgan ham katta boʻladi.",
+      "name": "Maqsad nomi",
+      "namePlaceholder": "masalan, Toʻy jamgʻarmasi",
+      "target": "Maqsad summasi",
+      "targetDate": "Muddat (ixtiyoriy)",
+      "by": "{date} gacha",
+      "contribute": "Maqsadga qoʻshish (soʻm)",
+      "contributeButton": "Qoʻshish",
+      "errorName": "Iltimos, maqsadga nom bering."
+    },
+    "transactions": {
+      "title": "Amaliyotlar",
+      "empty": "Bu oyda hali hech narsa kiritilmagan. Yuqorida birinchi amaliyotni qoʻshing.",
+      "demoBadge": "Demo maʼlumot",
+      "demoNote": "Bunday belgilangan qatorlar namunaviy demo tarixdan olingan.",
+      "type": {
+        "INCOME": "Kirim",
+        "REMITTANCE": "Chet eldan oʻtkazma",
+        "EXPENSE": "Xarajat",
+        "SAVINGS": "Jamgʻarmaga qoʻyilma"
+      }
+    },
+    "form": {
+      "addTransaction": "Amaliyot qoʻshish",
+      "close": "Yopish",
+      "typeLabel": "Amaliyot turi",
+      "kind": {
+        "EXPENSE": "Xarajat",
+        "INCOME": "Kirim"
+      },
+      "amount": "Summa",
+      "category": "Toifa",
+      "date": "Sana",
+      "note": "Izoh (ixtiyoriy)",
+      "notePlaceholder": "masalan, bozorlik",
+      "save": "Saqlash",
+      "cancel": "Bekor qilish",
+      "errorAmount": "Iltimos, noldan katta toʻgʻri summa kiriting.",
+      "errorDate": "Iltimos, toʻgʻri sana tanlang.",
+      "errorGeneric": "Saqlab boʻlmadi. Qaytadan urinib koʻring."
+    },
+    "deleteTransaction": "Amaliyotni oʻchirish",
+    "deleteConfirm": "Bu amaliyot oʻchirilsinmi? Buni ortga qaytarib boʻlmaydi.",
+    "categories": {
+      "food": "Oziq-ovqat va bozor",
+      "utilities": "Kommunal toʻlovlar",
+      "education": "Taʼlim",
+      "health": "Sogʻliq",
+      "transport": "Transport",
+      "household": "Roʻzgʻor",
+      "clothing": "Kiyim-kechak",
+      "celebrations": "Toʻy-marosim va sovgʻalar",
+      "debt": "Qarz toʻlovlari",
+      "other": "Boshqa"
+    }
+  },
+  "trust": {
+    "title": "Oilaviy ishonch bali",
+    "subtitle": "Oilangiz moliyaviy odatlarining shaffof manzarasi — muntazam oʻtkazmalar, barqaror summalar va jamgʻarishdan yigʻiladi. Bu kredit reytingi emas: birgalikda oʻstiriladigan odat.",
+    "demoBadge": "Demo maʼlumot",
+    "demoNote": "bu bal qanday ishlashini koʻrsatish uchun namunaviy tarix asosida hisoblangan.",
+    "outOf100": "100 dan",
+    "calculatedAt": "Hisoblangan sana: {date}",
+    "provisional": "dastlabki — tarix 3 oydan kam",
+    "verdict": {
+      "strong": "Kuchli va barqaror",
+      "growing": "Yaxshi oʻsmoqda",
+      "early": "Endi boshlanmoqda"
+    },
+    "explainer": "Bal soʻnggi 12 oydagi uchta odatni birlashtiradi: chet eldan pul qanchalik muntazam kelishi, summalar qanchalik barqarorligi va oila jamgʻarma qilishi. Quyidagi har bir omil ortidagi aniq raqamlar koʻrsatilgan.",
+    "factorsTitle": "Balingiz nimadan iborat",
+    "weight": "Balning {percent}%",
+    "factors": {
+      "consistency": {
+        "title": "Oʻtkazmalar muntazamligi",
+        "explanation": "Soʻnggi {total} oyning {active} oyida pul kelib turdi. Har oylik muntazam oʻtkazmalar ishonchlilikning eng kuchli belgisidir."
+      },
+      "stability": {
+        "title": "Summalar barqarorligi",
+        "explanation": "Oylik oʻtkazma summalari oʻrtachadan taxminan {variation}% ga farq qildi. Barqaror summalar oila byudjetini rejalashtirishni osonlashtiradi."
+      },
+      "savings": {
+        "title": "Jamgʻarish odati",
+        "explanation": "Oila {total} oyning {months} oyida pul jamgʻardi — kirimning taxminan {rate}% i. Oz-oz boʻlsa ham muntazam qoʻyilmalar hisobga olinadi."
+      }
+    },
+    "tipsTitle": "Qanday yaxshilash mumkin",
+    "tips": {
+      "keepGoing": {
+        "title": "Tarixni yigʻishda davom eting",
+        "body": "Bal 3 oylik faoliyatdan soʻng ishonchli boʻladi. Oʻtkazma va jamgʻarmalarni kiritib boring — tez orada oʻz oʻrnini topadi."
+      },
+      "consistency": {
+        "title": "Imkon boʻlganda emas, maromda yuboring",
+        "body": "Har oy — kichikroq boʻlsa ham — yuborilgan oʻtkazma vaqti-vaqti bilan yuborilgan katta summalardan koʻra muntazamlikni koʻproq oshiradi. Oyning bir kunini tanlab, unga amal qiling."
+      },
+      "stability": {
+        "title": "Summalarni tekislang",
+        "body": "Daromad oʻzgaruvchan boʻlsa, har oy barqaror asosiy summa yuborib, yaxshi oylarda qoʻshimcha qilganingiz maʼqul. Bashorat qilsa boʻladigan summalar oilaga reja tuzishga yordam beradi."
+      },
+      "savings": {
+        "title": "Jamgʻarishni avtomatik qiling",
+        "body": "Har oʻtkazma kelgach — xarajatlar boshlanmasdan oldin — jamgʻarma maqsadiga kichik belgilangan summa qoʻying. Kirimning 10% ini moʻljal qiling."
+      },
+      "maintain": {
+        "title": "Shu yoʻlda davom eting",
+        "body": "Odatlaringiz har tomonlama kuchli. Maromni saqlang — bal yuqoriligicha qoladi va tarixingiz buni tasdiqlab turadi."
+      }
+    },
+    "disclaimer": "Ishonch bali — oilalarga sogʻlom moliyaviy odatlarni shakllantirish va ishonchliligini hujjatlashtirishga yordam beruvchi SendYurtʼning ichki koʻrsatkichi. Bu kredit reytingi emas va roziligingizsiz hech qachon ulashilmaydi."
+  },
+  "dashboard": {
+    "title": "Bosh sahifa",
+    "greeting": "Xush kelibsiz, {name}",
+    "subtitleSender": "Bugun oilangizni qoʻllab-quvvatlashning eng yaxshi yoʻli shu yerda.",
+    "subtitleReceiver": "Oilangizning bu oydagi ahvoli quyidagicha.",
+    "inviteTitle": "Oilangizni taklif qiling",
+    "inviteBody": "Qarindoshlaringiz xonadonga qoʻshilishi uchun ushbu kodni ulashing:",
+    "quickRates": "Oʻtkazma yoʻllarini solishtirish",
+    "cards": {
+      "rates": {
+        "title": "Bugungi eng yaxshi yoʻl",
+        "teaser": "Uyga {amount} yubormoqchimisiz? Hozir eng koʻpini {provider} yetkazadi:",
+        "sample": "Namunaviy kurslar — jonli integratsiya kutilmoqda",
+        "cta": "Barcha yoʻllarni solishtirish"
+      },
+      "budget": {
+        "title": "Bu oy",
+        "income": "Kirim",
+        "spent": "Sarflandi",
+        "saved": "Jamgʻarildi",
+        "cta": "Byudjetni ochish"
+      },
+      "trust": {
+        "title": "Ishonch bali",
+        "hint": "Muntazam oʻtkazma va barqaror jamgʻarma bilan oʻsadi.",
+        "cta": "Tafsilotlarni koʻrish"
+      }
+    }
+  },
+  "errors": {
+    "notFoundTitle": "Sahifa topilmadi",
+    "notFoundBody": "Siz izlayotgan sahifa mavjud emas yoki koʻchirilgan.",
+    "errorTitle": "Nimadir xato ketdi",
+    "errorBody": "Bizda kutilmagan xatolik yuz berdi. Maʼlumotlaringiz xavfsiz.",
+    "retry": "Qaytadan urinish",
+    "goHome": "Bosh sahifaga oʻtish"
+  }
+}
