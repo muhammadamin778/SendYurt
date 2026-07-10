@@ -96,7 +96,7 @@ export function MobileNav() {
   return (
     <nav
       aria-label="Main"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-sand-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-sand-200 bg-white pb-[env(safe-area-inset-bottom)] print:hidden md:hidden"
     >
       <ul className="grid grid-cols-4">
         {MOBILE_ITEMS.map((item) => {

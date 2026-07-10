@@ -6,10 +6,13 @@ export function ScoreDial({
   score,
   label,
   sublabel,
+  animate = true,
 }: {
   score: number;
   label: string;
   sublabel?: string;
+  /** false renders the value statically — used in the printable report. */
+  animate?: boolean;
 }) {
   const clamped = Math.min(100, Math.max(0, score));
   const r = 64;
@@ -38,7 +41,7 @@ export function ScoreDial({
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="font-display text-5xl font-bold" style={{ color: tone }}>
-          <CountUp value={clamped} />
+          {animate ? <CountUp value={clamped} /> : clamped}
         </span>
         {sublabel && <span className="mt-1 text-xs text-sand-700">{sublabel}</span>}
       </div>

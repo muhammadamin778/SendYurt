@@ -130,7 +130,8 @@ export function RegisterForm() {
         window.location.assign(`/${locale}/login`);
         return;
       }
-      window.location.assign(`/${locale}/dashboard`);
+      // New accounts land on the first-run walkthrough.
+      window.location.assign(`/${locale}/welcome`);
     } catch {
       setFormError(t("errorGeneric"));
       setSubmitting(false);

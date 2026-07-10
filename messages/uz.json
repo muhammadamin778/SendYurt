@@ -239,7 +239,51 @@
     "copied": "Taklif kodi nusxalandi.",
     "copyFailed": "Nusxalab boʻlmadi — uni qoʻlda belgilab nusxalang."
   },
+  "onboarding": {
+    "title": "SendYurtʼga xush kelibsiz",
+    "progress": "{total} bosqichdan {current}-si",
+    "skip": "Hozircha oʻtkazib yuborish",
+    "next": "Keyingisi",
+    "start": "Boshlaymiz",
+    "family": {
+      "title": "Xush kelibsiz, {name}",
+      "body": "SendYurt — oilangiz pullari uchun yagona maskan: chet elda ishlayotganlar va uyni yuritayotganlar uchun. Bu yerdagi hamma narsa faqat xonadoningiz bilan ulashiladi."
+    },
+    "rates": {
+      "title": "Topganingizning koʻprogʻini yuboring",
+      "body": "Uyga pul yuborishdan oldin yoʻllarni yonma-yon solishtiring. Komissiya va kurs farqi hisobga olingan holda, oilangiz qoʻliga aslida qancha soʻm yetib borishiga qarab saralaymiz."
+    },
+    "budget": {
+      "title": "Bitta byudjet, bitta oila",
+      "body": "Xarajatlarni kiriting, toifalar boʻyicha oylik chegara qoʻying va jamgʻarma maqsadlarini birga oʻstiring. Xonadondagi har kim bir xil halol manzarani koʻradi."
+    },
+    "trust": {
+      "title": "Barqaror odatlar siz uchun gapirsin",
+      "body": "Muntazam oʻtkazmalar va barqaror jamgʻarish oilangizning Ishonch balini shakllantiradi — kerak paytda koʻrsatsa boʻladigan shaffof tarix. U oydan-oyga oʻsib boradi."
+    }
+  },
   "trust": {
+    "report": {
+      "title": "Ishonch bali hisoboti",
+      "open": "Ulashiladigan hisobot",
+      "back": "Ishonch baliga qaytish",
+      "download": "Chop etish / PDF sifatida saqlash",
+      "docTitle": "Oilaviy moliyaviy ishonchlilik xulosasi",
+      "docSubtitle": "Oilaviy oʻtkazmalar va jamgʻarmalar tarixi",
+      "generated": "Tuzilgan sana: {date}",
+      "demoNote": "ushbu hujjat namunaviy demo tarix asosida tuzilgan.",
+      "household": "Xonadon",
+      "memberSender": "yuboruvchi (chet elda ishlaydi)",
+      "memberReceiver": "qabul qiluvchi (Oʻzbekistonda)",
+      "factor": "Omil",
+      "weightCol": "Ulushi",
+      "scoreCol": "Bal",
+      "recordTitle": "Oʻtkazmalar tarixi — soʻnggi 12 oy",
+      "monthCol": "Oy",
+      "receivedCol": "Qabul qilingan (soʻm)",
+      "historyTitle": "Bal tarixi",
+      "dateCol": "Sana"
+    },
     "timeline": {
       "title": "Oʻn ikki oy bir qarashda",
       "subtitle": "Uyga pul qachon kelgani — barqaror oylar muntazamlikni shakllantiradi.",

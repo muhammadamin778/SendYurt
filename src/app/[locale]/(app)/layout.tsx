@@ -14,7 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-40 border-b border-sand-200 bg-white/90 backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-sand-200 bg-white/90 backdrop-blur print:hidden">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
           <div className="flex items-center gap-6">
             <Link href="/dashboard" aria-label="SendYurt">

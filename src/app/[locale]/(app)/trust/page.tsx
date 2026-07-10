@@ -1,23 +1,16 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import { Alert } from "@/components/ui/Alert";
 import { Card } from "@/components/ui/Card";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Milestones } from "@/components/trust/Milestones";
-import {
-  RemittanceTimeline,
-  type TimelineMonth,
-} from "@/components/trust/RemittanceTimeline";
+import { RemittanceTimeline } from "@/components/trust/RemittanceTimeline";
 import { ScoreDial } from "@/components/trust/ScoreDial";
 import { formatDate } from "@/lib/format";
-import { computeMilestones, type Milestone } from "@/lib/milestones";
-import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
-import {
-  computeTrustScore,
-  improvementTips,
-  type TrustScoreResult,
-} from "@/lib/trust-score";
+import { getTrustData } from "@/lib/trust-data";
+import { improvementTips } from "@/lib/trust-score";
 
 export async function generateMetadata({
   params: { locale },
@@ -26,101 +19,6 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "trust" });
   return { title: t("title") };
-}
-
-/**
- * Recompute the score from the ledger, and persist a snapshot when the
- * score changed or the latest snapshot is older than a day — so the
- * household accumulates an auditable score history.
- */
-async function getScoreWithSnapshot(householdId: string): Promise<{
-  result: TrustScoreResult;
-  calculatedAt: Date;
-  hasDemoData: boolean;
-  timeline: TimelineMonth[];
-  milestones: Milestone[];
-}> {
-  const since = new Date();
-  since.setUTCMonth(since.getUTCMonth() - 13);
-
-  const [transactions, goals] = await Promise.all([
-    prisma.transaction.findMany({
-      where: { householdId, status: "COMPLETED", date: { gte: since } },
-      select: { type: true, amount: true, date: true, isDemo: true },
-    }),
-    prisma.savingsGoal.findMany({
-      where: { householdId },
-      select: { currentAmount: true, targetAmount: true },
-    }),
-  ]);
-
-  const result = computeTrustScore(
-    transactions.map((t) => ({
-      type: t.type,
-      amount: t.amount.toNumber(),
-      date: t.date,
-    })),
-  );
-
-  const latest = await prisma.trustScoreSnapshot.findFirst({
-    where: { householdId },
-    orderBy: { calculatedAt: "desc" },
-  });
-
-  const staleMs = 24 * 60 * 60 * 1000;
-  let calculatedAt = latest?.calculatedAt ?? new Date();
-  if (
-    !latest ||
-    latest.score !== result.score ||
-    Date.now() - latest.calculatedAt.getTime() > staleMs
-  ) {
-    const snapshot = await prisma.trustScoreSnapshot.create({
-      data: {
-        householdId,
-        score: result.score,
-        consistencyFactor: result.consistency.score,
-        stabilityFactor: result.stability.score,
-        savingsFactor: result.savings.score,
-      },
-    });
-    calculatedAt = snapshot.calculatedAt;
-  }
-
-  // Last 12 calendar months of remittance arrivals, oldest first.
-  const byMonth = new Map<string, number>();
-  for (const tx of transactions) {
-    if (tx.type !== "REMITTANCE") continue;
-    const key = `${tx.date.getUTCFullYear()}-${String(tx.date.getUTCMonth() + 1).padStart(2, "0")}`;
-    byMonth.set(key, (byMonth.get(key) ?? 0) + tx.amount.toNumber());
-  }
-  const now = new Date();
-  const timeline: TimelineMonth[] = [];
-  for (let i = 11; i >= 0; i--) {
-    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
-    const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
-    timeline.push({
-      key,
-      monthStartIso: d.toISOString(),
-      amountUzs: byMonth.get(key) ?? null,
-      isCurrent: i === 0,
-    });
-  }
-
-  const milestones = computeMilestones(
-    transactions.map((t) => ({ type: t.type, date: t.date })),
-    goals.map((g) => ({
-      currentAmount: g.currentAmount.toNumber(),
-      targetAmount: g.targetAmount.toNumber(),
-    })),
-  );
-
-  return {
-    result,
-    calculatedAt,
-    hasDemoData: transactions.some((t) => t.isDemo),
-    timeline,
-    milestones,
-  };
 }
 
 function FactorCard({
@@ -162,16 +60,28 @@ export default async function TrustPage({
   const currentLocale = await getLocale();
 
   const { result, calculatedAt, hasDemoData, timeline, milestones } =
-    await getScoreWithSnapshot(user.householdId);
+    await getTrustData(user.householdId);
   const tips = improvementTips(result);
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-2xl font-bold text-samarkand-950 sm:text-3xl">
-          {t("title")}
-        </h1>
-        <p className="mt-1 max-w-2xl text-sand-800">{t("subtitle")}</p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-samarkand-950 sm:text-3xl">
+            {t("title")}
+          </h1>
+          <p className="mt-1 max-w-2xl text-sand-800">{t("subtitle")}</p>
+        </div>
+        <Link
+          href="/trust/report"
+          className="inline-flex items-center gap-2 rounded-lg border border-samarkand-300 bg-white px-4 py-2 text-sm font-semibold text-samarkand-800 transition-colors hover:bg-samarkand-50"
+        >
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+            <path d="M7 17h10M7 13h10M7 9h4" strokeLinecap="round" />
+            <path d="M5 3h10l4 4v14a1 1 0 01-1 1H5a1 1 0 01-1-1V4a1 1 0 011-1z" strokeLinejoin="round" />
+          </svg>
+          {t("report.open")}
+        </Link>
       </div>
 
       {hasDemoData && (

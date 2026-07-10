@@ -239,7 +239,51 @@
     "copied": "Invite code copied.",
     "copyFailed": "Couldn't copy — please select and copy it manually."
   },
+  "onboarding": {
+    "title": "Welcome to SendYurt",
+    "progress": "Step {current} of {total}",
+    "skip": "Skip for now",
+    "next": "Next",
+    "start": "Let's begin",
+    "family": {
+      "title": "Welcome, {name}",
+      "body": "SendYurt is one home for your family's money — for those working abroad and those keeping the house. Everything here is shared with your household, and only your household."
+    },
+    "rates": {
+      "title": "Send more of what you earn",
+      "body": "Before sending money home, compare routes side by side. We sort by what your family actually receives in soʻm — fees and exchange margins included."
+    },
+    "budget": {
+      "title": "One budget, one family",
+      "body": "Log expenses, set monthly limits by category, and grow savings goals together. Everyone in the household sees the same honest picture."
+    },
+    "trust": {
+      "title": "Let steady habits speak for you",
+      "body": "Regular transfers and steady saving build your family's Trust Score — a transparent record you can share when it matters. It grows month by month."
+    }
+  },
   "trust": {
+    "report": {
+      "title": "Trust Score report",
+      "open": "Shareable report",
+      "back": "Back to Trust Score",
+      "download": "Print / Save as PDF",
+      "docTitle": "Family Financial Reliability Summary",
+      "docSubtitle": "Family remittance & savings record",
+      "generated": "Generated {date}",
+      "demoNote": "this document was generated from seeded sample history.",
+      "household": "Household",
+      "memberSender": "sender (working abroad)",
+      "memberReceiver": "receiver (in Uzbekistan)",
+      "factor": "Factor",
+      "weightCol": "Weight",
+      "scoreCol": "Score",
+      "recordTitle": "Remittance record — last 12 months",
+      "monthCol": "Month",
+      "receivedCol": "Received (UZS)",
+      "historyTitle": "Score history",
+      "dateCol": "Date"
+    },
     "timeline": {
       "title": "Twelve months at a glance",
       "subtitle": "When money arrived home — steady months are what build your consistency.",

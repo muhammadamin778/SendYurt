@@ -36,6 +36,8 @@ model User {
   name         String
   languagePref String   @default("uz")
   householdId  String
+  // Set when the user finishes (or skips) the first-run walkthrough.
+  onboardedAt  DateTime?
   createdAt    DateTime @default(now())
 
   household        Household     @relation(fields: [householdId], references: [id])
