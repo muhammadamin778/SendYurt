@@ -8,6 +8,8 @@ export type SessionUser = {
   id: string;
   role: string;
   householdId: string;
+  /** "ADMIN" | "VIEWER" — read fresh from the DB on every request. */
+  accessRole: string;
   name?: string | null;
   email?: string | null;
 };
@@ -31,7 +33,7 @@ export const requireUser = cache(async (): Promise<SessionUser> => {
 
   const dbUser = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, householdId: true },
+    select: { id: true, householdId: true, accessRole: true },
   });
   if (!dbUser || dbUser.householdId !== session.user.householdId) {
     // Server components can't delete cookies mid-render; a dedicated
@@ -39,5 +41,5 @@ export const requireUser = cache(async (): Promise<SessionUser> => {
     redirect("/api/clear-session");
   }
 
-  return session.user;
+  return { ...session.user, accessRole: dbUser.accessRole };
 });

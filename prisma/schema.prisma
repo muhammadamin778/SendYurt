@@ -36,6 +36,14 @@ model User {
   name         String
   languagePref String   @default("uz")
   householdId  String
+  // Permission inside the household: "ADMIN" (edit budgets/goals, manage
+  // roles) | "VIEWER" (read-only). Distinct from `role`, which is the
+  // family position (sender/receiver). Everyone defaults to ADMIN;
+  // admins may restrict others to VIEWER.
+  accessRole   String    @default("ADMIN")
+  // Saved "usual" transfer for one-tap rate comparisons.
+  usualSendAmount   Decimal?
+  usualSendCurrency String?
   // Set when the user finishes (or skips) the first-run walkthrough.
   onboardedAt  DateTime?
   createdAt    DateTime @default(now())
@@ -44,6 +52,26 @@ model User {
   sentTransactions Transaction[] @relation("SentTransactions")
   receivedTransactions Transaction[] @relation("ReceivedTransactions")
   passwordResetTokens PasswordResetToken[]
+  notifications    Notification[]
+}
+
+model Notification {
+  id          String    @id @default(cuid())
+  // Fanned out per member so each person has their own read state.
+  userId      String
+  householdId String
+  // "REMITTANCE_LOGGED" | "GOAL_NEAR" | "SCORE_CHANGE"
+  type        String
+  // JSON with the values needed to render the message in any language,
+  // e.g. {"goal":"Toʻy fund","percent":85} — text is localized at render.
+  payload     String
+  readAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
 }
 
 model PasswordResetToken {

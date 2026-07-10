@@ -1,10 +1,11 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { isCategory } from "@/lib/categories";
+import { crossedNearThreshold, notifyHousehold } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 import {
   budgetSchema,
@@ -16,12 +17,30 @@ import {
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
+/**
+ * Every budget mutation requires ADMIN access inside the household --
+ * VIEWER members are read-only. Access is read fresh from the DB so a
+ * demotion takes effect immediately, not at next login.
+ */
 async function requireHousehold(): Promise<{ householdId: string; userId: string }> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !session.user.householdId) {
+  if (!session?.user?.id) {
     throw new Error("unauthorized");
   }
-  return { householdId: session.user.householdId, userId: session.user.id };
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { householdId: true, accessRole: true },
+  });
+  if (!dbUser) throw new Error("unauthorized");
+  if (dbUser.accessRole !== "ADMIN") throw new Error("forbidden");
+  return { householdId: dbUser.householdId, userId: session.user.id };
+}
+
+function actionError(e: unknown): ActionResult | null {
+  if (e instanceof Error && (e.message === "forbidden" || e.message === "unauthorized")) {
+    return fail(e.message);
+  }
+  return null;
 }
 
 function revalidateBudget() {
@@ -56,6 +75,8 @@ export async function addExpense(input: unknown): Promise<ActionResult> {
     revalidateBudget();
     return { ok: true };
   } catch (e) {
+    const known = actionError(e);
+    if (known) return known;
     console.error("addExpense failed", e);
     return fail("server");
   }
@@ -81,6 +102,8 @@ export async function addIncome(input: unknown): Promise<ActionResult> {
     revalidateBudget();
     return { ok: true };
   } catch (e) {
+    const known = actionError(e);
+    if (known) return known;
     console.error("addIncome failed", e);
     return fail("server");
   }
@@ -100,6 +123,8 @@ export async function deleteTransaction(id: unknown): Promise<ActionResult> {
     revalidateBudget();
     return { ok: true };
   } catch (e) {
+    const known = actionError(e);
+    if (known) return known;
     console.error("deleteTransaction failed", e);
     return fail("server");
   }
@@ -131,6 +156,8 @@ export async function setBudget(input: unknown): Promise<ActionResult> {
     revalidateBudget();
     return { ok: true };
   } catch (e) {
+    const known = actionError(e);
+    if (known) return known;
     console.error("setBudget failed", e);
     return fail("server");
   }
@@ -153,6 +180,8 @@ export async function addSavingsGoal(input: unknown): Promise<ActionResult> {
     revalidateBudget();
     return { ok: true };
   } catch (e) {
+    const known = actionError(e);
+    if (known) return known;
     console.error("addSavingsGoal failed", e);
     return fail("server");
   }
@@ -166,7 +195,7 @@ export async function contributeToGoal(input: unknown): Promise<ActionResult> {
     const { goalId, amount } = parsed.data;
 
     // The goal update and the ledger entry must land together.
-    await prisma.$transaction(async (tx) => {
+    const crossed = await prisma.$transaction(async (tx) => {
       const goal = await tx.savingsGoal.findFirst({
         where: { id: goalId, householdId },
       });
@@ -187,12 +216,31 @@ export async function contributeToGoal(input: unknown): Promise<ActionResult> {
           status: "COMPLETED",
         },
       });
+
+      const before = goal.currentAmount.toNumber();
+      const target = goal.targetAmount.toNumber();
+      return crossedNearThreshold(before, before + amount, target)
+        ? {
+            name: goal.name,
+            percent: Math.min(100, Math.round(((before + amount) / target) * 100)),
+          }
+        : null;
     });
+
+    if (crossed) {
+      await notifyHousehold(householdId, "GOAL_NEAR", {
+        goal: crossed.name,
+        percent: crossed.percent,
+      });
+    }
     revalidateBudget();
     return { ok: true };
   } catch (e) {
+    const known = actionError(e);
+    if (known) return known;
     if (e instanceof Error && e.message === "not_found") return fail("not_found");
     console.error("contributeToGoal failed", e);
     return fail("server");
   }
 }
+

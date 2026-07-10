@@ -266,6 +266,22 @@ async function seedDemoHousehold() {
 
   await prisma.transaction.createMany({ data: txs });
 
+  // A fresh "transfer arrived" notification for both members, so the
+  // bell has something real to show in a live demo.
+  const lastRemit = [...txs]
+    .reverse()
+    .find((t) => t.type === "REMITTANCE");
+  if (lastRemit) {
+    await prisma.notification.createMany({
+      data: [sender.id, receiver.id].map((userId) => ({
+        userId,
+        householdId: household.id,
+        type: "REMITTANCE_LOGGED",
+        payload: JSON.stringify({ amount: lastRemit.amount, currency: "UZS" }),
+      })),
+    });
+  }
+
   // Savings goals.
   await prisma.savingsGoal.createMany({
     data: [

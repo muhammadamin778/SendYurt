@@ -24,7 +24,7 @@ export interface GoalProps {
  * move the instant the family adds money; the server result then either
  * confirms (silent) or reverts with an error toast.
  */
-export function GoalCard({ goal }: { goal: GoalProps }) {
+export function GoalCard({ goal, canEdit = true }: { goal: GoalProps; canEdit?: boolean }) {
   const t = useTranslations("budget");
   const locale = useLocale();
   const router = useRouter();
@@ -78,7 +78,7 @@ export function GoalCard({ goal }: { goal: GoalProps }) {
           <> · {t("goals.by", { date: formatDate(new Date(goal.targetDateIso), locale) })}</>
         )}
       </p>
-      {pct < 100 && (
+      {pct < 100 && canEdit && (
         <form onSubmit={onContribute} className="mt-3 flex items-start gap-2" noValidate>
           <Input
             label={t("goals.contribute")}

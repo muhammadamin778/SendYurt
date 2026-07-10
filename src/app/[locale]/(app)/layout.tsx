@@ -2,6 +2,7 @@ import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/Logo";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { LogoutButton } from "@/components/LogoutButton";
+import { NotificationBell } from "@/components/NotificationBell";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { DesktopNav, MobileNav } from "@/components/AppNav";
 import { requireUser } from "@/lib/session";
@@ -24,6 +25,17 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <DesktopNav />
           </div>
           <div className="flex items-center gap-2">
+            <Link
+              href="/help"
+              aria-label="Help"
+              className="rounded-lg border border-sand-300 bg-white p-2 text-sand-800 transition-colors hover:bg-sand-100"
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M9.5 9.3a2.5 2.5 0 114.1 1.9c-.8.7-1.6 1.2-1.6 2.3M12 16.8v.2" strokeLinecap="round" />
+              </svg>
+            </Link>
+            <NotificationBell />
             <ThemeToggle />
             <LanguageSwitcher />
             <LogoutButton />

@@ -118,6 +118,10 @@
     "compareButton": "Compare routes",
     "errorAmountPositive": "Please enter an amount greater than zero.",
     "errorAmountTooLarge": "That amount is too large for a single transfer.",
+    "errorGeneric": "Something went wrong. Please try again.",
+    "saveUsual": "Save as my usual amount",
+    "usualSaved": "Saved — the Rate Finder will start from this amount now.",
+    "usualBadge": "Your usual amount",
     "empty": "No providers support this currency yet. Try another one.",
     "resultsLabel": "Transfer options",
     "bestValue": "Best for your family",
@@ -135,6 +139,7 @@
   "budget": {
     "title": "Family budget",
     "subtitle": "One shared picture of the money you earn, spend and save.",
+    "downloadSummary": "Download my financial summary",
     "monthNav": "Month navigation",
     "prevMonth": "Previous month",
     "nextMonth": "Next month",
@@ -150,6 +155,11 @@
       "income": "Income",
       "spent": "Spent",
       "saved": "Saved"
+    },
+    "pie": {
+      "title": "Where the money went",
+      "ariaLabel": "Pie chart of this month's spending by category",
+      "empty": "No expenses this month yet — the split appears as soon as spending is logged."
     },
     "allocations": {
       "title": "Category budgets",
@@ -210,6 +220,7 @@
       "goalCreated": "Goal \"{goal}\" created — good luck!",
       "contributed": "Added to \"{goal}\"."
     },
+    "viewerNote": "You have view-only access. Ask a family admin if something needs changing.",
     "deleteTransaction": "Delete transaction",
     "deleteConfirm": "Remove this transaction? This can't be undone.",
     "categories": {
@@ -238,7 +249,62 @@
     "inviteHint": "Anyone with the code can join. Share it only within the family.",
     "copy": "Copy code",
     "copied": "Invite code copied.",
-    "copyFailed": "Couldn't copy — please select and copy it manually."
+    "copyFailed": "Couldn't copy — please select and copy it manually.",
+    "accessAdmin": "Can edit",
+    "accessViewer": "View only",
+    "makeAdmin": "Allow editing",
+    "makeViewer": "Make view-only",
+    "accessChanged": "Member access updated.",
+    "accessChangeFailed": "Couldn't change access. Please try again."
+  },
+  "summary": {
+    "title": "Financial summary",
+    "back": "Back to the budget",
+    "download": "Print / Save as PDF",
+    "docTitle": "Family Financial Summary",
+    "docSubtitle": "Monthly budget & Trust Score overview",
+    "categoriesTitle": "This month by category",
+    "allocatedCol": "Budgeted",
+    "spentCol": "Spent"
+  },
+  "help": {
+    "title": "Help & questions",
+    "subtitle": "Plain answers about what each part of SendYurt does.",
+    "footer": "Still unsure about something? Ask the family member who set up your household, or write to us — SendYurt is built for families, not for banks.",
+    "rates": {
+      "q": "What does the Rate Finder do?",
+      "a": "Before sending money home, it compares several transfer services side by side. Instead of showing only the fee, it calculates what your family actually receives in soʻm after fees and the exchange-rate margin — and sorts by that. You can save your usual amount so the comparison is ready every time you open the page."
+    },
+    "budget": {
+      "q": "How does the family budget work?",
+      "a": "Everyone in your household sees the same budget. You can record expenses and income, set monthly limits for categories like food or education, and create savings goals that the whole family fills together. Charts show where money went and how spending compares with saving month by month."
+    },
+    "trust": {
+      "q": "What is the Trust Score?",
+      "a": "A 0–100 number built from three habits: how regularly money arrives from abroad, how steady the amounts are, and whether the family saves. It is not a credit rating — it's your family's own record, and every factor shows the exact numbers behind it, with tips to improve."
+    },
+    "household": {
+      "q": "How do I add family members?",
+      "a": "Open the Family page and share your invite code. A relative enters it when registering and joins your household. Admins can mark members as view-only — useful for younger family members who should see the budget but not change it."
+    },
+    "notifications": {
+      "q": "What will I be notified about?",
+      "a": "The bell in the top bar shows news that matters: a transfer arriving for your family, a savings goal getting close to complete, or a meaningful change in your Trust Score. Nothing promotional — only your family's money."
+    },
+    "report": {
+      "q": "Can I show my history to a bank or lender?",
+      "a": "Yes. The Trust Score page has a shareable report, and the budget page has a financial summary — both are clean documents you can print or save as PDF and show to a microfinance officer. They clearly state what the numbers mean and where they come from."
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "Nothing yet. News about transfers, goals and your Trust Score will appear here.",
+    "fallback": "Something happened in your household.",
+    "remittance": "A transfer of {amount} arrived for your family.",
+    "goalNear": "\"{goal}\" is almost there — {percent}% saved.",
+    "goalReached": "\"{goal}\" is fully funded. Quiet pride, well earned.",
+    "scoreUp": "Your family's Trust Score rose from {from} to {to}.",
+    "scoreDown": "Your family's Trust Score changed from {from} to {to}."
   },
   "onboarding": {
     "title": "Welcome to SendYurt",

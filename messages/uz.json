@@ -118,6 +118,10 @@
     "compareButton": "Yoʻllarni solishtirish",
     "errorAmountPositive": "Iltimos, noldan katta summa kiriting.",
     "errorAmountTooLarge": "Bu summa bitta oʻtkazma uchun juda katta.",
+    "errorGeneric": "Nimadir xato ketdi. Qaytadan urinib koʻring.",
+    "saveUsual": "Odatiy summam sifatida saqlash",
+    "usualSaved": "Saqlandi — endi kurs qidiruvi shu summadan boshlanadi.",
+    "usualBadge": "Odatiy summangiz",
     "empty": "Bu valyutani hozircha hech bir xizmat qoʻllab-quvvatlamaydi. Boshqasini tanlab koʻring.",
     "resultsLabel": "Oʻtkazma variantlari",
     "bestValue": "Oilangiz uchun eng foydali",
@@ -135,6 +139,7 @@
   "budget": {
     "title": "Oila byudjeti",
     "subtitle": "Topilgan, sarflangan va jamgʻarilgan pulning yagona oilaviy manzarasi.",
+    "downloadSummary": "Moliyaviy xulosamni yuklab olish",
     "monthNav": "Oylar boʻyicha yurish",
     "prevMonth": "Oldingi oy",
     "nextMonth": "Keyingi oy",
@@ -150,6 +155,11 @@
       "income": "Kirim",
       "spent": "Xarajat",
       "saved": "Jamgʻarma"
+    },
+    "pie": {
+      "title": "Pul qayerga ketdi",
+      "ariaLabel": "Shu oy xarajatlarining toifalar boʻyicha doiraviy diagrammasi",
+      "empty": "Bu oyda hali xarajat yoʻq — sarflar kiritilishi bilan taqsimot koʻrinadi."
     },
     "allocations": {
       "title": "Toifalar boʻyicha byudjet",
@@ -210,6 +220,7 @@
       "goalCreated": "\"{goal}\" maqsadi yaratildi. Yoʻl boʻlsin!",
       "contributed": "\"{goal}\" maqsadiga qoʻshildi."
     },
+    "viewerNote": "Sizda faqat koʻrish huquqi bor. Biror narsani oʻzgartirish kerak boʻlsa, oila administratoriga ayting.",
     "deleteTransaction": "Amaliyotni oʻchirish",
     "deleteConfirm": "Bu amaliyot oʻchirilsinmi? Buni ortga qaytarib boʻlmaydi.",
     "categories": {
@@ -238,7 +249,62 @@
     "inviteHint": "Kodga ega har kim qoʻshila oladi. Uni faqat oila ichida ulashing.",
     "copy": "Kodni nusxalash",
     "copied": "Taklif kodi nusxalandi.",
-    "copyFailed": "Nusxalab boʻlmadi — uni qoʻlda belgilab nusxalang."
+    "copyFailed": "Nusxalab boʻlmadi — uni qoʻlda belgilab nusxalang.",
+    "accessAdmin": "Tahrirlaydi",
+    "accessViewer": "Faqat koʻradi",
+    "makeAdmin": "Tahrirlashga ruxsat berish",
+    "makeViewer": "Faqat koʻrish qilish",
+    "accessChanged": "Aʼzo huquqi yangilandi.",
+    "accessChangeFailed": "Huquqni oʻzgartirib boʻlmadi. Qaytadan urinib koʻring."
+  },
+  "summary": {
+    "title": "Moliyaviy xulosa",
+    "back": "Byudjetga qaytish",
+    "download": "Chop etish / PDF sifatida saqlash",
+    "docTitle": "Oilaviy moliyaviy xulosa",
+    "docSubtitle": "Oylik byudjet va Ishonch bali koʻrinishi",
+    "categoriesTitle": "Bu oy toifalar boʻyicha",
+    "allocatedCol": "Rejalashtirilgan",
+    "spentCol": "Sarflangan"
+  },
+  "help": {
+    "title": "Yordam va savollar",
+    "subtitle": "SendYurtʼning har bir qismi nima qilishi haqida sodda javoblar.",
+    "footer": "Yana savolingiz bormi? Xonadonni ochgan oila aʼzosidan soʻrang yoki bizga yozing — SendYurt banklar uchun emas, oilalar uchun qurilgan.",
+    "rates": {
+      "q": "Kurs qidiruvi nima qiladi?",
+      "a": "Uyga pul yuborishdan oldin bir nechta oʻtkazma xizmatini yonma-yon solishtiradi. Faqat komissiyani emas, balki komissiya va kurs farqidan keyin oilangiz qoʻliga aslida qancha soʻm tegishini hisoblaydi — va shunga qarab saralaydi. Odatiy summangizni saqlab qoʻysangiz, sahifa ochilganda solishtiruv tayyor boʻladi."
+    },
+    "budget": {
+      "q": "Oila byudjeti qanday ishlaydi?",
+      "a": "Xonadondagi hamma bitta byudjetni koʻradi. Xarajat va kirimlarni yozib borasiz, oziq-ovqat yoki taʼlim kabi toifalarga oylik chegara qoʻyasiz, butun oila birga toʻldiradigan jamgʻarma maqsadlarini yaratasiz. Diagrammalar pul qayerga ketganini va oyma-oy xarajat-jamgʻarma nisbatini koʻrsatadi."
+    },
+    "trust": {
+      "q": "Ishonch bali nima?",
+      "a": "Uchta odatdan yigʻiladigan 0–100 koʻrsatkich: chet eldan pul qanchalik muntazam kelishi, summalar qanchalik barqarorligi va oila jamgʻarishi. Bu kredit reytingi emas — oilangizning oʻz tarixi. Har bir omil ortidagi aniq raqamlar va yaxshilash boʻyicha maslahatlar koʻrsatiladi."
+    },
+    "household": {
+      "q": "Oila aʼzolarini qanday qoʻshaman?",
+      "a": "Oila sahifasini ochib, taklif kodini ulashing. Qarindoshingiz roʻyxatdan oʻtishda kodni kiritadi va xonadonga qoʻshiladi. Administratorlar aʼzolarni \"faqat koʻrish\" rejimiga oʻtkaza oladi — byudjetni koʻrishi, lekin oʻzgartirmasligi kerak boʻlganlar uchun qulay."
+    },
+    "notifications": {
+      "q": "Nimalar haqida xabar olaman?",
+      "a": "Yuqoridagi qoʻngʻiroqcha muhim yangiliklarni koʻrsatadi: oilangizga oʻtkazma kelgani, jamgʻarma maqsadi deyarli toʻlgani yoki Ishonch balidagi sezilarli oʻzgarish. Hech qanday reklama yoʻq — faqat oilangiz pullari."
+    },
+    "report": {
+      "q": "Tarixni bank yoki kreditorga koʻrsata olamanmi?",
+      "a": "Ha. Ishonch bali sahifasida ulashiladigan hisobot, byudjet sahifasida esa moliyaviy xulosa bor — ikkalasi ham chop etish yoki PDF sifatida saqlash mumkin boʻlgan ozoda hujjatlar. Ularda raqamlar nimani anglatishi va qayerdan olinishi aniq yozilgan."
+    }
+  },
+  "notifications": {
+    "title": "Bildirishnomalar",
+    "empty": "Hozircha boʻsh. Oʻtkazmalar, maqsadlar va Ishonch bali haqidagi yangiliklar shu yerda koʻrinadi.",
+    "fallback": "Xonadoningizda yangilik yuz berdi.",
+    "remittance": "Oilangizga {amount} miqdorida oʻtkazma keldi.",
+    "goalNear": "\"{goal}\" deyarli yetdi — {percent}% jamgʻarildi.",
+    "goalReached": "\"{goal}\" toʻliq jamgʻarildi. Barakalla!",
+    "scoreUp": "Oilangizning Ishonch bali {from} dan {to} ga koʻtarildi.",
+    "scoreDown": "Oilangizning Ishonch bali {from} dan {to} ga oʻzgardi."
   },
   "onboarding": {
     "title": "SendYurtʼga xush kelibsiz",

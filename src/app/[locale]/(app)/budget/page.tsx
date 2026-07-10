@@ -10,6 +10,7 @@ import {
   EditBudgetButton,
   SetBudgetForm,
 } from "@/components/budget/BudgetForms";
+import { CategoryPie } from "@/components/budget/CategoryPie";
 import { GoalCard } from "@/components/budget/GoalCard";
 import { DeleteTransactionButton } from "@/components/budget/DeleteTransactionButton";
 import { SpendSaveChart } from "@/components/budget/SpendSaveChart";
@@ -79,6 +80,8 @@ export default async function BudgetPage({
   ).format(periodRange(period).start);
 
   const hasDemoRows = transactions.some((tx) => tx.isDemo);
+  // VIEWER members see everything but edit nothing.
+  const canEdit = user.accessRole === "ADMIN";
 
   return (
     <div className="space-y-8">
@@ -90,6 +93,16 @@ export default async function BudgetPage({
           </h1>
           <p className="mt-1 text-sand-800">{t("subtitle")}</p>
         </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/summary"
+            className="inline-flex items-center gap-2 rounded-lg border border-samarkand-300 bg-white px-3.5 py-2 text-sm font-semibold text-samarkand-800 transition-colors hover:bg-samarkand-50"
+          >
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+              <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            {t("downloadSummary")}
+          </Link>
         <nav aria-label={t("monthNav")} className="flex items-center gap-2">
           <Link
             href={{ pathname: "/budget", query: { month: shiftPeriod(period, -1) } }}
@@ -119,6 +132,7 @@ export default async function BudgetPage({
             </svg>
           </Link>
         </nav>
+        </div>
       </div>
 
       {/* Month summary */}
@@ -149,23 +163,45 @@ export default async function BudgetPage({
         </Card>
       </section>
 
-      {/* Trend chart */}
-      <Card className="p-5">
-        <h2 className="font-display text-lg font-bold text-samarkand-950">
-          {t("chart.title")}
-        </h2>
-        <div className="mt-4">
-          <SpendSaveChart
-            points={trend.map((p) => ({
-              period: p.period,
-              monthStartIso: p.monthStart.toISOString(),
-              incomeUzs: p.incomeUzs,
-              spentUzs: p.spentUzs,
-              savedUzs: p.savedUzs,
-            }))}
-          />
-        </div>
-      </Card>
+      {/* Charts: 6-month trend + this month's category split */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card className="p-5">
+          <h2 className="font-display text-lg font-bold text-samarkand-950">
+            {t("chart.title")}
+          </h2>
+          <div className="mt-4">
+            <SpendSaveChart
+              points={trend.map((p) => ({
+                period: p.period,
+                monthStartIso: p.monthStart.toISOString(),
+                incomeUzs: p.incomeUzs,
+                spentUzs: p.spentUzs,
+                savedUzs: p.savedUzs,
+              }))}
+            />
+          </div>
+        </Card>
+        <Card className="p-5">
+          <h2 className="font-display text-lg font-bold text-samarkand-950">
+            {t("pie.title")}
+          </h2>
+          {categories.some((c) => c.spentUzs > 0) ? (
+            <div className="mt-4">
+              <CategoryPie
+                slices={categories
+                  .filter((c) => c.spentUzs > 0)
+                  .sort((a, b) => b.spentUzs - a.spentUzs)
+                  .map((c) => ({
+                    label: t(`categories.${c.category}`),
+                    value: c.spentUzs,
+                  }))}
+              />
+            </div>
+          ) : (
+            <p className="mt-6 text-center text-sm text-sand-700">{t("pie.empty")}</p>
+          )}
+        </Card>
+      </div>
 
       {/* Category budgets */}
       <section aria-label={t("allocations.title")}>
@@ -173,9 +209,9 @@ export default async function BudgetPage({
           <h2 className="font-display text-lg font-bold text-samarkand-950">
             {t("allocations.title")}
           </h2>
-          <EditBudgetButton />
+          {canEdit && <EditBudgetButton />}
         </div>
-        <SetBudgetForm period={period} />
+        {canEdit && <SetBudgetForm period={period} />}
         {categories.length === 0 ? (
           <div className="mt-4">
             <EmptyState>{t("allocations.empty")}</EmptyState>
@@ -236,9 +272,9 @@ export default async function BudgetPage({
           <h2 className="font-display text-lg font-bold text-samarkand-950">
             {t("goals.title")}
           </h2>
-          <AddGoalButton />
+          {canEdit && <AddGoalButton />}
         </div>
-        <AddGoalForm />
+        {canEdit && <AddGoalForm />}
         {goals.length === 0 ? (
           <div className="mt-4">
             <EmptyState
@@ -257,6 +293,7 @@ export default async function BudgetPage({
             {goals.map((g) => (
               <GoalCard
                 key={g.id}
+                canEdit={canEdit}
                 goal={{
                   id: g.id,
                   name: g.name,
@@ -276,9 +313,12 @@ export default async function BudgetPage({
           <h2 className="font-display text-lg font-bold text-samarkand-950">
             {t("transactions.title")}
           </h2>
-          <AddTransactionButton />
+          {canEdit && <AddTransactionButton />}
         </div>
-        <TransactionForm />
+        {canEdit && <TransactionForm />}
+        {!canEdit && (
+          <p className="mt-3 text-xs text-sand-700">{t("viewerNote")}</p>
+        )}
         {hasDemoRows && (
           <p className="mt-3 text-xs text-sand-700">
             <span className="mr-1 rounded bg-sand-200 px-1.5 py-0.5 font-semibold">
@@ -332,7 +372,7 @@ export default async function BudgetPage({
                     {style.sign}
                     {formatMoney(tx.amount, tx.currency, currentLocale)}
                   </span>
-                  <DeleteTransactionButton id={tx.id} />
+                  {canEdit && <DeleteTransactionButton id={tx.id} />}
                 </div>
               );
             })}

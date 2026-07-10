@@ -1,5 +1,6 @@
 import type { TimelineMonth } from "@/components/trust/RemittanceTimeline";
 import { computeMilestones, type Milestone } from "@/lib/milestones";
+import { isSignificantScoreChange, notifyHousehold } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 import { computeTrustScore, type TrustScoreResult } from "@/lib/trust-score";
 
@@ -71,6 +72,15 @@ export async function getTrustData(householdId: string): Promise<TrustData> {
       },
     });
     calculatedAt = snapshot.calculatedAt;
+
+    // No background workers: significant movement is detected the moment
+    // a new snapshot is written.
+    if (latest && isSignificantScoreChange(latest.score, result.score)) {
+      await notifyHousehold(householdId, "SCORE_CHANGE", {
+        from: latest.score,
+        to: result.score,
+      });
+    }
   }
 
   // Last 12 calendar months of remittance arrivals, oldest first.

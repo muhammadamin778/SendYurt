@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { CopyButton } from "@/components/CopyButton";
+import { MemberAccessToggle } from "@/components/household/MemberAccessToggle";
 import { Card } from "@/components/ui/Card";
 import { formatDate } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
@@ -78,11 +79,23 @@ export default async function HouseholdPage({
                     role={member.role}
                     label={t(member.role === "SENDER" ? "roleSender" : "roleReceiver")}
                   />
+                  <span
+                    className={
+                      member.accessRole === "ADMIN"
+                        ? "rounded-full bg-zar-50 px-2.5 py-0.5 text-xs font-semibold text-zar-800 dark:text-zar-300"
+                        : "rounded-full bg-sand-100 px-2.5 py-0.5 text-xs font-semibold text-sand-800"
+                    }
+                  >
+                    {t(member.accessRole === "ADMIN" ? "accessAdmin" : "accessViewer")}
+                  </span>
                 </div>
                 <p className="mt-0.5 truncate text-xs text-sand-700">
                   {t("joined", { date: formatDate(member.createdAt, currentLocale) })}
                 </p>
               </div>
+              {user.accessRole === "ADMIN" && member.id !== user.id && (
+                <MemberAccessToggle memberId={member.id} accessRole={member.accessRole} />
+              )}
             </div>
           ))}
         </Card>

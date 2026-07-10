@@ -22,10 +22,20 @@ async function getTrustScore(householdId: string): Promise<number> {
   ).score;
 }
 
-async function RatesCard({ locale, primary }: { locale: string; primary: boolean }) {
+async function RatesCard({
+  locale,
+  primary,
+  usualAmount,
+  usualCurrency,
+}: {
+  locale: string;
+  primary: boolean;
+  usualAmount: number;
+  usualCurrency: string;
+}) {
   const t = await getTranslations("dashboard");
   const providers = await prisma.remittanceProvider.findMany();
-  const [best] = computeQuotes(providers, 400, "USD");
+  const [best] = computeQuotes(providers, usualAmount, usualCurrency);
 
   return (
     <Link href="/rates" className="group block h-full">
@@ -36,7 +46,10 @@ async function RatesCard({ locale, primary }: { locale: string; primary: boolean
         {best ? (
           <>
             <p className="mt-2 flex-1 text-sm text-sand-800">
-              {t("cards.rates.teaser", { amount: "$400", provider: best.providerName })}
+              {t("cards.rates.teaser", {
+                amount: formatMoney(usualAmount, usualCurrency, locale),
+                provider: best.providerName,
+              })}
             </p>
             <p className="mt-3 font-display text-xl font-extrabold text-samarkand-800">
               ≈ {formatMoney(best.receivedUzs, "UZS", locale)}
@@ -143,23 +156,31 @@ export default async function DashboardPage({
   const t = await getTranslations("dashboard");
   const currentLocale = await getLocale();
 
-  const household = await prisma.household.findUnique({
-    where: { id: user.householdId },
-    select: { name: true, inviteCode: true },
-  });
+  const [household, prefs] = await Promise.all([
+    prisma.household.findUnique({
+      where: { id: user.householdId },
+      select: { name: true, inviteCode: true },
+    }),
+    prisma.user.findUnique({
+      where: { id: user.id },
+      select: { usualSendAmount: true, usualSendCurrency: true },
+    }),
+  ]);
+  const usualAmount = prefs?.usualSendAmount?.toNumber() ?? 400;
+  const usualCurrency = prefs?.usualSendCurrency ?? "USD";
 
   const isSender = user.role === "SENDER";
 
   const cards = isSender
     ? [
-        <RatesCard key="rates" locale={currentLocale} primary />,
+        <RatesCard key="rates" locale={currentLocale} primary usualAmount={usualAmount} usualCurrency={usualCurrency} />,
         <BudgetCard key="budget" householdId={user.householdId} locale={currentLocale} primary={false} />,
         <TrustCard key="trust" householdId={user.householdId} primary={false} />,
       ]
     : [
         <BudgetCard key="budget" householdId={user.householdId} locale={currentLocale} primary />,
         <TrustCard key="trust" householdId={user.householdId} primary />,
-        <RatesCard key="rates" locale={currentLocale} primary={false} />,
+        <RatesCard key="rates" locale={currentLocale} primary={false} usualAmount={usualAmount} usualCurrency={usualCurrency} />,
       ];
 
   return (

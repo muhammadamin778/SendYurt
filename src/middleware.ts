@@ -6,7 +6,7 @@ import { routing } from "@/i18n/routing";
 const intlMiddleware = createIntlMiddleware(routing);
 
 // Path segments (after the locale prefix) that require a session.
-const PROTECTED = ["dashboard", "budget", "rates", "trust", "household", "welcome"];
+const PROTECTED = ["dashboard", "budget", "rates", "trust", "household", "welcome", "summary", "help"];
 // Auth pages a logged-in user should be bounced away from.
 const AUTH_PAGES = ["login", "register", "forgot-password", "reset-password"];
 

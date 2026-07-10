@@ -18,15 +18,21 @@ export async function generateMetadata({
   return { title: t("title") };
 }
 
-function parseParams(searchParams: { amount?: string; currency?: string }) {
+function parseParams(
+  searchParams: { amount?: string; currency?: string },
+  usual: { amount: number | null; currency: string | null },
+) {
   const amountRaw = Number(searchParams.amount);
+  // Explicit query wins; then the user's saved usual; then a sane default.
   const amount =
     Number.isFinite(amountRaw) && amountRaw > 0 && amountRaw <= 1_000_000
       ? amountRaw
-      : 400;
+      : (usual.amount ?? 400);
   const currency = SOURCE_CURRENCIES.includes(searchParams.currency as never)
     ? (searchParams.currency as string)
-    : "USD";
+    : SOURCE_CURRENCIES.includes(usual.currency as never)
+      ? (usual.currency as string)
+      : "USD";
   return { amount, currency };
 }
 
@@ -157,13 +163,23 @@ export default async function RatesPage({
   searchParams: { amount?: string; currency?: string };
 }) {
   setRequestLocale(locale);
-  await requireUser();
+  const user = await requireUser();
   const t = await getTranslations("rates");
   const currentLocale = await getLocale();
 
-  const { amount, currency } = parseParams(searchParams);
+  const prefs = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { usualSendAmount: true, usualSendCurrency: true },
+  });
+  const usual = {
+    amount: prefs?.usualSendAmount?.toNumber() ?? null,
+    currency: prefs?.usualSendCurrency ?? null,
+  };
+
+  const { amount, currency } = parseParams(searchParams, usual);
   const providers = await prisma.remittanceProvider.findMany();
   const quotes = computeQuotes(providers, amount, currency);
+  const isUsual = usual.amount === amount && usual.currency === currency;
 
   return (
     <div className="space-y-6">
@@ -186,6 +202,7 @@ export default async function RatesPage({
           currencies={SOURCE_CURRENCIES}
           initialAmount={amount}
           initialCurrency={currency}
+          isUsual={isUsual}
         />
       </Card>
 
