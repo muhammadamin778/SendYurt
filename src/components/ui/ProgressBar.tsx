@@ -29,7 +29,7 @@ export function ProgressBar({
     >
       <div
         className={clsx(
-          "h-full rounded-full transition-all",
+          "h-full rounded-full motion-safe:transition-all",
           danger || over ? "bg-terracotta-600" : "bg-samarkand-600",
         )}
         style={{ width: `${pct}%` }}

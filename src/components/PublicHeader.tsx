@@ -2,6 +2,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/Logo";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function PublicHeader() {
   const t = useTranslations("common");
@@ -13,6 +14,7 @@ export function PublicHeader() {
           <Logo />
         </Link>
         <nav className="flex items-center gap-2 sm:gap-3">
+          <ThemeToggle />
           <LanguageSwitcher />
           <Link
             href="/login"

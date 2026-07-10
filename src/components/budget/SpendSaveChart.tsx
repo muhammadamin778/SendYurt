@@ -1,6 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -31,6 +32,12 @@ export function SpendSaveChart({ points }: { points: ChartPoint[] }) {
   const t = useTranslations("budget.chart");
   const locale = useLocale();
 
+  // Bars rise in unless the user prefers reduced motion.
+  const [animate, setAnimate] = useState(false);
+  useEffect(() => {
+    setAnimate(!window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }, []);
+
   const data = points.map((p) => ({
     name: formatMonth(new Date(p.monthStartIso), locale),
     [t("income")]: p.incomeUzs,
@@ -60,9 +67,9 @@ export function SpendSaveChart({ points }: { points: ChartPoint[] }) {
             }}
           />
           <Legend wrapperStyle={{ fontSize: 13 }} />
-          <Bar dataKey={t("income")} fill="#bc9432" radius={[4, 4, 0, 0]} />
-          <Bar dataKey={t("spent")} fill="#cf4e20" radius={[4, 4, 0, 0]} />
-          <Bar dataKey={t("saved")} fill="#2f5096" radius={[4, 4, 0, 0]} />
+          <Bar dataKey={t("income")} fill="#bc9432" radius={[4, 4, 0, 0]} isAnimationActive={animate} />
+          <Bar dataKey={t("spent")} fill="#cf4e20" radius={[4, 4, 0, 0]} isAnimationActive={animate} />
+          <Bar dataKey={t("saved")} fill="#2f5096" radius={[4, 4, 0, 0]} isAnimationActive={animate} />
         </BarChart>
       </ResponsiveContainer>
     </div>

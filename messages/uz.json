@@ -1,6 +1,7 @@
 {
   "common": {
     "language": "Til",
+    "themeToggle": "Yorugʻ va tungi mavzu oʻrtasida almashish",
     "logIn": "Kirish",
     "register": "Roʻyxatdan oʻtish",
     "logOut": "Chiqish",

@@ -51,7 +51,23 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={`${manrope.variable} ${lora.variable}`}>
+    // suppressHydrationWarning: the pre-paint theme script may add .dark
+    // before React hydrates the html element.
+    <html
+      lang={locale}
+      className={`${manrope.variable} ${lora.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        {/* Applies the stored (or system) theme before first paint so
+            there is no light-flash for dark-mode users. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var t=localStorage.getItem('sy-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}",
+          }}
+        />
+      </head>
       <body className="min-h-screen">
         <NextIntlClientProvider messages={messages}>
           <Providers>

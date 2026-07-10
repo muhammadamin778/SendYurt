@@ -1,6 +1,7 @@
 {
   "common": {
     "language": "Language",
+    "themeToggle": "Switch between light and dark theme",
     "logIn": "Log in",
     "register": "Sign up",
     "logOut": "Log out",

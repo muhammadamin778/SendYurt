@@ -40,3 +40,89 @@
     background-image: url("data:image/svg+xml,%3Csvg width='56' height='28' viewBox='0 0 56 28' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 21 14 7l14 14L42 7l14 14' fill='none' stroke='%23ffffff' stroke-opacity='0.06' stroke-width='6'/%3E%3C/svg%3E");
   }
 }
+
+/* ---------------------------------------------------------------------
+   Dark mode: night-sky indigo (tiled domes after dusk), not gray-black.
+
+   Strategy: the light theme's recurring token classes are REMAPPED here
+   rather than sprinkling dark: variants across every file. The classes
+   stay the design tokens; this layer gives them their night values.
+   Scoped to @media screen so the printable Trust Score report always
+   prints on white regardless of theme.
+--------------------------------------------------------------------- */
+@media screen {
+  .dark body {
+    background-color: #0f1729;
+    color: #dce4f2;
+  }
+
+  /* Surfaces */
+  .dark .bg-white { background-color: #182238; }
+  .dark .bg-white\/90 { background-color: rgb(24 34 56 / 0.92); }
+  .dark .bg-sand-50 { background-color: #0f1729; }
+  .dark .bg-sand-100 { background-color: #1c2740; }
+  .dark .bg-sand-200 { background-color: #243352; }
+  .dark .bg-samarkand-50 { background-color: #20304f; }
+  .dark .bg-samarkand-100 { background-color: #274067; }
+  .dark .bg-terracotta-50 { background-color: #2b1a13; }
+  .dark .bg-terracotta-100 { background-color: #3c2317; }
+  .dark .bg-zar-50 { background-color: #2b2210; }
+  .dark .bg-samarkand-900 { background-color: #131d33; }
+  .dark .from-samarkand-50 { --tw-gradient-from: #20304f var(--tw-gradient-from-position); --tw-gradient-to: rgb(32 48 79 / 0); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+  .dark .to-sand-50 { --tw-gradient-to: #0f1729 var(--tw-gradient-to-position); }
+
+  /* Text */
+  .dark .text-ink,
+  .dark .text-samarkand-950,
+  .dark .text-samarkand-900 { color: #e6ecf8; }
+  .dark .text-samarkand-800 { color: #9cbce3; }
+  .dark .text-samarkand-700 { color: #9cbce3; }
+  .dark .text-samarkand-100 { color: #c4d7ef; }
+  .dark .text-sand-900,
+  .dark .text-sand-800 { color: #aab8d2; }
+  .dark .text-sand-700 { color: #8fa3c4; }
+  .dark .text-sand-600,
+  .dark .text-sand-500 { color: #7186a9; }
+  .dark .text-sand-400 { color: #5c6f8f; }
+  .dark .text-terracotta-800,
+  .dark .text-terracotta-900 { color: #edaf80; }
+  .dark .text-terracotta-700 { color: #e4854d; }
+  .dark input::placeholder,
+  .dark textarea::placeholder { color: #5c6f8f; }
+
+  /* Lines */
+  .dark .border-sand-100,
+  .dark .border-sand-200,
+  .dark .border-sand-300,
+  .dark .border-samarkand-200,
+  .dark .border-samarkand-300 { border-color: #26314b; }
+  .dark .divide-sand-100 > :not([hidden]) ~ :not([hidden]) { border-color: #26314b; }
+
+  /* Hovers */
+  .dark .hover\:bg-sand-100:hover { background-color: #1c2740; }
+  .dark .hover\:bg-sand-200:hover { background-color: #243352; }
+  .dark .hover\:bg-samarkand-50:hover { background-color: #20304f; }
+  .dark .hover\:bg-terracotta-50:hover { background-color: #2b1a13; }
+  .dark .hover\:text-ink:hover { color: #e6ecf8; }
+
+  /* Patterns: swap lapis strokes for faint white on night surfaces */
+  .dark .bg-girih {
+    background-image: url("data:image/svg+xml,%3Csvg width='96' height='96' viewBox='0 0 96 96' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.045' stroke-width='1.5'%3E%3Crect x='24' y='24' width='48' height='48'/%3E%3Crect x='24' y='24' width='48' height='48' transform='rotate(45 48 48)'/%3E%3Cpath d='M48 0v24M48 72v24M0 48h24M72 48h24'/%3E%3C/g%3E%3C/svg%3E");
+  }
+  .dark .bg-ikat {
+    background-image: url("data:image/svg+xml,%3Csvg width='56' height='28' viewBox='0 0 56 28' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 21 14 7l14 14L42 7l14 14' fill='none' stroke='%23ffffff' stroke-opacity='0.05' stroke-width='6'/%3E%3C/svg%3E");
+  }
+
+  /* Recharts */
+  .dark .recharts-text { fill: #8fa3c4; }
+  .dark .recharts-cartesian-grid line { stroke: #26314b; }
+  .dark .recharts-default-tooltip {
+    background-color: #182238 !important;
+    border-color: #26314b !important;
+    color: #dce4f2;
+  }
+  .dark .recharts-legend-item-text { color: #aab8d2 !important; }
+
+  /* Score dial track */
+  .dark .dial-track { stroke: #26314b; }
+}

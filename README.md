@@ -22,6 +22,23 @@ household, and build a transparent financial Trust Score.
 Fully localized in **Uzbek (Latin), Russian and English**, switchable from
 every page. Mobile-first (bottom navigation on phones).
 
+**Design language & depth features:**
+
+- Palette drawn from real Uzbek craft sources: Registan majolica cobalt
+  (primary), Bukhara clay terracotta, zardoʻzi gold (accents/milestones),
+  warm sand neutrals; **dark mode** uses night-sky indigo, toggleable from
+  every header with no flash on load. Girih star-lattice textures, suzani
+  vine dividers and iwan-arch card tops used sparingly as accents.
+  Type: Manrope (UI) + Lora (display), full Cyrillic.
+- Household page (member list + invite management), 12-month remittance
+  timeline, quiet achievement milestones, a **printable Trust Score
+  report** (`/trust/report`, prints/saves as PDF) presentable to a
+  microfinance officer, and a once-per-account onboarding walkthrough.
+- Toasts on every action, page transitions, button press feedback,
+  Trust Score count-up, optimistic goal contributions — all gated behind
+  `prefers-reduced-motion`; every text/surface token pair verified ≥ AA
+  contrast in both themes.
+
 ## Stack
 
 - Next.js 14 (App Router, React Server Components + Server Actions), TypeScript

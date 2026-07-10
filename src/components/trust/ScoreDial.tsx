@@ -26,7 +26,7 @@ export function ScoreDial({
   return (
     <div className="relative inline-flex items-center justify-center">
       <svg width="176" height="176" viewBox="0 0 176 176" role="img" aria-label={`${label}: ${clamped}`}>
-        <circle cx="88" cy="88" r={r} fill="none" stroke="#e4dbc6" strokeWidth="14" />
+        <circle cx="88" cy="88" r={r} fill="none" stroke="#e4dbc6" strokeWidth="14" className="dial-track" />
         <circle
           cx="88"
           cy="88"
