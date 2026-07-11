@@ -12,7 +12,7 @@ import path from "path";
 
 const BASE = "http://localhost:3000";
 const OUT = "D:/My code/sendyurt-html";
-const LOCALE = "uz";
+const LOCALE = "en";
 
 const PAGES = [
   { route: `/${LOCALE}`, file: "index.html", auth: false },
@@ -22,6 +22,8 @@ const PAGES = [
   { route: `/${LOCALE}/rates?amount=400&currency=USD`, file: "rates.html", auth: true },
   { route: `/${LOCALE}/budget`, file: "budget.html", auth: true },
   { route: `/${LOCALE}/trust`, file: "trust.html", auth: true },
+  { route: `/${LOCALE}/household`, file: "household.html", auth: true },
+  { route: `/${LOCALE}/help`, file: "help.html", auth: true },
 ];
 
 const jar = {};
