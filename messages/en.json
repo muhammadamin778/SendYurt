@@ -257,6 +257,22 @@
     "accessChanged": "Member access updated.",
     "accessChangeFailed": "Couldn't change access. Please try again."
   },
+  "assistant": {
+    "title": "Yordam",
+    "subtitle": "Your SendYurt helper — ask in Uzbek, Russian or English.",
+    "guideMode": "Quick guide mode — answers come from the built-in help.",
+    "welcome": "Salom! I'm Yordam. Ask me anything about sending money, the family budget, or your Trust Score — you can also tap the microphone and just speak.",
+    "placeholder": "Ask a question…",
+    "listening": "Listening…",
+    "send": "Send",
+    "micStart": "Speak your question",
+    "micStop": "Stop listening",
+    "speakReplies": "Read answers aloud",
+    "thinking": "Thinking…",
+    "rateLimited": "You've asked a lot in a short time — please wait a little and try again.",
+    "error": "I couldn't answer just now. Please try again in a moment.",
+    "guideFallback": "I can help with sending money home, the family budget, savings goals, the Trust Score, family members and printable reports. Ask about one of those, or open the Help page for plain-language answers to common questions."
+  },
   "summary": {
     "title": "Financial summary",
     "back": "Back to the budget",

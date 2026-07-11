@@ -257,6 +257,22 @@
     "accessChanged": "Aʼzo huquqi yangilandi.",
     "accessChangeFailed": "Huquqni oʻzgartirib boʻlmadi. Qaytadan urinib koʻring."
   },
+  "assistant": {
+    "title": "Yordam",
+    "subtitle": "SendYurt yordamchingiz — oʻzbek, rus yoki ingliz tilida soʻrang.",
+    "guideMode": "Tezkor qoʻllanma rejimi — javoblar ichki yordam boʻlimidan olinadi.",
+    "welcome": "Salom! Men Yordamman. Pul yuborish, oila byudjeti yoki Ishonch bali haqida bemalol soʻrang — mikrofon tugmasini bosib gapirsangiz ham boʻladi.",
+    "placeholder": "Savolingizni yozing…",
+    "listening": "Eshitmoqdaman…",
+    "send": "Yuborish",
+    "micStart": "Savolni ovoz bilan ayting",
+    "micStop": "Eshitishni toʻxtatish",
+    "speakReplies": "Javoblarni ovoz bilan oʻqish",
+    "thinking": "Oʻylayapman…",
+    "rateLimited": "Qisqa vaqtda juda koʻp soʻradingiz — biroz kutib, qaytadan urinib koʻring.",
+    "error": "Hozir javob bera olmadim. Bir ozdan soʻng qaytadan urinib koʻring.",
+    "guideFallback": "Men uyga pul yuborish, oila byudjeti, jamgʻarma maqsadlari, Ishonch bali, oila aʼzolari va chop etiladigan hisobotlar boʻyicha yordam bera olaman. Shulardan biri haqida soʻrang yoki Yordam sahifasini oching."
+  },
   "summary": {
     "title": "Moliyaviy xulosa",
     "back": "Byudjetga qaytish",

@@ -38,6 +38,15 @@ every page. Mobile-first (bottom navigation on phones).
   Trust Score count-up, optimistic goal contributions — all gated behind
   `prefers-reduced-motion`; every text/surface token pair verified ≥ AA
   contrast in both themes.
+- **AI assistant "Yordam"** (chat bubble, bottom-right): answers in
+  Uzbek/Russian/English with voice input (Web Speech dictation) and
+  spoken replies. With `ANTHROPIC_API_KEY` set it runs on Claude
+  (`claude-opus-4-8`, personalized with the household's own numbers,
+  rate-limited 30/hour/user); without a key it degrades to a built-in
+  localized guide answering from the help content. Uzbek speech
+  *synthesis* depends on browser voices (often unavailable — the toggle
+  simply reads in the closest available voice); dictation and text work
+  in all three languages.
 
 ## Stack
 

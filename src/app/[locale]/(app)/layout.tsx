@@ -5,6 +5,7 @@ import { LogoutButton } from "@/components/LogoutButton";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { DesktopNav, MobileNav } from "@/components/AppNav";
+import { AssistantWidget } from "@/components/assistant/AssistantWidget";
 import { requireUser } from "@/lib/session";
 
 // Everything in this group is per-user, per-household data behind auth —
@@ -49,6 +50,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </main>
 
       <MobileNav />
+      <AssistantWidget />
     </div>
   );
 }
