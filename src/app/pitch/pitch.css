@@ -1,0 +1,79 @@
+/* Pitch-page-only styles. The page commits to a deep ink-navy world with
+   bone type, teal trust signals and one amber accent — independent from
+   the product app's palette. */
+
+.f-serif { font-family: var(--font-pitch-serif), Georgia, serif; }
+.f-sans  { font-family: var(--font-pitch-sans), system-ui, sans-serif; }
+.f-mono  { font-family: var(--font-pitch-mono), ui-monospace, monospace; }
+
+/* 1px hairlines that read as editorial rules, not borders */
+.hairline   { border-color: rgba(244, 239, 228, 0.08); }
+.hairline-strong { border-color: rgba(244, 239, 228, 0.16); }
+
+/* Faint radial glow + grain behind the hero. Grain is a tiny inline SVG
+   noise tile at whisper opacity — no asset request, no banding. */
+.hero-atmosphere {
+  background:
+    radial-gradient(52rem 30rem at 72% -6rem, rgba(45, 212, 191, 0.09), transparent 60%),
+    radial-gradient(40rem 26rem at 12% 12rem, rgba(232, 163, 61, 0.07), transparent 65%);
+}
+.grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Infinite marquee: track holds the list twice; translate by half. */
+.marquee { overflow: hidden; }
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: pitch-marquee 30s linear infinite;
+}
+.marquee:hover .marquee-track { animation-play-state: paused; }
+@keyframes pitch-marquee {
+  to { transform: translateX(-50%); }
+}
+
+/* Scroll reveal: fade + 12px rise, driven by IntersectionObserver. */
+.reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Card hover lift — restrained, ~200ms */
+.lift {
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.lift:hover {
+  transform: translateY(-3px);
+  border-color: rgba(244, 239, 228, 0.18);
+}
+
+/* Visible focus for keyboard users, tuned to the palette */
+.pitch a:focus-visible,
+.pitch button:focus-visible {
+  outline: 2px solid #e8a33d;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .lift, .lift:hover { transform: none; transition: none; }
+}
