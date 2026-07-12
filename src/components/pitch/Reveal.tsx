@@ -2,9 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 
+type State = "shown" | "hidden" | "revealed";
+
 /**
- * Fade + 12px rise on first scroll into view. CSS handles the motion (and
- * the prefers-reduced-motion fallback); this only toggles the class.
+ * Scroll-reveal that degrades safely: content renders VISIBLE by default,
+ * so no-JS, slow hydration, and reduced-motion users always see it. Only
+ * elements clearly below the fold are briefly hidden (off-screen, so no
+ * visible flash) and then faded in when scrolled into view.
  */
 export function Reveal({
   children,
@@ -12,24 +16,35 @@ export function Reveal({
   className,
 }: {
   children: React.ReactNode;
-  /** Stagger offset in ms. */
   delay?: number;
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [seen, setSeen] = useState(false);
+  const [state, setState] = useState<State>("shown");
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce || typeof IntersectionObserver === "undefined") {
+      return; // stays visible, no animation
+    }
+
+    // Only animate elements that are safely below the current viewport —
+    // anything already on screen stays visible so it can never flash.
+    const rect = el.getBoundingClientRect();
+    if (rect.top <= window.innerHeight * 0.9) return;
+
+    setState("hidden");
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) {
-          setSeen(true);
+          setState("revealed");
           observer.disconnect();
         }
       },
-      { threshold: 0.15, rootMargin: "0px 0px -40px 0px" },
+      { threshold: 0.1, rootMargin: "0px 0px -40px 0px" },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -38,8 +53,13 @@ export function Reveal({
   return (
     <div
       ref={ref}
-      className={`reveal ${seen ? "is-in" : ""} ${className ?? ""}`}
-      style={{ "--reveal-delay": `${delay}ms` } as React.CSSProperties}
+      className={`reveal ${className ?? ""}`}
+      style={{
+        transitionDelay: `${delay}ms`,
+        ...(state === "hidden"
+          ? { opacity: 0, transform: "translateY(12px)" }
+          : null),
+      }}
     >
       {children}
     </div>

@@ -26,6 +26,12 @@ function localeOf(pathname: string): string {
 }
 
 export default async function middleware(req: NextRequest) {
+  // The site's landing page is the pitch site — serve it at the root URL
+  // without a locale prefix or redirect.
+  if (req.nextUrl.pathname === "/") {
+    return NextResponse.rewrite(new URL("/pitch", req.url));
+  }
+
   const segment = firstSegmentAfterLocale(req.nextUrl.pathname);
   const locale = localeOf(req.nextUrl.pathname);
 

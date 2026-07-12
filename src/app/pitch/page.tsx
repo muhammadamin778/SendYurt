@@ -275,12 +275,20 @@ export default function PitchPage() {
             <a href="#features" className="transition-colors hover:text-[#F4EFE4]">Features</a>
             <a href="#investors" className="transition-colors hover:text-[#F4EFE4]">For investors</a>
           </div>
-          <a
-            href="#cta"
-            className="rounded-full bg-[#E8A33D] px-4 py-1.5 text-[13px] font-semibold text-[#0B1220] transition-colors hover:bg-[#F0B458]"
-          >
-            Get early access
-          </a>
+          <div className="flex items-center gap-4">
+            <a
+              href="/en/login"
+              className="hidden text-[13px] font-medium text-[#9DA9BE] transition-colors hover:text-[#F4EFE4] sm:inline"
+            >
+              Log in
+            </a>
+            <a
+              href="/en/register"
+              className="rounded-full bg-[#E8A33D] px-4 py-1.5 text-[13px] font-semibold text-[#0B1220] transition-colors hover:bg-[#F0B458]"
+            >
+              Get early access
+            </a>
+          </div>
         </nav>
       </header>
 
@@ -310,7 +318,7 @@ export default function PitchPage() {
               <Reveal delay={240}>
                 <div className="mt-8 flex flex-wrap items-center gap-3">
                   <a
-                    href="#cta"
+                    href="/en/register"
                     className="rounded-full bg-[#E8A33D] px-6 py-3 text-sm font-semibold text-[#0B1220] transition-colors hover:bg-[#F0B458]"
                   >
                     Get early access
@@ -545,7 +553,7 @@ export default function PitchPage() {
                 </p>
                 <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
                   <a
-                    href="mailto:pilot@sendyurt.uz"
+                    href="/en/register"
                     className="rounded-full bg-[#B25E1E] px-7 py-3.5 text-sm font-semibold text-[#FDF9F0] transition-colors hover:bg-[#9A4E15]"
                   >
                     Join the pilot
@@ -579,8 +587,8 @@ export default function PitchPage() {
           </div>
           {(
             [
-              ["Product", [["Rate finder", "#features"], ["Trust Score", "#features"], ["Family Budget", "#features"], ["How it works", "#how"]]],
-              ["Company", [["The problem", "#problem"], ["For investors", "#investors"], ["Early access", "#cta"]]],
+              ["Product", [["Rate finder", "/en/rates"], ["Trust Score", "/en/trust"], ["Family Budget", "/en/budget"], ["How it works", "#how"]]],
+              ["Company", [["The problem", "#problem"], ["For investors", "#investors"], ["Get early access", "/en/register"]]],
               ["Contact", [["Telegram — @sendyurt", "https://t.me/sendyurt"], ["hello@sendyurt.uz", "mailto:hello@sendyurt.uz"]]],
             ] as const
           ).map(([group, links]) => (
