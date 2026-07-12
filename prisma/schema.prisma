@@ -14,6 +14,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Investor / pilot inquiries submitted from the public pitch page.
+model InvestorInquiry {
+  id           String   @id @default(cuid())
+  name         String
+  email        String
+  organization String?
+  // "INVESTOR" | "PILOT" — which CTA the inquiry came from
+  kind         String   @default("INVESTOR")
+  message      String
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 model Household {
   id         String   @id @default(cuid())
   name       String

@@ -89,4 +89,5 @@ export const LIMITS = {
   forgotPassword: { max: 3, windowMs: 60 * 60 * 1000 },
   resetPassword: { max: 5, windowMs: 15 * 60 * 1000 },
   assistant: { max: 30, windowMs: 60 * 60 * 1000 },
+  investor: { max: 5, windowMs: 60 * 60 * 1000 },
 } as const;

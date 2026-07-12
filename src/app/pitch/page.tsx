@@ -1,3 +1,4 @@
+import { InvestorForm } from "@/components/pitch/InvestorForm";
 import { Reveal } from "@/components/pitch/Reveal";
 
 /* ------------------------------------------------------------------ */
@@ -519,6 +520,23 @@ export default function PitchPage() {
                 before investor distribution.
               </p>
             </Reveal>
+
+            {/* Working investor inquiry */}
+            <div className="mt-16 grid items-start gap-10 border-t border-[#F4EFE4]/[0.08] pt-16 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
+              <Reveal>
+                <Display size="md">
+                  Building the <em className="font-normal">trust rail</em> for a $16B corridor.
+                </Display>
+                <p className="mt-5 max-w-md text-[16px] leading-relaxed">
+                  We&apos;re raising to expand coverage across the top remittance corridors and
+                  deepen the Trust Score data moat. Tell us what you&apos;d like to see — the
+                  founders read every note.
+                </p>
+              </Reveal>
+              <Reveal delay={120}>
+                <InvestorForm />
+              </Reveal>
+            </div>
           </div>
         </section>
 
@@ -559,7 +577,7 @@ export default function PitchPage() {
                     Join the pilot
                   </a>
                   <a
-                    href="mailto:invest@sendyurt.uz"
+                    href="#investors"
                     className="rounded-full border border-[#101828]/25 px-7 py-3.5 text-sm font-semibold text-[#101828] transition-colors hover:border-[#101828]/50"
                   >
                     Investor inquiries <span aria-hidden="true">→</span>
