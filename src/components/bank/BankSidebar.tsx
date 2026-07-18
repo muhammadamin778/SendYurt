@@ -91,10 +91,8 @@ export function BankSidebar({
     <aside className="hidden w-[260px] shrink-0 self-start border-r border-[#e2e8f0] bg-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col print:hidden">
       {/* Brand */}
       <div className="flex items-center gap-3 px-6 pt-6 pb-5">
-        <Link href="/dashboard" aria-label="SendYurt" className="flex items-center gap-3">
-          <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#0a7c53] text-white shadow-sm">
-            <YurtMark className="h-6 w-6 text-white" />
-          </span>
+        <Link href="/dashboard" aria-label="SendYurt" className="flex items-center gap-2.5">
+          <YurtMark className="h-10 w-auto" />
           <span className="leading-tight">
             <span className="block font-display text-[19px] font-bold tracking-tight text-[#0f172a]">
               SendYurt

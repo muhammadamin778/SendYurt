@@ -11,9 +11,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="flex flex-col px-6 py-8 sm:px-12 sm:py-10">
           <div className="flex items-center justify-between gap-3">
             <Link href="/" aria-label="SendYurt" className="flex items-center gap-2.5">
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#0a7c53] text-white shadow-sm">
-                <YurtMark className="h-6 w-6 text-white" />
-              </span>
+              <YurtMark className="h-11 w-auto" />
               <span className="font-display text-[22px] font-bold tracking-tight text-[#0f172a]">SendYurt</span>
             </Link>
             <LanguageSwitcher />
