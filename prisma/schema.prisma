@@ -1,16 +1,15 @@
 // SendYurt data model.
-// Local dev runs on SQLite; the schema deliberately avoids SQLite-only or
-// Postgres-only constructs so switching `provider` to "postgresql" for
-// deployment requires no model changes. Enums are not supported by SQLite,
-// so role/status/type fields are strings constrained by zod at the app
-// boundary (see src/lib/validators.ts).
+// Runs on PostgreSQL (Vercel Postgres / Neon / Supabase). The schema avoids
+// Postgres-only constructs so it stays portable. Enums are modeled as strings
+// constrained by zod at the app boundary (see src/lib/validators.ts) — a
+// carry-over from the original SQLite setup, kept for that validation layer.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
