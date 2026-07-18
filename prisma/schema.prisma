@@ -65,6 +65,12 @@ model User {
   usualSendCurrency String?
   // Set when the user finishes (or skips) the first-run walkthrough.
   onboardedAt  DateTime?
+  // Platform-level access for the admin panel — distinct from `role` (family
+  // position) and `accessRole` (household permission). Defaults to USER;
+  // promoted to ADMIN only through an audited, admin-guarded server action.
+  adminRole    AdminRole @default(USER)
+  // Admins can suspend an account (blocks sign-in); an audited toggle.
+  suspended    Boolean   @default(false)
   createdAt    DateTime @default(now())
 
   household        Household     @relation(fields: [householdId], references: [id])
@@ -72,6 +78,37 @@ model User {
   receivedTransactions Transaction[] @relation("ReceivedTransactions")
   passwordResetTokens PasswordResetToken[]
   notifications    Notification[]
+  auditLogs        AuditLog[]    @relation("AdminAuditLogs")
+}
+
+// Platform admin access. A real Postgres enum (the app moved off SQLite),
+// giving the admin layer compile-time type safety end to end.
+enum AdminRole {
+  USER
+  ADMIN
+}
+
+// Append-only audit trail for privileged admin actions: who did what, to
+// whom, and when. Written inside the same transaction as the mutation so the
+// record and the change commit or roll back together.
+model AuditLog {
+  id           String   @id @default(cuid())
+  // e.g. "ROLE_PROMOTION" | "ROLE_DEMOTION" | "USER_SUSPEND" | "USER_UNSUSPEND"
+  action       String
+  // The admin who performed the action.
+  adminId      String
+  // The record acted upon (nullable for non-entity actions like exports).
+  targetUserId String?
+  targetType   String?  // "User" | "Transaction" | ...
+  // Free-form JSON context (before/after values, reason, request ip, ...).
+  metadata     Json?
+  createdAt    DateTime @default(now())
+
+  admin User @relation("AdminAuditLogs", fields: [adminId], references: [id])
+
+  @@index([createdAt])
+  @@index([adminId, createdAt])
+  @@index([targetUserId])
 }
 
 model Notification {
