@@ -1,6 +1,7 @@
 import { HeroVideo } from "@/components/pitch/HeroVideo";
 import { InvestorForm } from "@/components/pitch/InvestorForm";
 import { Reveal } from "@/components/pitch/Reveal";
+import { DemoButton } from "./DemoButton";
 import { PITCH, PITCH_LANGS, resolveLang, type PitchLang } from "./content";
 
 /* ------------------------------------------------------------------ */
@@ -8,17 +9,17 @@ import { PITCH, PITCH_LANGS, resolveLang, type PitchLang } from "./content";
 /* ------------------------------------------------------------------ */
 
 function Wordmark({ tone = "dark" }: { tone?: "dark" | "light" }) {
-  const ink = tone === "dark" ? "#0B1A30" : "#FBF6F0";
+  const ink = tone === "dark" ? "#0B1A30" : "#f7f9fb";
   return (
     <span className="inline-flex items-center gap-2">
-      <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#FF4F3D]">
+      <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#0a7c53]">
         <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
-          <path d="M12 4 20 11H4Z" fill="#FBF6F0" />
-          <path d="M6 13h12v5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 18Z" fill="#FBF6F0" opacity="0.85" />
+          <path d="M12 4 20 11H4Z" fill="#f7f9fb" />
+          <path d="M6 13h12v5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 18Z" fill="#f7f9fb" opacity="0.85" />
         </svg>
       </span>
       <span className="f-display text-[19px] font-bold tracking-tight" style={{ color: ink }}>
-        Send<span className="text-[#FF4F3D]">Yurt</span>
+        Send<span className="text-[#0a7c53]">Yurt</span>
       </span>
     </span>
   );
@@ -26,8 +27,8 @@ function Wordmark({ tone = "dark" }: { tone?: "dark" | "light" }) {
 
 function Chip({
   children,
-  bg = "#FFE3DD",
-  color = "#E23A29",
+  bg = "#d1fae5",
+  color = "#065f3e",
 }: {
   children: React.ReactNode;
   bg?: string;
@@ -41,7 +42,7 @@ function Chip({
 }
 
 /** Renders an accented headline fragment: plain + coral emphasis + plain. */
-function Em({ v, accent = "#FF4F3D" }: { v: { a: string; em: string; b: string }; accent?: string }) {
+function Em({ v, accent = "#0a7c53" }: { v: { a: string; em: string; b: string }; accent?: string }) {
   return (
     <>
       {v.a}
@@ -88,9 +89,9 @@ function LineIcon({ path, color = "#0B1A30" }: { path: string; color?: string })
 /* ------------------------------------------------------------------ */
 
 const PROBLEM_VIS: [string, string, string][] = [
-  ["6–8%", "#FFE3DD", "#E23A29"],
+  ["6–8%", "#d1fae5", "#065f3e"],
   ["$1B+", "#FFE4AC", "#7C5310"],
-  ["1 in 5", "#CFE0FF", "#1B3F8F"],
+  ["1 in 5", "#ccfbf1", "#0f766e"],
   ["0", "#C8EFD8", "#0C6B49"],
 ];
 
@@ -104,9 +105,9 @@ const STEP_ICONS = [
 const FEATURE_VIS: { icon: string; bg: string; ink: string }[] = [
   { icon: "M4 17l5-5 4 4 7-8M15 8h5v5", bg: "#FFE4AC", ink: "#7C5310" },
   { icon: "M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6zM9 12l2 2 4-4", bg: "#C8EFD8", ink: "#0C6B49" },
-  { icon: "M4 21V10l8-6 8 6v11M9 21v-6h6v6", bg: "#CFE0FF", ink: "#1B3F8F" },
-  { icon: "M3 5h12M9 3v2m1.5 14L15 9l4.5 10M12 19h6M5 9c2.5 4 6 7 10 9", bg: "#E6DDFF", ink: "#4B3AA0" },
-  { icon: "M18 9a6 6 0 10-12 0c0 5-2 6-2 6h16s-2-1-2-6M10.3 19a2 2 0 003.4 0", bg: "#FFE3DD", ink: "#E23A29" },
+  { icon: "M4 21V10l8-6 8 6v11M9 21v-6h6v6", bg: "#ccfbf1", ink: "#0f766e" },
+  { icon: "M3 5h12M9 3v2m1.5 14L15 9l4.5 10M12 19h6M5 9c2.5 4 6 7 10 9", bg: "#dcfce7", ink: "#166534" },
+  { icon: "M18 9a6 6 0 10-12 0c0 5-2 6-2 6h16s-2-1-2-6M10.3 19a2 2 0 003.4 0", bg: "#d1fae5", ink: "#065f3e" },
   { icon: "M7 3h10a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2zM11 18h2", bg: "#FFFFFF", ink: "#0B1A30" },
 ];
 
@@ -114,9 +115,9 @@ const METRIC_VALUES = ["$16B+", "~20%", "2M+", "0"];
 
 const BADGE_COLORS: [string, string][] = [
   ["#C8EFD8", "#0C6B49"],
-  ["#CFE0FF", "#1B3F8F"],
+  ["#ccfbf1", "#0f766e"],
   ["#FFE4AC", "#7C5310"],
-  ["#E6DDFF", "#4B3AA0"],
+  ["#dcfce7", "#166534"],
 ];
 
 /** Language switcher — links stay on "/" and swap the ?lang= param. */
@@ -129,7 +130,7 @@ function LangSwitch({ lang }: { lang: PitchLang }) {
           href={code === "en" ? "/" : `/?lang=${code}`}
           className={[
             "rounded-full px-2.5 py-1 text-[12px] font-semibold transition-colors",
-            code === lang ? "bg-[#0B1A30] text-[#FBF6F0]" : "text-[#5A6B82] hover:text-[#0B1A30]",
+            code === lang ? "bg-[#0B1A30] text-[#f7f9fb]" : "text-[#5A6B82] hover:text-[#0B1A30]",
           ].join(" ")}
         >
           {label}
@@ -157,7 +158,7 @@ export default function PitchPage({
   return (
     <div className="relative">
       {/* 1 · Sticky nav */}
-      <header className="hairline sticky top-0 z-50 border-b bg-[#FBF6F0]/85 backdrop-blur-md">
+      <header className="hairline sticky top-0 z-50 border-b bg-[#f7f9fb]/85 backdrop-blur-md">
         <nav aria-label="Main" className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-5">
           <a href="#top" aria-label="SendYurt — back to top">
             <Wordmark />
@@ -170,12 +171,12 @@ export default function PitchPage({
           </div>
           <div className="flex items-center gap-3">
             <LangSwitch lang={lang} />
-            <a href={href("/login")} className="hidden text-[14px] font-semibold text-[#0B1A30] transition-colors hover:text-[#FF4F3D] sm:inline">
+            <a href={href("/login")} className="hidden text-[14px] font-semibold text-[#0B1A30] transition-colors hover:text-[#0a7c53] sm:inline">
               {c.nav.login}
             </a>
-            <a href={href("/register")} className="btn btn-coral px-5 py-2.5 text-[14px]">
+            <DemoButton locale={lang} className="btn btn-coral px-5 py-2.5 text-[14px]">
               {c.nav.cta}
-            </a>
+            </DemoButton>
           </div>
         </nav>
       </header>
@@ -196,7 +197,7 @@ export default function PitchPage({
               </Reveal>
               <Reveal delay={240}>
                 <div className="mt-8 flex flex-wrap items-center gap-3">
-                  <a href={href("/register")} className="btn btn-coral px-7 py-3.5 text-[15px]">{c.hero.ctaPrimary}</a>
+                  <DemoButton locale={lang} className="btn btn-coral px-7 py-3.5 text-[15px]">{c.hero.ctaPrimary}</DemoButton>
                   <a href="#how" className="btn btn-ghost px-7 py-3.5 text-[15px]">{c.hero.ctaSecondary}</a>
                 </div>
               </Reveal>
@@ -214,9 +215,9 @@ export default function PitchPage({
 
             <Reveal delay={200} className="lg:justify-self-end">
               <div className="relative mx-auto w-full max-w-[30rem]">
-                <div aria-hidden="true" className="absolute -inset-3 -rotate-2 rounded-[2.75rem] bg-[#FF4F3D]/12 sm:-inset-5" />
+                <div aria-hidden="true" className="absolute -inset-3 -rotate-2 rounded-[2.75rem] bg-[#0a7c53]/12 sm:-inset-5" />
                 <div className="absolute -right-3 -top-3 hidden rotate-3 sm:block">
-                  <Chip bg="#0B1A30" color="#FBF6F0">{c.hero.trustBadge}</Chip>
+                  <Chip bg="#0B1A30" color="#f7f9fb">{c.hero.trustBadge}</Chip>
                 </div>
                 <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem] border-[6px] border-[#0B1A30] bg-[#0B1A30] shadow-[0_30px_60px_-25px_rgba(11,26,48,0.55)]">
                   <HeroVideo />
@@ -252,7 +253,7 @@ export default function PitchPage({
                   {c.marquee.map((tag) => (
                     <li key={tag} className="flex items-center gap-5 pr-5 text-[14px] font-semibold text-[#0B1A30]">
                       <span>{tag}</span>
-                      <span className="text-[#FF4F3D]" aria-hidden="true">●</span>
+                      <span className="text-[#0a7c53]" aria-hidden="true">●</span>
                     </li>
                   ))}
                 </ul>
@@ -294,9 +295,9 @@ export default function PitchPage({
             <ol className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {c.how.steps.map((step, i) => (
                 <Reveal key={i} delay={i * 90}>
-                  <li className="h-full rounded-3xl bg-[#FBF6F0] p-7">
+                  <li className="h-full rounded-3xl bg-[#f7f9fb] p-7">
                     <div className="flex items-center gap-3">
-                      <span className="grid h-9 w-9 place-items-center rounded-full bg-[#FF4F3D] text-[15px] font-bold text-white">{i + 1}</span>
+                      <span className="grid h-9 w-9 place-items-center rounded-full bg-[#0a7c53] text-[15px] font-bold text-white">{i + 1}</span>
                       <LineIcon path={STEP_ICONS[i]} color="#0C6B49" />
                     </div>
                     <h3 className="f-display mt-5 text-[17px] font-bold text-[#0B1A30]">{step.title}</h3>
@@ -334,12 +335,12 @@ export default function PitchPage({
         {/* 8 · Opportunity + investor form */}
         <section id="investors" className="scroll-mt-20 bg-[#0B1A30]">
           <div className="mx-auto max-w-6xl px-5 py-24 lg:py-32">
-            <Reveal><Chip bg="#FF4F3D" color="#FBF6F0">{c.opportunity.chip}</Chip></Reveal>
+            <Reveal><Chip bg="#0a7c53" color="#f7f9fb">{c.opportunity.chip}</Chip></Reveal>
             <div className="mt-12 grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
               {c.opportunity.metricLabels.map((label, i) => (
                 <Reveal key={label} delay={i * 80}>
                   <div>
-                    <p className="f-display text-[clamp(3rem,6vw,4.5rem)] font-bold leading-none text-[#FF4F3D]">{METRIC_VALUES[i]}</p>
+                    <p className="f-display text-[clamp(3rem,6vw,4.5rem)] font-bold leading-none text-[#0a7c53]">{METRIC_VALUES[i]}</p>
                     <p className="mt-4 text-[13px] font-medium uppercase tracking-wide text-[#9DB0CC]">{label}</p>
                   </div>
                 </Reveal>
@@ -351,7 +352,7 @@ export default function PitchPage({
 
             <div className="mt-16 grid items-start gap-10 border-t border-white/10 pt-16 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
               <Reveal>
-                <Display size="md" color="#FBF6F0"><Em v={c.opportunity.title} /></Display>
+                <Display size="md" color="#f7f9fb"><Em v={c.opportunity.title} /></Display>
                 <p className="mt-5 max-w-md text-[16px] leading-relaxed text-[#9DB0CC]">{c.opportunity.sub}</p>
               </Reveal>
               <Reveal delay={120}><InvestorForm t={c.form} /></Reveal>
@@ -364,19 +365,19 @@ export default function PitchPage({
           <div className="mx-auto max-w-4xl px-5 py-24 text-center lg:py-28">
             <Reveal>
               <blockquote className="f-display text-[clamp(1.8rem,4vw,2.9rem)] font-bold leading-[1.15] tracking-[-0.02em] text-[#7C5310] [text-wrap:balance]">
-                {c.quote.a}<span className="text-[#E23A29]">{c.quote.em}</span>{c.quote.b}
+                {c.quote.a}<span className="text-[#065f3e]">{c.quote.em}</span>{c.quote.b}
               </blockquote>
             </Reveal>
           </div>
         </section>
 
         {/* 10 · CTA */}
-        <section id="cta" className="scroll-mt-20 bg-[#FF4F3D]">
+        <section id="cta" className="scroll-mt-20 bg-[#0a7c53]">
           <div className="mx-auto max-w-6xl px-5 py-24 lg:py-28">
             <Reveal>
               <div className="mx-auto max-w-2xl text-center">
-                <Display color="#FBF6F0"><Em v={c.cta.title} accent="#0B1A30" /></Display>
-                <p className="mx-auto mt-5 max-w-md text-[18px] leading-relaxed text-[#FFE3DD]">{c.cta.sub}</p>
+                <Display color="#f7f9fb"><Em v={c.cta.title} accent="#0B1A30" /></Display>
+                <p className="mx-auto mt-5 max-w-md text-[18px] leading-relaxed text-[#d1fae5]">{c.cta.sub}</p>
                 <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
                   <a href={href("/register")} className="btn btn-navy px-7 py-3.5 text-[15px]">{c.cta.join}</a>
                   <a href="#investors" className="btn btn-light px-7 py-3.5 text-[15px]">{c.cta.investors}</a>
@@ -400,7 +401,7 @@ export default function PitchPage({
               <ul className="mt-4 space-y-2.5">
                 {group.links.map(([label, link]) => (
                   <li key={label}>
-                    <a href={href(link)} className="text-[14px] text-[#9DB0CC] transition-colors hover:text-[#FBF6F0]">{label}</a>
+                    <a href={href(link)} className="text-[14px] text-[#9DB0CC] transition-colors hover:text-[#f7f9fb]">{label}</a>
                   </li>
                 ))}
               </ul>

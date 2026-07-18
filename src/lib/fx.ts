@@ -14,60 +14,57 @@ export interface FxRates {
 const HOUR = 60 * 60 * 1000;
 let cache: { expires: number; data: FxRates } | null = null;
 
+// fawazahmed0's free, keyless, rate-limit-free exchange API
+// (github.com/fawazahmed0/exchange-api). USD-based; a jsDelivr primary with
+// the project's official Cloudflare-Pages fallback.
+const FX_ENDPOINTS = [
+  "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.min.json",
+  "https://latest.currency-api.pages.dev/v1/currencies/usd.min.json",
+];
+
 /**
- * Live mid-market rates to UZS, from exchangerate-api.com — the same provider
- * used by the reference Currency-Converter-App. Keyless "open" endpoint by
- * default; keyed v6 if EXCHANGERATE_API_KEY is set. Falls back to the static
- * MID_MARKET_UZS table when the network is slow or unavailable, so the rate
- * finder never blocks: the request is capped at 2.5s and the whole thing is
- * cached in-process for an hour.
- *
- * The response is based on USD; we derive "UZS per 1 C" for each source
- * currency via the USD cross rate: (UZS per USD) / (C per USD).
+ * Live mid-market rates to UZS from the fawazahmed0 exchange-api. The feed is
+ * USD-based (`{ date, usd: { uzs, eur, rub, kzt, ... } }`), so we derive
+ * "UZS per 1 C" for each source currency via the cross rate
+ * (UZS per USD) / (C per USD). Falls back to the static MID_MARKET_UZS table
+ * when the network is slow or unavailable, so the rate finder never blocks:
+ * each request is capped at 2.5s, endpoints are tried in order, and the whole
+ * thing is cached in-process for an hour.
  */
 export async function getUzsRates(): Promise<FxRates> {
   if (cache && Date.now() < cache.expires) return cache.data;
 
-  const key = process.env.EXCHANGERATE_API_KEY;
-  const url = key
-    ? `https://v6.exchangerate-api.com/v6/${key}/latest/USD`
-    : "https://open.er-api.com/v6/latest/USD";
+  for (const url of FX_ENDPOINTS) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2500);
+    try {
+      const res = await fetch(url, { next: { revalidate: 3600 }, signal: controller.signal });
+      if (!res.ok) throw new Error(`fx http ${res.status}`);
+      const data = (await res.json()) as { date?: string; usd?: Record<string, number> };
+      const table = data.usd;
+      const usdToUzs = table?.uzs;
+      if (!table || !usdToUzs) throw new Error("fx: missing UZS rate");
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 2500);
-  try {
-    const res = await fetch(url, {
-      next: { revalidate: 3600 },
-      signal: controller.signal,
-    });
-    if (!res.ok) throw new Error(`fx http ${res.status}`);
-    const data = (await res.json()) as {
-      result?: string;
-      rates?: Record<string, number>;
-      conversion_rates?: Record<string, number>;
-    };
-    // keyless "open" endpoint returns `rates`; keyed v6 returns `conversion_rates`.
-    const table = key ? data.conversion_rates : data.rates;
-    const usdToUzs = table?.UZS;
-    if (!table || !usdToUzs) throw new Error("fx: missing UZS rate");
-
-    const rates: Record<string, number> = {};
-    for (const c of SOURCE_CURRENCIES) {
-      if (c === "USD") {
-        rates.USD = usdToUzs;
-        continue;
+      const rates: Record<string, number> = {};
+      for (const c of SOURCE_CURRENCIES) {
+        if (c === "USD") {
+          rates.USD = usdToUzs;
+          continue;
+        }
+        const perUsd = table[c.toLowerCase()];
+        rates[c] = perUsd ? usdToUzs / perUsd : MID_MARKET_UZS[c];
       }
-      const perUsd = table[c];
-      rates[c] = perUsd ? usdToUzs / perUsd : MID_MARKET_UZS[c];
+      const result: FxRates = { rates, live: true, fetchedAt: new Date() };
+      cache = { expires: Date.now() + HOUR, data: result };
+      return result;
+    } catch {
+      // try the next endpoint
+    } finally {
+      clearTimeout(timeout);
     }
-    const result: FxRates = { rates, live: true, fetchedAt: new Date() };
-    cache = { expires: Date.now() + HOUR, data: result };
-    return result;
-  } catch {
-    const fallback: FxRates = { rates: { ...MID_MARKET_UZS }, live: false, fetchedAt: null };
-    cache = { expires: Date.now() + 2 * 60 * 1000, data: fallback };
-    return fallback;
-  } finally {
-    clearTimeout(timeout);
   }
+
+  const fallback: FxRates = { rates: { ...MID_MARKET_UZS }, live: false, fetchedAt: null };
+  cache = { expires: Date.now() + 2 * 60 * 1000, data: fallback };
+  return fallback;
 }

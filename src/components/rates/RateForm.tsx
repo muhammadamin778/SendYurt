@@ -81,7 +81,7 @@ export function RateForm({
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
         error={error ?? undefined}
-        className="flex-1"
+        className="flex-1 sm:min-w-[130px]"
       />
       <Select
         label={t("currencyLabel")}

@@ -88,7 +88,7 @@ export function BankSidebar({
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-[260px] shrink-0 border-r border-[#e2e8f0] bg-white lg:flex lg:flex-col print:hidden">
+    <aside className="hidden w-[260px] shrink-0 self-start border-r border-[#e2e8f0] bg-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col print:hidden">
       {/* Brand */}
       <div className="flex items-center gap-3 px-6 pt-6 pb-5">
         <Link href="/dashboard" aria-label="SendYurt" className="flex items-center gap-3">
@@ -104,7 +104,7 @@ export function BankSidebar({
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-1" aria-label="Main">
+      <nav className="flex-1 overflow-y-auto px-3 py-1" aria-label="Main">
         <ul className="space-y-1">
           {NAV.map((item) => {
             const active =

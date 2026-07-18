@@ -52,16 +52,6 @@ export function BankTopbar({
             />
           </label>
 
-          <Link
-            href="/profile"
-            aria-label={bank("setting")}
-            className="grid h-[50px] w-[50px] place-items-center rounded-full bg-[#f1f5f9] text-[#64748b] transition-colors hover:text-[#0a7c53]"
-          >
-            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
-              <circle cx="12" cy="12" r="3.2" /><path d="M19.4 13a7.8 7.8 0 000-2l1.8-1.4-1.8-3.1-2.2.9a7.8 7.8 0 00-1.7-1l-.3-2.3H9.6l-.3 2.3a7.8 7.8 0 00-1.7 1l-2.2-.9L3.6 9.6 5.4 11a7.8 7.8 0 000 2l-1.8 1.4 1.8 3.1 2.2-.9a7.8 7.8 0 001.7 1l.3 2.3h3.8l.3-2.3a7.8 7.8 0 001.7-1l2.2.9 1.8-3.1L19.4 13z" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </Link>
-
           <NotificationBell />
 
           <Link

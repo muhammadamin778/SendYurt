@@ -33,7 +33,7 @@ export default function PitchLayout({ children }: { children: React.ReactNode })
       lang="en"
       className={`${spaceGrotesk.variable} ${hanken.variable} scroll-smooth`}
     >
-      <body className="pitch f-sans bg-[#FBF6F0] text-[#0F1B2D] antialiased">
+      <body className="pitch f-sans bg-[#f7f9fb] text-[#0F1B2D] antialiased">
         {children}
       </body>
     </html>

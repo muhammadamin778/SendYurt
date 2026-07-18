@@ -5,13 +5,13 @@
    from the product app's palette. */
 
 :root {
-  --coral: #ff4f3d; /* SendYurt hot coral — rhymes with our terracotta */
-  --coral-deep: #e23a29; /* hover / pressed */
-  --coral-soft: #ffe3dd; /* tinted section blocks */
+  --coral: #0a7c53; /* SendYurt hot coral — rhymes with our terracotta */
+  --coral-deep: #065f3e; /* hover / pressed */
+  --coral-soft: #d1fae5; /* tinted section blocks */
   --navy: #0b1a30; /* headline + dark section ink */
   --ink: #0f1b2d; /* body text */
   --slate: #5a6b82; /* muted body */
-  --paper: #fbf6f0; /* warm page background */
+  --paper: #f7f9fb; /* warm page background */
   --white: #ffffff;
 
   /* Candy section blocks (Monzo-style colour-coding) */
@@ -19,10 +19,10 @@
   --mint-ink: #0c6b49;
   --butter: #ffe4ac;
   --butter-ink: #7c5310;
-  --sky: #cfe0ff;
-  --sky-ink: #1b3f8f;
-  --lilac: #e6ddff;
-  --lilac-ink: #4b3aa0;
+  --sky: #ccfbf1;
+  --sky-ink: #0f766e;
+  --lilac: #dcfce7;
+  --lilac-ink: #166534;
 
   --trust-green: #129e63;
 }
@@ -72,7 +72,7 @@
   background: var(--white);
   color: var(--navy);
 }
-.btn-light:hover { background: #f1ece4; }
+.btn-light:hover { background: #eef2f7; }
 
 /* ---- Pills / chips ---------------------------------------------------- */
 .chip {

@@ -6,7 +6,7 @@ import type { PitchContent } from "@/app/pitch/content";
 type Status = "idle" | "sending" | "done" | "error";
 
 const fieldClass =
-  "w-full rounded-xl border border-[#0B1A30]/14 bg-[#FBF6F0] px-4 py-2.5 text-[14px] text-[#0B1A30] placeholder:text-[#8A94A6] transition-colors focus:border-[#FF4F3D] focus:outline-none focus:ring-2 focus:ring-[#FF4F3D]/30";
+  "w-full rounded-xl border border-[#0B1A30]/14 bg-[#f7f9fb] px-4 py-2.5 text-[14px] text-[#0B1A30] placeholder:text-[#8A94A6] transition-colors focus:border-[#0a7c53] focus:outline-none focus:ring-2 focus:ring-[#0a7c53]/30";
 
 const labelClass = "block text-[13px] font-semibold text-[#0B1A30]";
 
@@ -75,11 +75,11 @@ export function InvestorForm({ t }: { t: PitchContent["form"] }) {
 
   return (
     <form onSubmit={onSubmit} className="rounded-3xl bg-white p-6 shadow-[0_20px_48px_-24px_rgba(11,26,48,0.5)] sm:p-8" noValidate>
-      <p className="chip" style={{ backgroundColor: "#FFE3DD", color: "#E23A29" }}>{t.chip}</p>
+      <p className="chip" style={{ backgroundColor: "#d1fae5", color: "#065f3e" }}>{t.chip}</p>
       <h3 className="f-display mt-3 text-xl font-bold text-[#0B1A30]">{t.heading}</h3>
 
       {error && (
-        <p role="alert" className="mt-4 rounded-xl border border-[#E23A29]/25 bg-[#FFE3DD] px-3.5 py-2.5 text-[13px] font-medium text-[#B4291B]">
+        <p role="alert" className="mt-4 rounded-xl border border-[#fecaca] bg-[#fef2f2] px-3.5 py-2.5 text-[13px] font-medium text-[#b91c1c]">
           {error}
         </p>
       )}
@@ -110,7 +110,7 @@ export function InvestorForm({ t }: { t: PitchContent["form"] }) {
       </button>
       <p className="mt-4 text-[12.5px] leading-relaxed text-[#8A94A6]">
         {t.preferEmail}{" "}
-        <a href="mailto:invest@sendyurt.uz" className="font-semibold text-[#E23A29] underline">invest@sendyurt.uz</a>.
+        <a href="mailto:invest@sendyurt.uz" className="font-semibold text-[#0a7c53] underline">invest@sendyurt.uz</a>.
       </p>
     </form>
   );

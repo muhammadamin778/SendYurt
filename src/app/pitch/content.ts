@@ -78,12 +78,12 @@ export interface PitchContent {
 }
 
 const en: PitchContent = {
-  nav: { problem: "Problem", how: "How it works", features: "Features", investors: "Investors", login: "Log in", cta: "Get early access" },
+  nav: { problem: "Problem", how: "How it works", features: "Features", investors: "Investors", login: "Log in", cta: "Demo" },
   hero: {
     chip: "Uzbekistan · 2026",
     title: { a: "Send money home ", em: "smarter", b: ", not blind." },
     sub: "SendYurt is the money co-pilot for Uzbek migrants and the families they support — the cheapest, safest route home, a trust rating on every provider, and one budget the whole family shares.",
-    ctaPrimary: "Get early access",
+    ctaPrimary: "Demo",
     ctaSecondary: "See how it works",
     stats: [["$16B+", "Annual remittances"], ["~2M+", "Migrants abroad"], ["6%", "Avg fee lost / transfer"]],
     receivesLabel: "Family receives",
@@ -171,12 +171,12 @@ const en: PitchContent = {
 };
 
 const ru: PitchContent = {
-  nav: { problem: "Проблема", how: "Как это работает", features: "Возможности", investors: "Инвесторам", login: "Войти", cta: "Ранний доступ" },
+  nav: { problem: "Проблема", how: "Как это работает", features: "Возможности", investors: "Инвесторам", login: "Войти", cta: "Demo" },
   hero: {
     chip: "Узбекистан · 2026",
     title: { a: "Отправляйте деньги домой ", em: "с умом", b: ", а не вслепую." },
     sub: "SendYurt — денежный со-пилот для узбекских мигрантов и их семей: самый дешёвый и надёжный маршрут домой, рейтинг доверия у каждого провайдера и общий бюджет для всей семьи.",
-    ctaPrimary: "Ранний доступ",
+    ctaPrimary: "Demo",
     ctaSecondary: "Как это работает",
     stats: [["$16B+", "Переводов в год"], ["~2М+", "Мигрантов за рубежом"], ["6%", "Комиссии теряется / перевод"]],
     receivesLabel: "Семья получает",
@@ -264,12 +264,12 @@ const ru: PitchContent = {
 };
 
 const uz: PitchContent = {
-  nav: { problem: "Muammo", how: "Qanday ishlaydi", features: "Imkoniyatlar", investors: "Investorlarga", login: "Kirish", cta: "Erta kirish" },
+  nav: { problem: "Muammo", how: "Qanday ishlaydi", features: "Imkoniyatlar", investors: "Investorlarga", login: "Kirish", cta: "Demo" },
   hero: {
     chip: "Oʻzbekiston · 2026",
     title: { a: "Uyga pulni ", em: "aqlli", b: " yuboring, koʻr-koʻrona emas." },
     sub: "SendYurt — oʻzbek migrantlari va ular qoʻllab-quvvatlaydigan oilalar uchun pul hamrohi: uyga eng arzon, xavfsiz yoʻl, har bir provayderga ishonch bahosi va butun oila uchun yagona byudjet.",
-    ctaPrimary: "Erta kirish",
+    ctaPrimary: "Demo",
     ctaSecondary: "Qanday ishlaydi",
     stats: [["$16B+", "Yillik pul oʻtkazmalari"], ["~2M+", "Chet eldagi migrantlar"], ["6%", "Har oʻtkazmada yoʻqoladi"]],
     receivesLabel: "Oila oladi",
