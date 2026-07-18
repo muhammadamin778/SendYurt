@@ -49,27 +49,32 @@ export function SpendSaveChart({ points }: { points: ChartPoint[] }) {
     <div className="h-72 w-full" role="img" aria-label={t("ariaLabel")}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e4dbc6" vertical={false} />
-          <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#6f5e48" }} tickLine={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
+          <XAxis dataKey="name" tick={{ fontSize: 12, fill: "var(--chart-axis)" }} tickLine={false} />
           <YAxis
             tickFormatter={compactUzs}
-            tick={{ fontSize: 12, fill: "#6f5e48" }}
+            tick={{ fontSize: 12, fill: "var(--chart-axis)" }}
             tickLine={false}
             axisLine={false}
             width={44}
           />
           <Tooltip
+            cursor={{ fill: "rgb(47 80 150 / 0.06)" }}
             formatter={(value) => formatMoney(Number(value), "UZS", locale)}
             contentStyle={{
               borderRadius: 12,
-              border: "1px solid #e4dbc6",
+              border: "1px solid var(--chart-grid)",
               fontSize: 13,
+              fontVariantNumeric: "tabular-nums",
+              boxShadow: "0 6px 20px -6px rgb(26 39 64 / 0.18)",
             }}
           />
           <Legend wrapperStyle={{ fontSize: 13 }} />
-          <Bar dataKey={t("income")} fill="#bc9432" radius={[4, 4, 0, 0]} isAnimationActive={animate} />
-          <Bar dataKey={t("spent")} fill="#cf4e20" radius={[4, 4, 0, 0]} isAnimationActive={animate} />
-          <Bar dataKey={t("saved")} fill="#2f5096" radius={[4, 4, 0, 0]} isAnimationActive={animate} />
+          {/* Semantic finance encoding: income = trust blue, spending =
+              outflow red, saved = profit green. */}
+          <Bar dataKey={t("income")} fill="var(--chart-primary)" radius={[4, 4, 0, 0]} isAnimationActive={animate} />
+          <Bar dataKey={t("spent")} fill="var(--chart-negative)" radius={[4, 4, 0, 0]} isAnimationActive={animate} />
+          <Bar dataKey={t("saved")} fill="var(--chart-positive)" radius={[4, 4, 0, 0]} isAnimationActive={animate} />
         </BarChart>
       </ResponsiveContainer>
     </div>

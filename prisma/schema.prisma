@@ -33,6 +33,10 @@ model Household {
   name       String
   inviteCode String   @unique
   createdAt  DateTime @default(now())
+  // Household-level settings surfaced on the Household Settings page.
+  currency          String  @default("UZS")
+  privacyMode       Boolean @default(false)
+  trustScoreSharing Boolean @default(true)
 
   users        User[]
   transactions Transaction[]
@@ -48,6 +52,8 @@ model User {
   // "SENDER" | "RECEIVER" — validated in app code (SQLite has no enums)
   role         String
   name         String
+  // Profile picture as a small downscaled data URL (no external storage).
+  image        String?
   languagePref String   @default("uz")
   householdId  String
   // Permission inside the household: "ADMIN" (edit budgets/goals, manage
@@ -128,6 +134,9 @@ model Transaction {
   senderId    String?
   receiverId  String?
   providerId  String?
+  // Nullable: set on SAVINGS rows that contribute to a specific goal, so the
+  // goal-detail view can show real contributors and contribution history.
+  goalId      String?
   amount      Decimal
   currency    String   @default("UZS")
   // For remittances: the original send-side amount and currency
@@ -147,9 +156,11 @@ model Transaction {
   sender    User?               @relation("SentTransactions", fields: [senderId], references: [id])
   receiver  User?               @relation("ReceivedTransactions", fields: [receiverId], references: [id])
   provider  RemittanceProvider? @relation(fields: [providerId], references: [id])
+  goal      SavingsGoal?        @relation(fields: [goalId], references: [id])
 
   @@index([householdId, date])
   @@index([householdId, type])
+  @@index([goalId])
 }
 
 model Budget {
@@ -174,7 +185,8 @@ model SavingsGoal {
   targetDate    DateTime?
   createdAt     DateTime  @default(now())
 
-  household Household @relation(fields: [householdId], references: [id])
+  household     Household     @relation(fields: [householdId], references: [id])
+  contributions Transaction[]
 }
 
 model TrustScoreSnapshot {

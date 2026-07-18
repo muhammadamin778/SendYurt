@@ -193,3 +193,82 @@ export async function getSavingsGoals(householdId: string): Promise<GoalRow[]> {
     targetDate: g.targetDate,
   }));
 }
+
+export interface GoalContributor {
+  userId: string;
+  name: string;
+  total: number;
+  count: number;
+  isOwner: boolean;
+}
+
+export interface GoalContributionRow {
+  id: string;
+  date: Date;
+  contributor: string;
+  note: string;
+  amount: number;
+}
+
+export interface GoalDetail extends GoalRow {
+  createdAt: Date;
+  contributors: GoalContributor[];
+  history: GoalContributionRow[];
+}
+
+/**
+ * One savings goal plus its real contribution ledger: contributions are the
+ * SAVINGS transactions tied to this goal (goalId), attributed to the member
+ * who made them (senderId). Contributors and history are derived from that —
+ * no fabricated figures.
+ */
+export async function getGoalDetail(
+  goalId: string,
+  householdId: string,
+): Promise<GoalDetail | null> {
+  const goal = await prisma.savingsGoal.findFirst({
+    where: { id: goalId, householdId },
+    include: {
+      contributions: {
+        orderBy: { date: "desc" },
+        include: { sender: { select: { id: true, name: true, accessRole: true } } },
+      },
+    },
+  });
+  if (!goal) return null;
+
+  const byUser = new Map<string, GoalContributor>();
+  for (const c of goal.contributions) {
+    if (!c.sender) continue;
+    const amt = c.amount.toNumber();
+    const cur =
+      byUser.get(c.sender.id) ??
+      {
+        userId: c.sender.id,
+        name: c.sender.name,
+        total: 0,
+        count: 0,
+        isOwner: c.sender.accessRole === "ADMIN",
+      };
+    cur.total += amt;
+    cur.count += 1;
+    byUser.set(c.sender.id, cur);
+  }
+
+  return {
+    id: goal.id,
+    name: goal.name,
+    targetAmount: goal.targetAmount.toNumber(),
+    currentAmount: goal.currentAmount.toNumber(),
+    targetDate: goal.targetDate,
+    createdAt: goal.createdAt,
+    contributors: Array.from(byUser.values()).sort((a, b) => b.total - a.total),
+    history: goal.contributions.map((c) => ({
+      id: c.id,
+      date: c.date,
+      contributor: c.sender?.name ?? "—",
+      note: c.note ?? "",
+      amount: c.amount.toNumber(),
+    })),
+  };
+}

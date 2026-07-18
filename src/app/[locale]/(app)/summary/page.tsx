@@ -63,7 +63,7 @@ export default async function SummaryPage({
   return (
     <div className="mx-auto max-w-3xl">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3 print:hidden">
-        <Link href="/budget" className="text-sm font-semibold text-samarkand-700 hover:underline">
+        <Link href="/budget/manage" className="text-sm font-semibold text-samarkand-700 hover:underline">
           ← {t("back")}
         </Link>
         <PrintButton label={t("download")} />

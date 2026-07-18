@@ -1,21 +1,41 @@
 import { clsx } from "clsx";
 
-// Yurt mark: crown (tunduk), conical roof and round wall with a door —
-// drawn as simple geometry so it stays crisp at 16px.
+/**
+ * SendYurt mark: a yurt dome with a rising growth arrow, set on a base
+ * platform — "sending value home, growing." Drawn in a single currentColor so
+ * it recolors per context (terracotta on light, white on the navy app icon).
+ */
 export function YurtMark({ className }: { className?: string }) {
   return (
     <svg
-      viewBox="0 0 32 32"
+      viewBox="0 0 60 50"
       aria-hidden="true"
-      className={clsx("h-8 w-8", className)}
+      fill="none"
+      className={clsx("h-7 w-auto", className)}
     >
-      <circle cx="16" cy="4.5" r="2" className="fill-terracotta-500" />
-      <path d="M16 7 29 18.5 H3 Z" className="fill-samarkand-600" />
-      <path
-        d="M5 20 h22 v6 a2 2 0 0 1 -2 2 H7 a2 2 0 0 1 -2 -2 Z"
-        className="fill-samarkand-700"
+      {/* base platform */}
+      <rect
+        x="7"
+        y="35"
+        width="40"
+        height="6.5"
+        rx="3.25"
+        stroke="currentColor"
+        strokeWidth="2.8"
       />
-      <rect x="13.5" y="21.5" width="5" height="6.5" rx="1" className="fill-terracotta-400" />
+      {/* yurt dome */}
+      <path
+        d="M12 33 C12 20 19 13 28 13 C35 13 40 17 42 23 C41 27 40 30 40 33 Z"
+        fill="currentColor"
+      />
+      {/* rising growth arrow */}
+      <path
+        d="M31 20 C37 14 44 12 51 12 M45 8 L52 12 L48.5 18.5"
+        stroke="currentColor"
+        strokeWidth="3.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -23,9 +43,9 @@ export function YurtMark({ className }: { className?: string }) {
 export function Logo({ className }: { className?: string }) {
   return (
     <span className={clsx("inline-flex items-center gap-2", className)}>
-      <YurtMark />
-      <span className="font-display text-xl font-bold tracking-tight text-samarkand-900">
-        Send<span className="text-terracotta-600">Yurt</span>
+      <YurtMark className="text-terracotta-600" />
+      <span className="font-display text-xl font-semibold lowercase tracking-tight text-samarkand-900">
+        sendyurt
       </span>
     </span>
   );

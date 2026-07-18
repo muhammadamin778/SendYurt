@@ -1,29 +1,24 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import type { PitchContent } from "@/app/pitch/content";
 
 type Status = "idle" | "sending" | "done" | "error";
 
 const fieldClass =
-  "w-full rounded-lg border border-[#F4EFE4]/12 bg-[#0B1220] px-4 py-2.5 text-[14px] text-[#F4EFE4] placeholder:text-[#5D6B84] transition-colors focus:border-[#2DD4BF]/50 focus:outline-none focus:ring-1 focus:ring-[#2DD4BF]/40";
+  "w-full rounded-xl border border-[#0B1A30]/14 bg-[#FBF6F0] px-4 py-2.5 text-[14px] text-[#0B1A30] placeholder:text-[#8A94A6] transition-colors focus:border-[#FF4F3D] focus:outline-none focus:ring-2 focus:ring-[#FF4F3D]/30";
 
-const labelClass =
-  "f-mono block text-[10px] uppercase tracking-[0.2em] text-[#8593AB]";
+const labelClass = "block text-[13px] font-semibold text-[#0B1A30]";
 
 /**
  * A real, working investor / pilot inquiry form — posts to /api/investor,
- * which persists the message. Replaces the old mailto: link that appeared
- * to do nothing on devices with no mail client configured.
+ * which persists the message. Copy comes from the pitch's language dictionary
+ * so the form speaks the visitor's chosen language.
  */
-export function InvestorForm() {
+export function InvestorForm({ t }: { t: PitchContent["form"] }) {
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    organization: "",
-    message: "",
-  });
+  const [form, setForm] = useState({ name: "", email: "", organization: "", message: "" });
 
   function update(field: keyof typeof form) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
@@ -34,11 +29,9 @@ export function InvestorForm() {
     e.preventDefault();
     setError(null);
 
-    if (form.name.trim().length < 2) return setError("Please enter your name.");
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
-      return setError("Please enter a valid email address.");
-    if (form.message.trim().length < 10)
-      return setError("Please add a line or two about what you're looking for.");
+    if (form.name.trim().length < 2) return setError(t.errName);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) return setError(t.errEmail);
+    if (form.message.trim().length < 10) return setError(t.errMessage);
 
     setStatus("sending");
     try {
@@ -49,93 +42,75 @@ export function InvestorForm() {
       });
       if (res.status === 429) {
         setStatus("error");
-        setError("Too many submissions — please try again a little later.");
+        setError(t.errRate);
         return;
       }
       if (!res.ok) {
         setStatus("error");
-        setError("Something went wrong on our side. Please try again.");
+        setError(t.errServer);
         return;
       }
       setStatus("done");
     } catch {
       setStatus("error");
-      setError("Couldn't reach the server. Please check your connection and retry.");
+      setError(t.errNetwork);
     }
   }
 
   if (status === "done") {
     return (
-      <div className="hairline rounded-2xl border bg-[#0E1729] p-8 text-center">
-        <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full border border-[#2DD4BF]/30 bg-[#2DD4BF]/10">
-          <svg viewBox="0 0 24 24" className="h-5 w-5 text-[#2DD4BF]" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+      <div className="rounded-3xl bg-white p-8 text-center shadow-[0_20px_48px_-24px_rgba(11,26,48,0.5)]">
+        <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-[#C8EFD8]">
+          <svg viewBox="0 0 24 24" className="h-6 w-6 text-[#0C6B49]" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
             <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
-        <h3 className="f-serif mt-4 text-xl font-medium text-[#F4EFE4]">
-          Thank you — we&apos;ll be in touch.
-        </h3>
-        <p className="mt-2 text-[14px] leading-relaxed text-[#8593AB]">
-          Your note reached the SendYurt team. Expect a reply at{" "}
-          <span className="text-[#C6CFDE]">{form.email}</span> within a few working days.
+        <h3 className="f-display mt-4 text-xl font-bold text-[#0B1A30]">{t.thankTitle}</h3>
+        <p className="mt-2 text-[14px] leading-relaxed text-[#5A6B82]">
+          {t.thankBody} <span className="font-semibold text-[#0B1A30]">{form.email}</span>.
         </p>
       </div>
     );
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="hairline rounded-2xl border bg-[#0E1729] p-6 sm:p-8"
-      noValidate
-    >
-      <p className="f-mono text-[11px] uppercase tracking-[0.2em] text-[#2DD4BF]">
-        Investor inquiry
-      </p>
-      <h3 className="f-serif mt-2 text-xl font-medium text-[#F4EFE4]">
-        Talk to the founders
-      </h3>
+    <form onSubmit={onSubmit} className="rounded-3xl bg-white p-6 shadow-[0_20px_48px_-24px_rgba(11,26,48,0.5)] sm:p-8" noValidate>
+      <p className="chip" style={{ backgroundColor: "#FFE3DD", color: "#E23A29" }}>{t.chip}</p>
+      <h3 className="f-display mt-3 text-xl font-bold text-[#0B1A30]">{t.heading}</h3>
 
       {error && (
-        <p role="alert" className="mt-4 rounded-lg border border-[#E8A33D]/30 bg-[#E8A33D]/[0.08] px-3.5 py-2.5 text-[13px] text-[#F0C078]">
+        <p role="alert" className="mt-4 rounded-xl border border-[#E23A29]/25 bg-[#FFE3DD] px-3.5 py-2.5 text-[13px] font-medium text-[#B4291B]">
           {error}
         </p>
       )}
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="inv-name" className={labelClass}>Name</label>
+          <label htmlFor="inv-name" className={labelClass}>{t.name}</label>
           <input id="inv-name" name="name" autoComplete="name" required value={form.name} onChange={update("name")} className={`mt-1.5 ${fieldClass}`} />
         </div>
         <div>
-          <label htmlFor="inv-email" className={labelClass}>Email</label>
+          <label htmlFor="inv-email" className={labelClass}>{t.email}</label>
           <input id="inv-email" name="email" type="email" autoComplete="email" required value={form.email} onChange={update("email")} className={`mt-1.5 ${fieldClass}`} />
         </div>
       </div>
       <div className="mt-4">
         <label htmlFor="inv-org" className={labelClass}>
-          Fund / firm <span className="text-[#5D6B84]">(optional)</span>
+          {t.org} <span className="font-normal text-[#8A94A6]">{t.orgOptional}</span>
         </label>
         <input id="inv-org" name="organization" autoComplete="organization" value={form.organization} onChange={update("organization")} className={`mt-1.5 ${fieldClass}`} />
       </div>
       <div className="mt-4">
-        <label htmlFor="inv-msg" className={labelClass}>What are you looking for?</label>
-        <textarea id="inv-msg" name="message" rows={4} required value={form.message} onChange={update("message")} className={`mt-1.5 resize-none ${fieldClass}`} placeholder="Stage, check size, what you'd like to see from us…" />
+        <label htmlFor="inv-msg" className={labelClass}>{t.message}</label>
+        <textarea id="inv-msg" name="message" rows={4} required value={form.message} onChange={update("message")} className={`mt-1.5 resize-none ${fieldClass}`} placeholder={t.messagePlaceholder} />
       </div>
 
-      <button
-        type="submit"
-        disabled={status === "sending"}
-        className="mt-5 w-full rounded-full bg-[#E8A33D] px-6 py-3 text-sm font-semibold text-[#0B1220] transition-colors hover:bg-[#F0B458] disabled:opacity-60 sm:w-auto"
-      >
-        {status === "sending" ? "Sending…" : "Send inquiry"}
+      <button type="submit" disabled={status === "sending"} className="btn btn-coral mt-5 w-full px-6 py-3 text-[15px] disabled:opacity-60 sm:w-auto">
+        {status === "sending" ? t.sending : t.send}
       </button>
-      <p className="mt-4 text-[12px] leading-relaxed text-[#5D6B84]">
-        Prefer email? Reach us directly at{" "}
-        <a href="mailto:invest@sendyurt.uz" className="text-[#8593AB] underline transition-colors hover:text-[#C6CFDE]">
-          invest@sendyurt.uz
-        </a>
-        .
+      <p className="mt-4 text-[12.5px] leading-relaxed text-[#8A94A6]">
+        {t.preferEmail}{" "}
+        <a href="mailto:invest@sendyurt.uz" className="font-semibold text-[#E23A29] underline">invest@sendyurt.uz</a>.
       </p>
     </form>
   );

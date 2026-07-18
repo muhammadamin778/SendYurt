@@ -82,7 +82,21 @@ export const savingsGoalSchema = z.object({
   targetDate: z.coerce.date().optional(),
 });
 
+export const remittanceSchema = z.object({
+  providerId: z.string().min(1),
+  amount: z.coerce.number().positive().max(1_000_000),
+  currency: z.enum(["USD", "RUB", "KZT", "EUR"]),
+});
+
 export const contributionSchema = z.object({
   goalId: z.string().min(1),
   amount: z.coerce.number().positive().max(10_000_000_000),
+  note: z.string().trim().max(120).optional(),
+});
+
+export const updateGoalSchema = z.object({
+  goalId: z.string().min(1),
+  name: z.string().trim().min(2).max(80),
+  targetAmount: z.coerce.number().positive().max(10_000_000_000),
+  targetDate: z.coerce.date().optional(),
 });

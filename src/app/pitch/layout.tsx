@@ -1,28 +1,23 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
+import { Space_Grotesk, Hanken_Grotesk } from "next/font/google";
 import "../globals.css";
 import "./pitch.css";
 
-// The pitch site has its own typographic identity: Fraunces (a modern
-// serif with true italics — the headline emphasis move), Inter for body,
-// JetBrains Mono for eyebrows and figures.
-const fraunces = Fraunces({
+// Monzo-inspired typographic identity, tuned for SendYurt: a friendly
+// grotesk display (Space Grotesk — the quirky-but-confident headline voice,
+// standing in for Oldschool Grotesk) over a clean humanist grotesk for UI
+// and body (Hanken Grotesk, our open stand-in for Monzo Sans).
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  style: ["normal", "italic"],
-  variable: "--font-pitch-serif",
+  weight: ["500", "600", "700"],
+  variable: "--font-pitch-display",
   display: "swap",
 });
 
-const inter = Inter({
+const hanken = Hanken_Grotesk({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-pitch-sans",
-  display: "swap",
-});
-
-const jetbrains = JetBrains_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-pitch-mono",
   display: "swap",
 });
 
@@ -36,9 +31,9 @@ export default function PitchLayout({ children }: { children: React.ReactNode })
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${inter.variable} ${jetbrains.variable} scroll-smooth`}
+      className={`${spaceGrotesk.variable} ${hanken.variable} scroll-smooth`}
     >
-      <body className="pitch f-sans bg-[#0B1220] text-[#9DA9BE] antialiased">
+      <body className="pitch f-sans bg-[#FBF6F0] text-[#0F1B2D] antialiased">
         {children}
       </body>
     </html>

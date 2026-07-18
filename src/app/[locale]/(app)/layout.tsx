@@ -1,11 +1,9 @@
-import { Link } from "@/i18n/navigation";
-import { Logo } from "@/components/Logo";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { LogoutButton } from "@/components/LogoutButton";
-import { NotificationBell } from "@/components/NotificationBell";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { DesktopNav, MobileNav } from "@/components/AppNav";
-import { AssistantWidget } from "@/components/assistant/AssistantWidget";
+import { getTranslations } from "next-intl/server";
+import { CustomCursor } from "@/components/CustomCursor";
+import { ConvaiWidget } from "@/components/ConvaiWidget";
+import { BankSidebar } from "@/components/bank/BankSidebar";
+import { BankTopbar } from "@/components/bank/BankTopbar";
+import { BankMobileNav } from "@/components/bank/BankMobileNav";
 import { requireUser } from "@/lib/session";
 
 // Everything in this group is per-user, per-household data behind auth —
@@ -13,44 +11,30 @@ import { requireUser } from "@/lib/session";
 export const dynamic = "force-dynamic";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  await requireUser();
+  const user = await requireUser();
+  const t = await getTranslations("household");
+  const initial = (user.name ?? "?").trim().charAt(0).toUpperCase();
+  const roleLabel = t(user.role === "SENDER" ? "roleSender" : "roleReceiver");
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-40 border-b border-sand-200 bg-white/90 backdrop-blur print:hidden">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
-          <div className="flex items-center gap-6">
-            <Link href="/dashboard" aria-label="SendYurt">
-              <Logo />
-            </Link>
-            <DesktopNav />
-          </div>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/help"
-              aria-label="Help"
-              className="rounded-lg border border-sand-300 bg-white p-2 text-sand-800 transition-colors hover:bg-sand-100"
-            >
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                <circle cx="12" cy="12" r="9" />
-                <path d="M9.5 9.3a2.5 2.5 0 114.1 1.9c-.8.7-1.6 1.2-1.6 2.3M12 16.8v.2" strokeLinecap="round" />
-              </svg>
-            </Link>
-            <NotificationBell />
-            <ThemeToggle />
-            <LanguageSwitcher />
-            <LogoutButton />
-          </div>
-        </div>
-      </header>
+    <div className="bankdash flex min-h-screen w-full">
+      <BankSidebar
+        name={user.name ?? "SendYurt"}
+        initial={initial}
+        image={user.image ?? null}
+        roleLabel={roleLabel}
+      />
 
-      {/* pb clears the fixed mobile bottom nav */}
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 pb-24 md:pb-10">
-        {children}
-      </main>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <BankTopbar image={user.image ?? null} initial={initial} />
 
-      <MobileNav />
-      <AssistantWidget />
+        {/* pb clears the fixed mobile bottom nav */}
+        <main className="flex-1 px-5 py-6 pb-28 sm:px-8 lg:pb-10">{children}</main>
+      </div>
+
+      <BankMobileNav />
+      <ConvaiWidget />
+      <CustomCursor />
     </div>
   );
 }

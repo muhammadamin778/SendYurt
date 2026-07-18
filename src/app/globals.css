@@ -10,6 +10,26 @@
     @apply bg-sand-50 text-ink font-sans;
   }
 
+  /* Finance canvas: a restrained "trust" backdrop, not decorative ornament.
+     A faint cobalt glow anchored at the top and a whisper hairline grid —
+     the Trust & Authority idiom for fintech. Fixed behind all content so it
+     never shifts layout, and pointer-transparent. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-color: #faf8f3; /* sand-50 */
+    background-image:
+      radial-gradient(1200px 560px at 50% -12%, rgba(47, 80, 150, 0.14), transparent 66%),
+      linear-gradient(rgba(47, 80, 150, 0.11) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(47, 80, 150, 0.11) 1px, transparent 1px);
+    background-size: 100% 100%, 32px 32px, 32px 32px;
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 60%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 0%, black 60%, transparent 100%);
+  }
+
   /* Craft-serif headings get a touch more air than default. */
   .font-display {
     letter-spacing: -0.01em;
@@ -19,6 +39,36 @@
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* Tabular (monospaced) figures — a fintech signature. Prices, balances,
+     rates and timers stay column-aligned and don't jitter as digits change.
+     `tabular-nums` is Tailwind's built-in utility; `.tnum` is a plain alias
+     for use in raw CSS / non-Tailwind contexts. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* Consistent hairline + elevation scale (Minimalism / Trust & Authority).
+     One border weight, one shadow rhythm — no ad-hoc shadows. */
+  .hairline {
+    border: 1px solid rgb(47 80 150 / 0.12);
+  }
+  .elev-1 {
+    box-shadow: 0 1px 2px 0 rgb(26 39 64 / 0.06), 0 1px 3px -1px rgb(26 39 64 / 0.05);
+  }
+  .elev-2 {
+    box-shadow: 0 1px 3px 0 rgb(26 39 64 / 0.07), 0 6px 20px -6px rgb(26 39 64 / 0.12);
+  }
+
+  /* Restrained finance texture for section panels — replaces the folk
+     girih/ikat ornament with a plain cobalt hairline grid. */
+  .bg-grid-finance {
+    background-image:
+      linear-gradient(rgba(47, 80, 150, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(47, 80, 150, 0.045) 1px, transparent 1px);
+    background-size: 28px 28px;
   }
 
   /* Girih-inspired star lattice (madrasa tilework geometry): two rotated
@@ -41,6 +91,75 @@
   }
 }
 
+/* Semantic chart / data-viz tokens. Trust blue leads; green/red carry money
+   direction only (never color-alone — components also label values). Dark
+   mode lifts each hue for contrast on night surfaces. */
+:root {
+  --chart-primary: #2f5096; /* trust blue (samarkand-700) */
+  --chart-gold: #a67c28; /* zar-600, premium accent */
+  --chart-positive: #0f9d63; /* profit / inflow-saved green */
+  --chart-negative: #cf4e20; /* outflow (terracotta-600) */
+  --chart-grid: #e7e0cf;
+  --chart-axis: #6f5e48;
+
+  /* shadcn/ui semantic token layer — the component design system, themed to
+     SendYurt's finance-blue identity (not shadcn's neutral gray). Values are
+     "R G B" channel triplets so Tailwind opacity modifiers (bg-primary/90,
+     bg-success/15, ring-ring/50, …) work. Consumed by the color names in
+     tailwind.config.ts (bg-card, text-muted-foreground, border-border, …). */
+  --background: 250 248 243; /* sand-50 */
+  --foreground: 38 34 27; /* ink */
+  --card: 255 255 255;
+  --card-foreground: 38 34 27;
+  --popover: 255 255 255;
+  --popover-foreground: 38 34 27;
+  --primary: 47 80 150; /* samarkand-700 — trust blue */
+  --primary-foreground: 255 255 255;
+  --secondary: 242 238 227; /* sand-100 */
+  --secondary-foreground: 42 68 120; /* samarkand-800 */
+  --muted: 244 241 234;
+  --muted-foreground: 111 99 80; /* readable warm gray */
+  --accent: 238 243 251; /* soft cobalt tint */
+  --accent-foreground: 42 68 120;
+  --destructive: 207 78 32; /* terracotta-600 */
+  --destructive-foreground: 255 255 255;
+  --success: 15 157 99;
+  --success-foreground: 255 255 255;
+  --border: 217 224 238; /* cobalt-tinted hairline */
+  --input: 205 214 232;
+  --ring: 47 80 150;
+}
+.dark {
+  --chart-primary: #6d9ad3;
+  --chart-gold: #cdab4f;
+  --chart-positive: #34d399;
+  --chart-negative: #e4854d;
+  --chart-grid: #26314b;
+  --chart-axis: #8fa3c4;
+
+  --background: 15 23 41;
+  --foreground: 230 236 248;
+  --card: 24 34 56; /* night.raised */
+  --card-foreground: 230 236 248;
+  --popover: 24 34 56;
+  --popover-foreground: 230 236 248;
+  --primary: 109 154 211;
+  --primary-foreground: 15 23 41;
+  --secondary: 28 39 64;
+  --secondary-foreground: 196 215 239;
+  --muted: 28 39 64;
+  --muted-foreground: 143 163 196;
+  --accent: 32 48 79;
+  --accent-foreground: 196 215 239;
+  --destructive: 228 133 77;
+  --destructive-foreground: 15 23 41;
+  --success: 52 211 153;
+  --success-foreground: 15 23 41;
+  --border: 38 49 75;
+  --input: 42 55 82;
+  --ring: 109 154 211;
+}
+
 /* ---------------------------------------------------------------------
    Dark mode: night-sky indigo (tiled domes after dusk), not gray-black.
 
@@ -54,6 +173,16 @@
   .dark body {
     background-color: #0f1729;
     color: #dce4f2;
+  }
+
+  /* Finance canvas, night variant: deep-indigo base, a cooler cobalt glow,
+     and a fainter hairline grid tuned for dark surfaces. */
+  .dark body::before {
+    background-color: #0f1729;
+    background-image:
+      radial-gradient(1200px 560px at 50% -12%, rgba(109, 154, 211, 0.20), transparent 66%),
+      linear-gradient(rgba(140, 165, 210, 0.09) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(140, 165, 210, 0.09) 1px, transparent 1px);
   }
 
   /* Surfaces */
@@ -126,3 +255,325 @@
   /* Score dial track */
   .dark .dial-track { stroke: #26314b; }
 }
+
+/* ---------------------------------------------------------------------
+   Vision UI (Creative Tim) dashboard aesthetic — a self-contained dark
+   navy-indigo glass world for the dashboard panel ONLY. Always dark,
+   independent of the app's light/dark theme.
+--------------------------------------------------------------------- */
+.vision-panel {
+  background:
+    radial-gradient(120% 85% at 12% -12%, rgba(33, 82, 255, 0.28), transparent 55%),
+    radial-gradient(90% 75% at 100% 0%, rgba(121, 40, 202, 0.22), transparent 55%),
+    linear-gradient(180deg, #0f1535 0%, #0a0e2e 100%);
+  color: #ffffff;
+}
+.vision-card {
+  background: linear-gradient(127deg, rgba(6, 11, 40, 0.72) 20%, rgba(10, 14, 35, 0.36) 77%);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+}
+.vision-card-hover {
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.vision-card-hover:hover {
+  border-color: rgba(33, 212, 253, 0.35);
+  transform: translateY(-3px);
+  box-shadow: 0 20px 40px -22px rgba(33, 82, 255, 0.5);
+}
+/* Blue→cyan info gradient (icon boxes, CTAs) and the purple→pink brand one */
+.vision-grad-info { background: linear-gradient(310deg, #2152ff, #21d4fd); }
+.vision-grad-brand { background: linear-gradient(310deg, #7928ca, #ff0080); }
+.vision-grad-success { background: linear-gradient(310deg, #01b574, #08d48a); }
+.vision-grad-gold { background: linear-gradient(310deg, #d9911f, #f7c744); }
+/* Progress track on glass */
+.vision-track { background: rgba(255, 255, 255, 0.12); }
+/* Inner sub-surface + hairline for grouping inside glass cards */
+.vision-soft {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+}
+.vision-divider { border-color: rgba(255, 255, 255, 0.08); }
+
+/* Charts inside a vision panel must read light-on-dark regardless of the
+   app's light/dark theme, so remap the chart tokens + Recharts chrome here. */
+.vision-panel {
+  --chart-primary: #21d4fd;
+  --chart-gold: #f7c744;
+  --chart-positive: #01e17b;
+  --chart-negative: #ff5b7f;
+  --chart-grid: rgba(255, 255, 255, 0.10);
+  --chart-axis: #a0aec0;
+}
+.vision-panel .recharts-cartesian-grid line { stroke: rgba(255, 255, 255, 0.08); }
+.vision-panel .recharts-text { fill: #a0aec0; }
+.vision-panel .recharts-default-tooltip {
+  background-color: #0b1437 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  border-radius: 12px !important;
+  color: #ffffff;
+}
+.vision-panel .recharts-legend-item-text { color: #cbd5e1 !important; }
+.vision-panel .dial-track { stroke: rgba(255, 255, 255, 0.12); }
+
+/* Native form controls inside a vision panel adopt the dark glass look
+   without every form component being rewritten. */
+.vision-panel label { color: #cbd5e1; }
+.vision-panel input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.vision-panel select,
+.vision-panel textarea {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+.vision-panel input::placeholder,
+.vision-panel textarea::placeholder { color: #7c88a0; }
+.vision-panel select option { color: #0b1437; }
+
+/* ---- Theme bridge -----------------------------------------------------
+   Existing light components (shadcn tokens + the legacy samarkand/sand
+   palette) adopt the dark-glass look when nested inside a vision panel,
+   so pages can reuse them (GoalCard, ProgressBar, Badge, forms) without
+   per-component rewrites. */
+.vision-panel .bg-card,
+.vision-panel .bg-white {
+  background: linear-gradient(127deg, rgba(6, 11, 40, 0.72) 20%, rgba(10, 14, 35, 0.36) 77%) !important;
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+}
+.vision-panel .bg-muted,
+.vision-panel .bg-secondary,
+.vision-panel .bg-sand-100,
+.vision-panel .bg-samarkand-50,
+.vision-panel .bg-samarkand-100 { background-color: rgba(255, 255, 255, 0.06) !important; }
+.vision-panel .bg-accent { background-color: rgba(255, 255, 255, 0.06) !important; }
+.vision-panel .bg-background { background-color: rgba(255, 255, 255, 0.05) !important; }
+
+.vision-panel .text-foreground,
+.vision-panel .text-card-foreground,
+.vision-panel .text-ink,
+.vision-panel .text-samarkand-950,
+.vision-panel .text-samarkand-900,
+.vision-panel .text-samarkand-800,
+.vision-panel .text-accent-foreground,
+.vision-panel .text-secondary-foreground { color: #ffffff !important; }
+.vision-panel .text-muted-foreground,
+.vision-panel .text-sand-800,
+.vision-panel .text-sand-700,
+.vision-panel .text-sand-600 { color: #a0aec0 !important; }
+.vision-panel .text-primary,
+.vision-panel .text-samarkand-700 { color: #21d4fd !important; }
+.vision-panel .text-destructive,
+.vision-panel .text-terracotta-800,
+.vision-panel .text-terracotta-700 { color: #ff8f70 !important; }
+.vision-panel .text-success { color: #01e17b !important; }
+
+.vision-panel .border-border,
+.vision-panel .border-input,
+.vision-panel .border-sand-200,
+.vision-panel .border-sand-300,
+.vision-panel .border-samarkand-300,
+.vision-panel .divide-border > :not([hidden]) ~ :not([hidden]),
+.vision-panel .divide-sand-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+/* Progress bars: light track, vivid fill */
+.vision-panel .bg-sand-200 { background-color: rgba(255, 255, 255, 0.12) !important; }
+.vision-panel .bg-samarkand-600 { background-color: #21d4fd !important; }
+.vision-panel .bg-terracotta-600 { background-color: #ff5b7f !important; }
+
+/* Badge tints */
+.vision-panel .bg-zar-100 { background-color: rgba(247, 199, 68, 0.16) !important; }
+.vision-panel .text-zar-800 { color: #f7c744 !important; }
+
+/* ---------------------------------------------------------------------
+   Creative custom cursor — a comet: a bright cyan dot with a lagging ring.
+   Adapted (concept) from the mouse_changer project for the web. Active only
+   on fine-pointer devices; touch keeps the native pointer.
+--------------------------------------------------------------------- */
+html.has-custom-cursor,
+html.has-custom-cursor * { cursor: none !important; }
+
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  will-change: transform;
+}
+.cursor-dot {
+  height: 7px;
+  width: 7px;
+  border-radius: 9999px;
+  background: #21d4fd;
+  box-shadow: 0 0 10px 2px rgba(33, 212, 253, 0.7);
+}
+.cursor-ring {
+  height: 34px;
+  width: 34px;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(33, 212, 253, 0.6);
+  transition: width 0.18s ease, height 0.18s ease, border-color 0.18s ease,
+    background-color 0.18s ease;
+}
+.cursor-ring.is-pointer {
+  height: 46px;
+  width: 46px;
+  border-color: rgba(33, 212, 253, 0.95);
+  background: rgba(33, 212, 253, 0.10);
+}
+.cursor-ring.is-down { height: 24px; width: 24px; background: rgba(33, 212, 253, 0.18); }
+
+/* ---------------------------------------------------------------------
+   Auth pages are a deliberately light two-panel design. Neutralise the
+   dark-mode token remaps inside `.auth-shell` so surfaces stay white and
+   text stays dark even when the rest of the app is in dark mode. Covers
+   the nested Logo + LanguageSwitcher too.
+--------------------------------------------------------------------- */
+.dark .auth-shell .bg-white { background-color: #ffffff !important; }
+.dark .auth-shell .text-ink { color: #0f172a !important; }
+.dark .auth-shell .text-samarkand-900,
+.dark .auth-shell .text-samarkand-950 { color: #273b63 !important; }
+.dark .auth-shell .border-sand-300 { border-color: #e2e8f0 !important; }
+.dark .auth-shell input::placeholder,
+.dark .auth-shell textarea::placeholder { color: #cbd5e1 !important; }
+
+/* =====================================================================
+   BankDash skin — a light, sidebar-based dashboard shell for the (app)
+   group, ported from the BankDash UI Kit. All colors are explicit so the
+   shell renders light even when the app is in `.dark` mode.
+   Palette: blue #2D60FF · ink #343C6A · muted #718EBF · teal #16DBCC ·
+   pink #FE5C73 · orange #FC7900 · canvas #F5F7FA.
+===================================================================== */
+/* ── SendYurt "Diaspora Fintech" design system (Stitch: El-Yurt) ───────────
+   Light canvas, deep-navy ink, emerald accent, gold trust. The class name
+   `.bankdash` is retained as the app-shell scope hook. */
+.bankdash {
+  --sy-green: #0a7c53;
+  --sy-green-dark: #065f3e;
+  --sy-navy: #0f172a;
+  --sy-navy-soft: #131b2e;
+  --sy-muted: #64748b;
+  --sy-mint: #34d399;
+  --sy-gold: #d9a441;
+  --sy-red: #ef4444;
+  /* Recharts token bridge for SendYurt surfaces */
+  --chart-primary: #0a7c53;
+  --chart-gold: #d9a441;
+  --chart-positive: #34d399;
+  --chart-negative: #ef4444;
+  --chart-grid: #eef2f6;
+  --chart-axis: #64748b;
+  /* Force the shadcn semantic token layer to LIGHT values (emerald primary)
+     so any reused primitives — Button, Input, Select, Badge, ProgressBar —
+     render light even when the app is in `.dark` mode. */
+  --background: 247 249 251;
+  --foreground: 15 23 42;
+  --card: 255 255 255;
+  --card-foreground: 15 23 42;
+  --popover: 255 255 255;
+  --popover-foreground: 15 23 42;
+  --primary: 10 124 83;
+  --primary-foreground: 255 255 255;
+  --secondary: 241 245 249;
+  --secondary-foreground: 15 23 42;
+  --muted: 241 245 249;
+  --muted-foreground: 100 116 139;
+  --accent: 220 252 231;
+  --accent-foreground: 6 95 62;
+  --destructive: 239 68 68;
+  --destructive-foreground: 255 255 255;
+  --success: 10 124 83;
+  --success-foreground: 255 255 255;
+  --border: 226 232 240;
+  --input: 226 232 240;
+  --ring: 10 124 83;
+  background-color: #f7f9fb;
+  color: #0f172a;
+}
+
+.bank-card {
+  background-color: #ffffff;
+  border-radius: 24px;
+  border: 1px solid #eef2f7;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+}
+
+.bank-input {
+  width: 100%;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  padding: 0.72rem 1.25rem;
+  font-size: 15px;
+  line-height: 1.2;
+  color: #0f172a;
+}
+.bank-input::placeholder { color: #94a3b8; }
+.bank-input:focus { outline: none; border-color: #0a7c53; box-shadow: 0 0 0 3px rgba(10, 124, 83, 0.14); }
+
+.bankdash .recharts-text { fill: #64748b; }
+.bankdash .recharts-cartesian-grid line { stroke: #eef2f6; }
+.bankdash .recharts-default-tooltip {
+  border-radius: 12px !important;
+  border: 1px solid #e8edf3 !important;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08) !important;
+  font-size: 13px !important;
+}
+
+/* Neutralise dark-mode token remaps for legacy components reused inside the
+   shell (LanguageSwitcher, Badge, native form controls). */
+.dark .bankdash .bg-white,
+.dark .bankdash .bg-white\/90 { background-color: #ffffff !important; }
+.dark .bankdash .bg-sand-50 { background-color: #f7f9fb !important; }
+.dark .bankdash .bg-sand-100 { background-color: #f1f5f9 !important; }
+.dark .bankdash .bg-sand-200 { background-color: #e9eef4 !important; }
+.dark .bankdash .bg-samarkand-50 { background-color: #eafaf1 !important; }
+.dark .bankdash .bg-samarkand-100 { background-color: #dcfce7 !important; }
+.dark .bankdash .text-ink,
+.dark .bankdash .text-samarkand-950,
+.dark .bankdash .text-samarkand-900 { color: #0f172a !important; }
+.dark .bankdash .text-samarkand-800,
+.dark .bankdash .text-samarkand-700 { color: #0a7c53 !important; }
+.dark .bankdash .text-sand-900,
+.dark .bankdash .text-sand-800,
+.dark .bankdash .text-sand-700 { color: #475569 !important; }
+.dark .bankdash .text-sand-600,
+.dark .bankdash .text-sand-500 { color: #64748b !important; }
+.dark .bankdash .border-sand-100,
+.dark .bankdash .border-sand-200,
+.dark .bankdash .border-sand-300 { border-color: #e2e8f0 !important; }
+.dark .bankdash .divide-sand-100 > :not([hidden]) ~ :not([hidden]) { border-color: #eef2f7 !important; }
+.dark .bankdash .hover\:bg-sand-100:hover { background-color: #f1f5f9 !important; }
+.dark .bankdash input::placeholder,
+.dark .bankdash textarea::placeholder { color: #94a3b8 !important; }
+/* Neutralise `dark:` variant utilities carried by reused legacy components
+   (GoalCard, budget forms) so they don't flip dark inside the light shell. */
+.dark .bankdash .dark\:bg-night-raised { background-color: #ffffff !important; }
+.dark .bankdash .dark\:border-night-line { border-color: #e2e8f0 !important; }
+.dark .bankdash .dark\:text-white { color: #0f172a !important; }
+.dark .bankdash .dark\:text-night-soft { color: #64748b !important; }
+.dark .bankdash .dark\:text-samarkand-100 { color: #0f172a !important; }
+.dark .bankdash .dark\:text-samarkand-300,
+.dark .bankdash .dark\:text-samarkand-200 { color: #0a7c53 !important; }
+.dark .bankdash .dark\:hover\:text-white:hover { color: #0f172a !important; }
+.dark .bankdash .dark\:bg-night,
+.dark .bankdash .dark\:bg-night-raised { background-color: #ffffff !important; }
+.dark .bankdash .dark\:bg-samarkand-600 { background-color: #0a7c53 !important; }
+.dark .bankdash .dark\:bg-zar-950 { background-color: #fbf7ec !important; }
+.dark .bankdash .dark\:border-zar-700,
+.dark .bankdash .dark\:border-zar-800 { border-color: #e7d29a !important; }
+.dark .bankdash .dark\:text-night-line { color: #e2e8f0 !important; }
+.dark .bankdash .dark\:text-zar-400 { color: #a67c28 !important; }
+/* Score dial track reads on a white card */
+.bankdash .dial-track { stroke: #eef2f7; }
+.bankdash input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.bankdash select,
+.bankdash textarea { color: #0f172a; }

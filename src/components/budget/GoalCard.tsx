@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { Link } from "@/i18n/navigation";
 import { contributeToGoal } from "@/app/actions/budget";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -66,7 +67,12 @@ export function GoalCard({ goal, canEdit = true }: { goal: GoalProps; canEdit?: 
   return (
     <Card accent={pct >= 100} className="p-5">
       <div className="flex items-baseline justify-between gap-2">
-        <h3 className="font-semibold text-ink dark:text-white">{goal.name}</h3>
+        <Link
+          href={`/budget/goals/${goal.id}`}
+          className="font-semibold text-ink underline-offset-2 hover:underline dark:text-white"
+        >
+          {goal.name}
+        </Link>
         <span className="text-sm font-bold text-samarkand-800 dark:text-samarkand-300">
           {Math.min(100, Math.round(pct))}%
         </span>

@@ -51,7 +51,13 @@ export function CategoryPie({ slices }: { slices: PieSlice[] }) {
               `${formatMoney(Number(value), "UZS", locale)} (${total > 0 ? Math.round((Number(value) / total) * 100) : 0}%)`,
               String(name),
             ]}
-            contentStyle={{ borderRadius: 12, fontSize: 13 }}
+            contentStyle={{
+              borderRadius: 12,
+              border: "1px solid var(--chart-grid)",
+              fontSize: 13,
+              fontVariantNumeric: "tabular-nums",
+              boxShadow: "0 6px 20px -6px rgb(26 39 64 / 0.18)",
+            }}
           />
           <Legend
             layout="vertical"

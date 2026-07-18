@@ -1,169 +1,140 @@
+import { HeroVideo } from "@/components/pitch/HeroVideo";
 import { InvestorForm } from "@/components/pitch/InvestorForm";
 import { Reveal } from "@/components/pitch/Reveal";
+import { PITCH, PITCH_LANGS, resolveLang, type PitchLang } from "./content";
 
 /* ------------------------------------------------------------------ */
 /* Small building blocks                                               */
 /* ------------------------------------------------------------------ */
 
-function Wordmark() {
+function Wordmark({ tone = "dark" }: { tone?: "dark" | "light" }) {
+  const ink = tone === "dark" ? "#0B1A30" : "#FBF6F0";
   return (
-    <span className="inline-flex items-baseline gap-2">
-      <svg viewBox="0 0 32 32" className="h-5 w-5 self-center" aria-hidden="true">
-        <circle cx="16" cy="4.5" r="2" fill="#E8A33D" />
-        <path d="M16 7 29 18.5 H3 Z" fill="#2DD4BF" />
-        <path d="M5 20h22v6a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2Z" fill="#F4EFE4" opacity="0.9" />
-      </svg>
-      <span className="f-serif text-lg font-semibold tracking-tight text-[#F4EFE4]">
-        Send<em className="not-italic text-[#E8A33D]">Yurt</em>
+    <span className="inline-flex items-center gap-2">
+      <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#FF4F3D]">
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+          <path d="M12 4 20 11H4Z" fill="#FBF6F0" />
+          <path d="M6 13h12v5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 18Z" fill="#FBF6F0" opacity="0.85" />
+        </svg>
+      </span>
+      <span className="f-display text-[19px] font-bold tracking-tight" style={{ color: ink }}>
+        Send<span className="text-[#FF4F3D]">Yurt</span>
       </span>
     </span>
   );
 }
 
-function Eyebrow({ children }: { children: React.ReactNode }) {
+function Chip({
+  children,
+  bg = "#FFE3DD",
+  color = "#E23A29",
+}: {
+  children: React.ReactNode;
+  bg?: string;
+  color?: string;
+}) {
   return (
-    <p className="f-mono text-[11px] uppercase tracking-[0.28em] text-[#2DD4BF]">
+    <span className="chip" style={{ backgroundColor: bg, color }}>
       {children}
-    </p>
+    </span>
   );
 }
 
-/** Serif display headline; <em> children render as the italic accent. */
+/** Renders an accented headline fragment: plain + coral emphasis + plain. */
+function Em({ v, accent = "#FF4F3D" }: { v: { a: string; em: string; b: string }; accent?: string }) {
+  return (
+    <>
+      {v.a}
+      <b className="font-bold" style={{ color: accent }}>{v.em}</b>
+      {v.b}
+    </>
+  );
+}
+
 function Display({
   children,
   size = "lg",
-  tone = "dark",
+  color = "#0B1A30",
 }: {
   children: React.ReactNode;
   size?: "lg" | "md";
-  tone?: "dark" | "light";
+  color?: string;
 }) {
   return (
     <h2
       className={[
-        "f-serif font-medium tracking-[-0.015em] [text-wrap:balance]",
+        "f-display font-bold tracking-[-0.02em] [text-wrap:balance]",
         size === "lg"
-          ? "text-[clamp(2.25rem,5.5vw,4rem)] leading-[1.06]"
-          : "text-[clamp(1.9rem,4vw,3rem)] leading-[1.1]",
-        tone === "dark" ? "text-[#F4EFE4]" : "text-[#101828]",
+          ? "text-[clamp(2.4rem,5.6vw,4.25rem)] leading-[1.02]"
+          : "text-[clamp(1.9rem,4vw,3rem)] leading-[1.05]",
       ].join(" ")}
+      style={{ color }}
     >
       {children}
     </h2>
   );
 }
 
-function LineIcon({ path }: { path: string }) {
+function LineIcon({ path, color = "#0B1A30" }: { path: string; color?: string }) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-6 w-6 text-[#2DD4BF]"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d={path} />
     </svg>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/* Hero mockup — a real UI mock, hand-built                            */
+/* Visual constants (language-independent: icons, colours, figures)    */
 /* ------------------------------------------------------------------ */
 
-function PhoneMockup() {
+const PROBLEM_VIS: [string, string, string][] = [
+  ["6–8%", "#FFE3DD", "#E23A29"],
+  ["$1B+", "#FFE4AC", "#7C5310"],
+  ["1 in 5", "#CFE0FF", "#1B3F8F"],
+  ["0", "#C8EFD8", "#0C6B49"],
+];
+
+const STEP_ICONS = [
+  "M12 3v12m0 0l-4-4m4 4l4-4M5 21h14",
+  "M4 17l5-5 4 4 7-8M15 8h5v5",
+  "M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z",
+  "M4 21V10l8-6 8 6v11M9 21v-6h6v6",
+];
+
+const FEATURE_VIS: { icon: string; bg: string; ink: string }[] = [
+  { icon: "M4 17l5-5 4 4 7-8M15 8h5v5", bg: "#FFE4AC", ink: "#7C5310" },
+  { icon: "M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6zM9 12l2 2 4-4", bg: "#C8EFD8", ink: "#0C6B49" },
+  { icon: "M4 21V10l8-6 8 6v11M9 21v-6h6v6", bg: "#CFE0FF", ink: "#1B3F8F" },
+  { icon: "M3 5h12M9 3v2m1.5 14L15 9l4.5 10M12 19h6M5 9c2.5 4 6 7 10 9", bg: "#E6DDFF", ink: "#4B3AA0" },
+  { icon: "M18 9a6 6 0 10-12 0c0 5-2 6-2 6h16s-2-1-2-6M10.3 19a2 2 0 003.4 0", bg: "#FFE3DD", ink: "#E23A29" },
+  { icon: "M7 3h10a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2zM11 18h2", bg: "#FFFFFF", ink: "#0B1A30" },
+];
+
+const METRIC_VALUES = ["$16B+", "~20%", "2M+", "0"];
+
+const BADGE_COLORS: [string, string][] = [
+  ["#C8EFD8", "#0C6B49"],
+  ["#CFE0FF", "#1B3F8F"],
+  ["#FFE4AC", "#7C5310"],
+  ["#E6DDFF", "#4B3AA0"],
+];
+
+/** Language switcher — links stay on "/" and swap the ?lang= param. */
+function LangSwitch({ lang }: { lang: PitchLang }) {
   return (
-    <div className="relative mx-auto w-full max-w-[21rem]">
-      {/* Peeking family-budget card */}
-      <div
-        aria-hidden="true"
-        className="absolute -right-4 top-24 hidden w-56 rotate-3 rounded-2xl border border-[#F4EFE4]/10 bg-[#111B2E] p-4 shadow-[0_1px_0_rgba(244,239,228,0.06)_inset] sm:block lg:-right-16"
-      >
-        <p className="f-mono text-[10px] uppercase tracking-[0.2em] text-[#8593AB]">
-          Family budget · July
-        </p>
-        <ul className="mt-3 space-y-2.5">
-          {[
-            ["Rent", "w-4/5", "#2DD4BF"],
-            ["School", "w-3/5", "#E8A33D"],
-            ["Medicine", "w-2/5", "#7C9CE8"],
-          ].map(([label, width, color]) => (
-            <li key={label as string}>
-              <div className="flex items-center justify-between text-xs text-[#C6CFDE]">
-                <span>{label}</span>
-              </div>
-              <div className="mt-1 h-1.5 rounded-full bg-[#F4EFE4]/10">
-                <div
-                  className={`h-full rounded-full ${width}`}
-                  style={{ backgroundColor: color as string }}
-                />
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Phone frame */}
-      <div className="relative rounded-[2.4rem] border border-[#F4EFE4]/15 bg-[#0E1729] p-2.5 shadow-[0_0_60px_rgba(45,212,191,0.07)]">
-        <div className="rounded-[2rem] border border-[#F4EFE4]/10 bg-[#0B1220] px-5 pb-7 pt-4">
-          {/* Notch line */}
-          <div className="mx-auto mb-5 h-1 w-16 rounded-full bg-[#F4EFE4]/15" aria-hidden="true" />
-
-          <p className="f-mono text-[10px] uppercase tracking-[0.22em] text-[#8593AB]">
-            New transfer
-          </p>
-
-          {/* Send → receive */}
-          <div className="mt-4 space-y-3">
-            <div className="rounded-xl border border-[#F4EFE4]/10 bg-[#111B2E] px-4 py-3.5">
-              <p className="text-[11px] text-[#8593AB]">You send</p>
-              <p className="f-serif mt-0.5 text-2xl font-medium text-[#F4EFE4]">€500</p>
-            </div>
-            <div className="flex justify-center" aria-hidden="true">
-              <svg viewBox="0 0 24 24" className="h-4 w-4 text-[#2DD4BF]" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 5v14m0 0l-5-5m5 5l5-5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-            <div className="rounded-xl border border-[#2DD4BF]/25 bg-[#2DD4BF]/[0.06] px-4 py-3.5">
-              <p className="text-[11px] text-[#8593AB]">Family receives</p>
-              <p className="f-serif mt-0.5 text-2xl font-medium text-[#F4EFE4]">
-                6,750,000 <span className="text-base text-[#9DA9BE]">soʻm</span>
-              </p>
-            </div>
-          </div>
-
-          {/* Best route */}
-          <div className="mt-4 rounded-xl border border-[#F4EFE4]/10 bg-[#111B2E] px-4 py-3">
-            <p className="f-mono text-[10px] uppercase tracking-[0.18em] text-[#E8A33D]">
-              Best route found
-            </p>
-            <p className="mt-1.5 text-[13px] leading-relaxed text-[#C6CFDE]">
-              Kapital Card · saves <span className="font-semibold text-[#F4EFE4]">€18</span> vs
-              your bank · arrives in ~10 min
-            </p>
-            <div className="mt-2.5 inline-flex items-center gap-1.5 rounded-full border border-[#4ADE80]/30 bg-[#4ADE80]/10 px-2.5 py-1">
-              <svg viewBox="0 0 24 24" className="h-3 w-3 text-[#4ADE80]" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <span className="f-mono text-[10px] uppercase tracking-[0.14em] text-[#4ADE80]">
-                Trust Score 96 · Verified
-              </span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            tabIndex={-1}
-            aria-hidden="true"
-            className="mt-4 w-full cursor-default rounded-xl bg-[#E8A33D] py-3 text-sm font-semibold text-[#0B1220]"
-          >
-            Send €500
-          </button>
-        </div>
-      </div>
+    <div className="flex items-center gap-0.5 rounded-full border border-[#0B1A30]/12 p-0.5">
+      {PITCH_LANGS.map(({ code, label }) => (
+        <a
+          key={code}
+          href={code === "en" ? "/" : `/?lang=${code}`}
+          className={[
+            "rounded-full px-2.5 py-1 text-[12px] font-semibold transition-colors",
+            code === lang ? "bg-[#0B1A30] text-[#FBF6F0]" : "text-[#5A6B82] hover:text-[#0B1A30]",
+          ].join(" ")}
+        >
+          {label}
+        </a>
+      ))}
     </div>
   );
 }
@@ -172,178 +143,69 @@ function PhoneMockup() {
 /* Page                                                                */
 /* ------------------------------------------------------------------ */
 
-const MARQUEE_TAGS = [
-  "Real-time rates",
-  "Trust Score",
-  "Family Budget",
-  "Uzbek & Russian",
-  "No hidden fees",
-  "Works offline (PWA)",
-  "Scam protection",
-  "Best-route finder",
-];
+export default function PitchPage({
+  searchParams,
+}: {
+  searchParams: { lang?: string };
+}) {
+  const lang = resolveLang(searchParams?.lang);
+  const c = PITCH[lang];
+  // Prefix internal app routes with the chosen locale; leave anchors and
+  // external links untouched.
+  const href = (h: string) => (h.startsWith("/") ? `/${lang}${h}` : h);
 
-const STEPS = [
-  {
-    n: "01",
-    title: "Enter amount & destination",
-    body: "Tell SendYurt how much you're sending and where it lands — Tashkent, Samarkand, a village in Fergana.",
-    icon: "M12 3v12m0 0l-4-4m4 4l4-4M5 21h14",
-  },
-  {
-    n: "02",
-    title: "Compare routes + Trust Scores",
-    body: "Banks, cards and money-transfer operators — ranked by what your family actually receives, each with a trust rating.",
-    icon: "M4 17l5-5 4 4 7-8M15 8h5v5",
-  },
-  {
-    n: "03",
-    title: "Send via the cheapest, safest route",
-    body: "One tap on the winning route. No hidden margin, no guesswork, no queue at a kiosk.",
-    icon: "M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z",
-  },
-  {
-    n: "04",
-    title: "Track it together in the Family Budget",
-    body: "The money arrives into a plan both sides can see — rent, school, medicine — not into a black box.",
-    icon: "M4 21V10l8-6 8 6v11M9 21v-6h6v6",
-  },
-];
-
-const FEATURES = [
-  {
-    tag: "LIVE RATES",
-    title: "Rate & Route Finder",
-    body: "Compares every channel in real time for the cheapest, fastest transfer.",
-    icon: "M4 17l5-5 4 4 7-8M15 8h5v5",
-  },
-  {
-    tag: "ANTI-FRAUD",
-    title: "Trust Score",
-    body: "Rates providers and agents on hidden fees, speed and complaint history so migrants dodge scams.",
-    icon: "M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6zM9 12l2 2 4-4",
-  },
-  {
-    tag: "SHARED FINANCE",
-    title: "Family Budget Dashboard",
-    body: "Migrant and family share one plan — rent, school, medicine — so money reaches its purpose.",
-    icon: "M4 21V10l8-6 8 6v11M9 21v-6h6v6",
-  },
-  {
-    tag: "LOCALIZED",
-    title: "Uzbek & Russian Native",
-    body: "Built in the languages migrants actually use, not translated as an afterthought.",
-    icon: "M3 5h12M9 3v2m1.5 14L15 9l4.5 10M12 19h6M5 9c2.5 4 6 7 10 9",
-  },
-  {
-    tag: "SMART ALERTS",
-    title: "Rate-Drop Alerts",
-    body: "Get pinged the moment a better route opens up for your usual transfer.",
-    icon: "M18 9a6 6 0 10-12 0c0 5-2 6-2 6h16s-2-1-2-6M10.3 19a2 2 0 003.4 0",
-  },
-  {
-    tag: "PWA",
-    title: "No App Store Needed",
-    body: "Installs as a PWA, works on any phone, sips data on weak connections.",
-    icon: "M7 3h10a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2zM11 18h2",
-  },
-];
-
-const METRICS = [
-  ["$16B+", "Remittance market"],
-  ["~20%", "Of Uzbekistan's GDP"],
-  ["2M+", "Migrants abroad"],
-  ["0", "Trust-first competitors"],
-];
-
-export default function PitchPage() {
   return (
     <div className="relative">
-      {/* ---------------------------------------------------------- */}
-      {/* 1 · Sticky nav                                              */}
-      {/* ---------------------------------------------------------- */}
-      <header className="hairline sticky top-0 z-50 border-b bg-[#0B1220]/85 backdrop-blur-md">
-        <nav
-          aria-label="Main"
-          className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5"
-        >
+      {/* 1 · Sticky nav */}
+      <header className="hairline sticky top-0 z-50 border-b bg-[#FBF6F0]/85 backdrop-blur-md">
+        <nav aria-label="Main" className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-5">
           <a href="#top" aria-label="SendYurt — back to top">
             <Wordmark />
           </a>
-          <div className="hidden items-center gap-7 text-[13px] text-[#9DA9BE] md:flex">
-            <a href="#problem" className="transition-colors hover:text-[#F4EFE4]">Problem</a>
-            <a href="#how" className="transition-colors hover:text-[#F4EFE4]">How it works</a>
-            <a href="#features" className="transition-colors hover:text-[#F4EFE4]">Features</a>
-            <a href="#investors" className="transition-colors hover:text-[#F4EFE4]">For investors</a>
+          <div className="hidden items-center gap-8 text-[14px] font-medium text-[#5A6B82] lg:flex">
+            <a href="#problem" className="transition-colors hover:text-[#0B1A30]">{c.nav.problem}</a>
+            <a href="#how" className="transition-colors hover:text-[#0B1A30]">{c.nav.how}</a>
+            <a href="#features" className="transition-colors hover:text-[#0B1A30]">{c.nav.features}</a>
+            <a href="#investors" className="transition-colors hover:text-[#0B1A30]">{c.nav.investors}</a>
           </div>
-          <div className="flex items-center gap-4">
-            <a
-              href="/en/login"
-              className="hidden text-[13px] font-medium text-[#9DA9BE] transition-colors hover:text-[#F4EFE4] sm:inline"
-            >
-              Log in
+          <div className="flex items-center gap-3">
+            <LangSwitch lang={lang} />
+            <a href={href("/login")} className="hidden text-[14px] font-semibold text-[#0B1A30] transition-colors hover:text-[#FF4F3D] sm:inline">
+              {c.nav.login}
             </a>
-            <a
-              href="/en/register"
-              className="rounded-full bg-[#E8A33D] px-4 py-1.5 text-[13px] font-semibold text-[#0B1220] transition-colors hover:bg-[#F0B458]"
-            >
-              Get early access
+            <a href={href("/register")} className="btn btn-coral px-5 py-2.5 text-[14px]">
+              {c.nav.cta}
             </a>
           </div>
         </nav>
       </header>
 
       <main id="top">
-        {/* -------------------------------------------------------- */}
-        {/* 2 · Hero                                                  */}
-        {/* -------------------------------------------------------- */}
-        <section className="hero-atmosphere grain relative overflow-hidden">
-          <div className="mx-auto grid max-w-6xl items-center gap-14 px-5 pb-20 pt-16 sm:pt-24 lg:grid-cols-[1.05fr_0.95fr] lg:gap-8 lg:pb-28">
+        {/* 2 · Hero */}
+        <section className="relative overflow-hidden">
+          <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 pb-20 pt-14 sm:pt-20 lg:grid-cols-[1.02fr_0.98fr] lg:gap-10 lg:pb-28">
             <div>
-              <Reveal>
-                <Eyebrow>Uzbekistan · Fintech · 2026</Eyebrow>
-              </Reveal>
+              <Reveal><Chip>{c.hero.chip}</Chip></Reveal>
               <Reveal delay={80}>
-                <h1 className="f-serif mt-5 text-[clamp(2.5rem,7vw,5rem)] font-medium leading-[1.05] tracking-[-0.02em] text-[#F4EFE4] [text-wrap:balance]">
-                  Send money home <em className="font-normal">smarter</em>, not{" "}
-                  <em className="font-normal">blind</em>.
+                <h1 className="f-display mt-6 text-[clamp(2.7rem,7vw,5.25rem)] font-bold leading-[0.98] tracking-[-0.03em] text-[#0B1A30] [text-wrap:balance]">
+                  <Em v={c.hero.title} />
                 </h1>
               </Reveal>
               <Reveal delay={160}>
-                <p className="mt-6 max-w-md text-[17px] leading-relaxed text-[#9DA9BE]">
-                  SendYurt is the money co-pilot for Uzbek migrants and the families they
-                  support — the cheapest, safest route home, a trust rating on every
-                  provider, and one budget the whole family shares.
-                </p>
+                <p className="mt-6 max-w-md text-[18px] leading-relaxed text-[#5A6B82]">{c.hero.sub}</p>
               </Reveal>
               <Reveal delay={240}>
                 <div className="mt-8 flex flex-wrap items-center gap-3">
-                  <a
-                    href="/en/register"
-                    className="rounded-full bg-[#E8A33D] px-6 py-3 text-sm font-semibold text-[#0B1220] transition-colors hover:bg-[#F0B458]"
-                  >
-                    Get early access
-                  </a>
-                  <a
-                    href="#how"
-                    className="hairline-strong rounded-full border px-6 py-3 text-sm font-semibold text-[#F4EFE4] transition-colors hover:border-[#F4EFE4]/40"
-                  >
-                    See how it works
-                  </a>
+                  <a href={href("/register")} className="btn btn-coral px-7 py-3.5 text-[15px]">{c.hero.ctaPrimary}</a>
+                  <a href="#how" className="btn btn-ghost px-7 py-3.5 text-[15px]">{c.hero.ctaSecondary}</a>
                 </div>
               </Reveal>
               <Reveal delay={320}>
-                <dl className="mt-10 flex flex-wrap gap-x-8 gap-y-4">
-                  {[
-                    ["$16B+", "Annual remittances"],
-                    ["~2M+", "Migrants abroad"],
-                    ["6%", "Avg fee lost per transfer"],
-                  ].map(([value, label]) => (
+                <dl className="mt-10 flex flex-wrap gap-x-9 gap-y-4">
+                  {c.hero.stats.map(([value, label]) => (
                     <div key={label}>
-                      <dt className="f-mono order-2 mt-1 text-[10px] uppercase tracking-[0.18em] text-[#8593AB]">
-                        {label}
-                      </dt>
-                      <dd className="f-serif text-2xl font-medium text-[#F4EFE4]">{value}</dd>
+                      <dd className="f-display text-2xl font-bold text-[#0B1A30]">{value}</dd>
+                      <dt className="mt-1 text-[12px] font-medium uppercase tracking-wide text-[#8A94A6]">{label}</dt>
                     </div>
                   ))}
                 </dl>
@@ -351,30 +213,46 @@ export default function PitchPage() {
             </div>
 
             <Reveal delay={200} className="lg:justify-self-end">
-              <PhoneMockup />
+              <div className="relative mx-auto w-full max-w-[30rem]">
+                <div aria-hidden="true" className="absolute -inset-3 -rotate-2 rounded-[2.75rem] bg-[#FF4F3D]/12 sm:-inset-5" />
+                <div className="absolute -right-3 -top-3 hidden rotate-3 sm:block">
+                  <Chip bg="#0B1A30" color="#FBF6F0">{c.hero.trustBadge}</Chip>
+                </div>
+                <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem] border-[6px] border-[#0B1A30] bg-[#0B1A30] shadow-[0_30px_60px_-25px_rgba(11,26,48,0.55)]">
+                  <HeroVideo />
+                </div>
+                <div className="absolute -bottom-4 -left-3 hidden -rotate-2 rounded-2xl bg-white p-3.5 shadow-[0_16px_36px_-18px_rgba(11,26,48,0.5)] sm:block">
+                  <p className="text-[11px] font-medium text-[#8A94A6]">{c.hero.receivesLabel}</p>
+                  <p className="f-display text-lg font-bold text-[#0B1A30]">
+                    6,750,000 <span className="text-[13px] font-medium text-[#5A6B82]">soʻm</span>
+                  </p>
+                </div>
+              </div>
             </Reveal>
           </div>
         </section>
 
-        {/* -------------------------------------------------------- */}
-        {/* 3 · Marquee                                               */}
-        {/* -------------------------------------------------------- */}
+        {/* 3 · Trust badges */}
+        <section aria-label="Trust signals" className="mx-auto max-w-6xl px-5 pb-6">
+          <Reveal>
+            <div className="flex flex-wrap items-center gap-2.5">
+              {c.badges.map((b, i) => (
+                <Chip key={i} bg={BADGE_COLORS[i][0]} color={BADGE_COLORS[i][1]}>{b}</Chip>
+              ))}
+            </div>
+          </Reveal>
+        </section>
+
+        {/* 4 · Marquee */}
         <section aria-label="Product highlights" className="hairline border-y py-5">
           <div className="marquee">
             <div className="marquee-track">
               {[0, 1].map((copy) => (
-                <ul
-                  key={copy}
-                  aria-hidden={copy === 1}
-                  className="flex shrink-0 items-center"
-                >
-                  {MARQUEE_TAGS.map((tag) => (
-                    <li
-                      key={tag}
-                      className="f-mono flex items-center gap-6 pr-6 text-[12px] uppercase tracking-[0.22em] text-[#8593AB]"
-                    >
+                <ul key={copy} aria-hidden={copy === 1} className="flex shrink-0 items-center">
+                  {c.marquee.map((tag) => (
+                    <li key={tag} className="flex items-center gap-5 pr-5 text-[14px] font-semibold text-[#0B1A30]">
                       <span>{tag}</span>
-                      <span className="text-[#2DD4BF]" aria-hidden="true">·</span>
+                      <span className="text-[#FF4F3D]" aria-hidden="true">●</span>
                     </li>
                   ))}
                 </ul>
@@ -383,73 +261,46 @@ export default function PitchPage() {
           </div>
         </section>
 
-        {/* -------------------------------------------------------- */}
-        {/* 4 · Problem                                               */}
-        {/* -------------------------------------------------------- */}
+        {/* 5 · Problem */}
         <section id="problem" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-24 lg:py-32">
           <Reveal>
-            <Eyebrow>The problem</Eyebrow>
-            <div className="mt-5 max-w-2xl">
-              <Display>
-                Migrants are <em className="font-normal">bleeding money</em> in the dark.
-              </Display>
-            </div>
-            <p className="mt-6 max-w-xl text-[17px] leading-relaxed">
-              Every transfer home runs a gauntlet of hidden margins, bad rates and
-              informal agents — and the family receiving it has no view of any of it.
-            </p>
+            <Chip>{c.problem.chip}</Chip>
+            <div className="mt-5 max-w-2xl"><Display><Em v={c.problem.title} /></Display></div>
+            <p className="mt-6 max-w-xl text-[18px] leading-relaxed text-[#5A6B82]">{c.problem.sub}</p>
           </Reveal>
-          <div className="mt-14 grid gap-px overflow-hidden rounded-2xl bg-[#F4EFE4]/[0.08] sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              ["6–8%", "Lost to fees & FX margin", "on a typical corridor transfer"],
-              ["$1B+", "Burned every year", "in avoidable transfer costs"],
-              ["1 in 5", "Has met a scam or 'agent'", "with no way to check reputations"],
-              ["0", "Shared visibility", "between sender and family today"],
-            ].map(([value, label, sub], i) => (
-              <Reveal key={label} delay={i * 80}>
-                <div className="h-full bg-[#0E1729] p-7">
-                  <p className="f-serif text-[clamp(2.5rem,4vw,3.5rem)] font-medium leading-none text-[#F4EFE4]">
-                    {value}
-                  </p>
-                  <p className="f-mono mt-4 text-[11px] uppercase tracking-[0.18em] text-[#E8A33D]">
-                    {label}
-                  </p>
-                  <p className="mt-1.5 text-[13px] leading-relaxed text-[#8593AB]">{sub}</p>
-                </div>
-              </Reveal>
-            ))}
+          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {c.problem.statLabels.map(([label, sub], i) => {
+              const [value, bg, ink] = PROBLEM_VIS[i];
+              return (
+                <Reveal key={label} delay={i * 80}>
+                  <div className="h-full rounded-3xl p-7" style={{ backgroundColor: bg }}>
+                    <p className="f-display text-[clamp(2.4rem,4vw,3.25rem)] font-bold leading-none" style={{ color: ink }}>{value}</p>
+                    <p className="mt-4 text-[15px] font-bold" style={{ color: ink }}>{label}</p>
+                    <p className="mt-1.5 text-[13.5px] leading-relaxed" style={{ color: ink, opacity: 0.75 }}>{sub}</p>
+                  </div>
+                </Reveal>
+              );
+            })}
           </div>
         </section>
 
-        {/* -------------------------------------------------------- */}
-        {/* 5 · How it works                                          */}
-        {/* -------------------------------------------------------- */}
-        <section id="how" className="hairline scroll-mt-20 border-t">
+        {/* 6 · How it works */}
+        <section id="how" className="scroll-mt-20 bg-[#C8EFD8]">
           <div className="mx-auto max-w-6xl px-5 py-24 lg:py-32">
             <Reveal>
-              <Eyebrow>How it works</Eyebrow>
-              <div className="mt-5 max-w-2xl">
-                <Display>
-                  Four steps to money that <em className="font-normal">arrives whole</em>.
-                </Display>
-              </div>
+              <Chip bg="#0C6B49" color="#C8EFD8">{c.how.chip}</Chip>
+              <div className="mt-5 max-w-2xl"><Display color="#0B3D2C"><Em v={c.how.title} accent="#0C6B49" /></Display></div>
             </Reveal>
-            <ol className="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
-              {STEPS.map((step, i) => (
-                <Reveal key={step.n} delay={i * 90}>
-                  <li className="h-full">
-                    <p className="f-mono text-[12px] uppercase tracking-[0.2em] text-[#2DD4BF]">
-                      {step.n} <span aria-hidden="true">——</span>
-                    </p>
-                    <div className="mt-5">
-                      <LineIcon path={step.icon} />
+            <ol className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {c.how.steps.map((step, i) => (
+                <Reveal key={i} delay={i * 90}>
+                  <li className="h-full rounded-3xl bg-[#FBF6F0] p-7">
+                    <div className="flex items-center gap-3">
+                      <span className="grid h-9 w-9 place-items-center rounded-full bg-[#FF4F3D] text-[15px] font-bold text-white">{i + 1}</span>
+                      <LineIcon path={STEP_ICONS[i]} color="#0C6B49" />
                     </div>
-                    <h3 className="mt-4 text-[15px] font-semibold text-[#F4EFE4]">
-                      {step.title}
-                    </h3>
-                    <p className="mt-2 text-[14px] leading-relaxed text-[#8593AB]">
-                      {step.body}
-                    </p>
+                    <h3 className="f-display mt-5 text-[17px] font-bold text-[#0B1A30]">{step.title}</h3>
+                    <p className="mt-2 text-[14px] leading-relaxed text-[#5A6B82]">{step.body}</p>
                   </li>
                 </Reveal>
               ))}
@@ -457,182 +308,107 @@ export default function PitchPage() {
           </div>
         </section>
 
-        {/* -------------------------------------------------------- */}
-        {/* 6 · Features grid                                         */}
-        {/* -------------------------------------------------------- */}
-        <section id="features" className="hairline scroll-mt-20 border-t">
-          <div className="mx-auto max-w-6xl px-5 py-24 lg:py-32">
-            <Reveal>
-              <Eyebrow>Features</Eyebrow>
-              <div className="mt-5 max-w-2xl">
-                <Display>
-                  Everything a migrant family needs.{" "}
-                  <em className="font-normal">Nothing they don&apos;t.</em>
-                </Display>
-              </div>
-            </Reveal>
-            <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {FEATURES.map((feature, i) => (
+        {/* 7 · Features */}
+        <section id="features" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-24 lg:py-32">
+          <Reveal>
+            <Chip>{c.features.chip}</Chip>
+            <div className="mt-5 max-w-2xl"><Display><Em v={c.features.title} /></Display></div>
+          </Reveal>
+          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {c.features.items.map((feature, i) => {
+              const vis = FEATURE_VIS[i];
+              return (
                 <Reveal key={feature.title} delay={(i % 3) * 80}>
-                  <article className="lift hairline relative h-full rounded-2xl border bg-[#0E1729] p-7">
-                    <span className="f-mono absolute right-5 top-5 text-[10px] uppercase tracking-[0.18em] text-[#8593AB]">
-                      {feature.tag}
-                    </span>
-                    <LineIcon path={feature.icon} />
-                    <h3 className="mt-5 text-[16px] font-semibold text-[#F4EFE4]">
-                      {feature.title}
-                    </h3>
-                    <p className="mt-2 text-[14px] leading-relaxed text-[#8593AB]">
-                      {feature.body}
-                    </p>
+                  <article className="lift hairline relative h-full rounded-3xl border p-7" style={{ backgroundColor: vis.bg }}>
+                    <span className="chip" style={{ backgroundColor: "rgba(11,26,48,0.08)", color: vis.ink }}>{feature.tag}</span>
+                    <div className="mt-6"><LineIcon path={vis.icon} color={vis.ink} /></div>
+                    <h3 className="f-display mt-4 text-[19px] font-bold" style={{ color: vis.ink }}>{feature.title}</h3>
+                    <p className="mt-2 text-[14.5px] leading-relaxed" style={{ color: vis.ink, opacity: 0.82 }}>{feature.body}</p>
                   </article>
                 </Reveal>
-              ))}
-            </div>
+              );
+            })}
           </div>
         </section>
 
-        {/* -------------------------------------------------------- */}
-        {/* 7 · Opportunity                                           */}
-        {/* -------------------------------------------------------- */}
-        <section id="investors" className="hairline scroll-mt-20 border-t">
+        {/* 8 · Opportunity + investor form */}
+        <section id="investors" className="scroll-mt-20 bg-[#0B1A30]">
           <div className="mx-auto max-w-6xl px-5 py-24 lg:py-32">
-            <Reveal>
-              <Eyebrow>The opportunity</Eyebrow>
-            </Reveal>
+            <Reveal><Chip bg="#FF4F3D" color="#FBF6F0">{c.opportunity.chip}</Chip></Reveal>
             <div className="mt-12 grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
-              {METRICS.map(([value, label], i) => (
+              {c.opportunity.metricLabels.map((label, i) => (
                 <Reveal key={label} delay={i * 80}>
                   <div>
-                    <p className="f-serif text-[clamp(3rem,6vw,4.5rem)] font-medium leading-none text-[#F4EFE4]">
-                      {value}
-                    </p>
-                    <p className="f-mono mt-4 text-[11px] uppercase tracking-[0.2em] text-[#8593AB]">
-                      {label}
-                    </p>
+                    <p className="f-display text-[clamp(3rem,6vw,4.5rem)] font-bold leading-none text-[#FF4F3D]">{METRIC_VALUES[i]}</p>
+                    <p className="mt-4 text-[13px] font-medium uppercase tracking-wide text-[#9DB0CC]">{label}</p>
                   </div>
                 </Reveal>
               ))}
             </div>
             <Reveal delay={200}>
-              <p className="f-mono mt-12 text-[10px] uppercase tracking-[0.16em] text-[#5D6B84]">
-                Directional market estimates — verify against current World Bank / CBU data
-                before investor distribution.
-              </p>
+              <p className="mt-12 text-[12px] font-medium uppercase tracking-wide text-[#5D6B84]">{c.opportunity.note}</p>
             </Reveal>
 
-            {/* Working investor inquiry */}
-            <div className="mt-16 grid items-start gap-10 border-t border-[#F4EFE4]/[0.08] pt-16 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
+            <div className="mt-16 grid items-start gap-10 border-t border-white/10 pt-16 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
               <Reveal>
-                <Display size="md">
-                  Building the <em className="font-normal">trust rail</em> for a $16B corridor.
-                </Display>
-                <p className="mt-5 max-w-md text-[16px] leading-relaxed">
-                  We&apos;re raising to expand coverage across the top remittance corridors and
-                  deepen the Trust Score data moat. Tell us what you&apos;d like to see — the
-                  founders read every note.
-                </p>
+                <Display size="md" color="#FBF6F0"><Em v={c.opportunity.title} /></Display>
+                <p className="mt-5 max-w-md text-[16px] leading-relaxed text-[#9DB0CC]">{c.opportunity.sub}</p>
               </Reveal>
-              <Reveal delay={120}>
-                <InvestorForm />
-              </Reveal>
+              <Reveal delay={120}><InvestorForm t={c.form} /></Reveal>
             </div>
           </div>
         </section>
 
-        {/* -------------------------------------------------------- */}
-        {/* 8 · Pull quote                                            */}
-        {/* -------------------------------------------------------- */}
-        <section className="hairline border-t">
-          <div className="mx-auto max-w-4xl px-5 py-24 text-center lg:py-32">
+        {/* 9 · Pull quote */}
+        <section className="bg-[#FFE4AC]">
+          <div className="mx-auto max-w-4xl px-5 py-24 text-center lg:py-28">
             <Reveal>
-              <blockquote className="f-serif text-[clamp(1.75rem,4vw,2.9rem)] font-medium leading-[1.25] tracking-[-0.01em] text-[#F4EFE4] [text-wrap:balance]">
-                &ldquo;The financial co-pilot in every Uzbek migrant&apos;s pocket —{" "}
-                <em className="font-normal text-[#E8A33D]">saving families millions</em> in
-                hidden fees.&rdquo;
+              <blockquote className="f-display text-[clamp(1.8rem,4vw,2.9rem)] font-bold leading-[1.15] tracking-[-0.02em] text-[#7C5310] [text-wrap:balance]">
+                {c.quote.a}<span className="text-[#E23A29]">{c.quote.em}</span>{c.quote.b}
               </blockquote>
             </Reveal>
           </div>
         </section>
 
-        {/* -------------------------------------------------------- */}
-        {/* 9 · CTA — the one contrast flip                           */}
-        {/* -------------------------------------------------------- */}
-        <section id="cta" className="scroll-mt-20 bg-[#F4EFE4]">
+        {/* 10 · CTA */}
+        <section id="cta" className="scroll-mt-20 bg-[#FF4F3D]">
           <div className="mx-auto max-w-6xl px-5 py-24 lg:py-28">
             <Reveal>
               <div className="mx-auto max-w-2xl text-center">
-                <Display tone="light">
-                  Ready to send home <em className="font-normal">smarter</em>?
-                </Display>
-                <p className="mt-5 text-[17px] leading-relaxed text-[#4B5565]">
-                  We&apos;re onboarding pilot families across the top remittance corridors
-                  now. Sit with us on the sender&apos;s side of the table.
-                </p>
+                <Display color="#FBF6F0"><Em v={c.cta.title} accent="#0B1A30" /></Display>
+                <p className="mx-auto mt-5 max-w-md text-[18px] leading-relaxed text-[#FFE3DD]">{c.cta.sub}</p>
                 <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-                  <a
-                    href="/en/register"
-                    className="rounded-full bg-[#B25E1E] px-7 py-3.5 text-sm font-semibold text-[#FDF9F0] transition-colors hover:bg-[#9A4E15]"
-                  >
-                    Join the pilot
-                  </a>
-                  <a
-                    href="#investors"
-                    className="rounded-full border border-[#101828]/25 px-7 py-3.5 text-sm font-semibold text-[#101828] transition-colors hover:border-[#101828]/50"
-                  >
-                    Investor inquiries <span aria-hidden="true">→</span>
-                  </a>
+                  <a href={href("/register")} className="btn btn-navy px-7 py-3.5 text-[15px]">{c.cta.join}</a>
+                  <a href="#investors" className="btn btn-light px-7 py-3.5 text-[15px]">{c.cta.investors}</a>
                 </div>
-                <p className="f-mono mt-10 text-[10px] uppercase tracking-[0.2em] text-[#8A94A6]">
-                  President Tech Award 2026 · Incubation track
-                </p>
               </div>
             </Reveal>
           </div>
         </section>
       </main>
 
-      {/* ------------------------------------------------------------ */}
-      {/* 10 · Footer                                                   */}
-      {/* ------------------------------------------------------------ */}
-      <footer className="hairline border-t">
+      {/* 11 · Footer */}
+      <footer className="bg-[#0B1A30]">
         <div className="mx-auto grid max-w-6xl gap-12 px-5 py-16 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <Wordmark />
-            <p className="mt-3 max-w-[16rem] text-[13px] leading-relaxed text-[#8593AB]">
-              The money co-pilot for Uzbek migrants and the families they support.
-            </p>
+            <Wordmark tone="light" />
+            <p className="mt-4 max-w-[16rem] text-[14px] leading-relaxed text-[#9DB0CC]">{c.footer.tagline}</p>
           </div>
-          {(
-            [
-              ["Product", [["Rate finder", "/en/rates"], ["Trust Score", "/en/trust"], ["Family Budget", "/en/budget"], ["How it works", "#how"]]],
-              ["Company", [["The problem", "#problem"], ["For investors", "#investors"], ["Get early access", "/en/register"]]],
-              ["Contact", [["Telegram — @sendyurt", "https://t.me/sendyurt"], ["hello@sendyurt.uz", "mailto:hello@sendyurt.uz"]]],
-            ] as const
-          ).map(([group, links]) => (
-            <nav key={group} aria-label={group}>
-              <h3 className="f-mono text-[11px] uppercase tracking-[0.2em] text-[#5D6B84]">
-                {group}
-              </h3>
+          {c.footer.groups.map((group) => (
+            <nav key={group.title} aria-label={group.title}>
+              <h3 className="text-[12px] font-bold uppercase tracking-wide text-[#5D6B84]">{group.title}</h3>
               <ul className="mt-4 space-y-2.5">
-                {links.map(([label, href]) => (
+                {group.links.map(([label, link]) => (
                   <li key={label}>
-                    <a
-                      href={href}
-                      className="text-[13px] text-[#9DA9BE] transition-colors hover:text-[#F4EFE4]"
-                    >
-                      {label}
-                    </a>
+                    <a href={href(link)} className="text-[14px] text-[#9DB0CC] transition-colors hover:text-[#FBF6F0]">{label}</a>
                   </li>
                 ))}
               </ul>
             </nav>
           ))}
         </div>
-        <div className="hairline border-t">
-          <p className="f-mono mx-auto max-w-6xl px-5 py-6 text-[11px] uppercase tracking-[0.18em] text-[#5D6B84]">
-            © 2026 SendYurt · Tashkent, Uzbekistan
-          </p>
+        <div className="border-t border-white/10">
+          <p className="mx-auto max-w-6xl px-5 py-6 text-[12px] font-medium uppercase tracking-wide text-[#5D6B84]">{c.footer.copyright}</p>
         </div>
       </footer>
     </div>

@@ -13,6 +13,7 @@ import {
   expenseSchema,
   incomeSchema,
   savingsGoalSchema,
+  updateGoalSchema,
 } from "@/lib/validators";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -187,12 +188,42 @@ export async function addSavingsGoal(input: unknown): Promise<ActionResult> {
   }
 }
 
-export async function contributeToGoal(input: unknown): Promise<ActionResult> {
+export async function updateSavingsGoal(input: unknown): Promise<ActionResult> {
   try {
     const { householdId } = await requireHousehold();
+    const parsed = updateGoalSchema.safeParse(input);
+    if (!parsed.success) return fail("validation");
+
+    const goal = await prisma.savingsGoal.findFirst({
+      where: { id: parsed.data.goalId, householdId },
+      select: { id: true },
+    });
+    if (!goal) return fail("not_found");
+
+    await prisma.savingsGoal.update({
+      where: { id: goal.id },
+      data: {
+        name: parsed.data.name,
+        targetAmount: parsed.data.targetAmount,
+        targetDate: parsed.data.targetDate ?? null,
+      },
+    });
+    revalidateBudget();
+    return { ok: true };
+  } catch (e) {
+    const known = actionError(e);
+    if (known) return known;
+    console.error("updateSavingsGoal failed", e);
+    return fail("server");
+  }
+}
+
+export async function contributeToGoal(input: unknown): Promise<ActionResult> {
+  try {
+    const { householdId, userId } = await requireHousehold();
     const parsed = contributionSchema.safeParse(input);
     if (!parsed.success) return fail("validation");
-    const { goalId, amount } = parsed.data;
+    const { goalId, amount, note } = parsed.data;
 
     // The goal update and the ledger entry must land together.
     const crossed = await prisma.$transaction(async (tx) => {
@@ -205,13 +236,17 @@ export async function contributeToGoal(input: unknown): Promise<ActionResult> {
         where: { id: goal.id },
         data: { currentAmount: { increment: amount } },
       });
+      // The savings row is tied to the goal + contributor so the goal-detail
+      // view can show real contributors and contribution history.
       await tx.transaction.create({
         data: {
           householdId,
           type: "SAVINGS",
           amount,
           currency: "UZS",
-          note: goal.name,
+          goalId: goal.id,
+          senderId: userId,
+          note: note && note.length > 0 ? note : goal.name,
           date: new Date(),
           status: "COMPLETED",
         },

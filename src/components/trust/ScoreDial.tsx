@@ -19,9 +19,10 @@ export function ScoreDial({
   const c = 2 * Math.PI * r;
   const filled = (clamped / 100) * c;
 
-  // Lapis for strong, zardoʻzi gold for growing, clay for early.
+  // Rich gold for strong, deeper amber for growing, clay for early —
+  // the SendYurt Trust Score reads as an amber verification dial.
   const tone =
-    clamped >= 75 ? "#2f5096" : clamped >= 50 ? "#a67c28" : "#cf4e20";
+    clamped >= 75 ? "#d9a441" : clamped >= 50 ? "#c98a2e" : "#cf4e20";
 
   return (
     <div className="relative inline-flex items-center justify-center">

@@ -1,150 +1,49 @@
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { Card } from "@/components/ui/Card";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { SuzaniDivider } from "@/components/ornament/Suzani";
-import { currentPeriod, getMonthSummary } from "@/lib/budget-data";
-import { formatMoney } from "@/lib/format";
+import { BankCreditCard } from "@/components/bank/BankCreditCard";
+import { QuickTransfer } from "@/components/bank/QuickTransfer";
+import { AddFundsButton } from "@/components/budget/AddFundsButton";
+import {
+  BankArea,
+  BankExpensePie,
+  BankGroupedBars,
+} from "@/components/bank/charts";
+import { currentPeriod, getCategorySpend, getMonthSummary, getMonthlyTrend, getSavingsGoals } from "@/lib/budget-data";
+import { formatDate, formatMoney, formatMonth } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
-import { computeQuotes } from "@/lib/rates";
 import { requireUser } from "@/lib/session";
-import { computeTrustScore } from "@/lib/trust-score";
 
-async function getTrustScore(householdId: string): Promise<number> {
-  const since = new Date();
-  since.setUTCMonth(since.getUTCMonth() - 13);
-  const transactions = await prisma.transaction.findMany({
-    where: { householdId, status: "COMPLETED", date: { gte: since } },
-    select: { type: true, amount: true, date: true },
-  });
-  return computeTrustScore(
-    transactions.map((t) => ({ type: t.type, amount: t.amount.toNumber(), date: t.date })),
-  ).score;
-}
-
-async function RatesCard({
-  locale,
-  primary,
-  usualAmount,
-  usualCurrency,
+/* Section card shell ---------------------------------------------------- */
+function Card({
+  title,
+  action,
+  children,
+  className = "",
+  bodyClassName = "",
 }: {
-  locale: string;
-  primary: boolean;
-  usualAmount: number;
-  usualCurrency: string;
+  title: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+  className?: string;
+  bodyClassName?: string;
 }) {
-  const t = await getTranslations("dashboard");
-  const providers = await prisma.remittanceProvider.findMany();
-  const [best] = computeQuotes(providers, usualAmount, usualCurrency);
-
   return (
-    <Link href="/rates" className="group block h-full">
-      <Card accent={primary} className="flex h-full flex-col p-5 transition-shadow group-hover:shadow-lg">
-        <h2 className="font-display text-lg font-bold text-samarkand-950">
-          {t("cards.rates.title")}
-        </h2>
-        {best ? (
-          <>
-            <p className="mt-2 flex-1 text-sm text-sand-800">
-              {t("cards.rates.teaser", {
-                amount: formatMoney(usualAmount, usualCurrency, locale),
-                provider: best.providerName,
-              })}
-            </p>
-            <p className="mt-3 font-display text-xl font-extrabold text-samarkand-800">
-              ≈ {formatMoney(best.receivedUzs, "UZS", locale)}
-            </p>
-            <p className="mt-0.5 text-xs text-sand-600">{t("cards.rates.sample")}</p>
-          </>
-        ) : (
-          <p className="mt-2 flex-1 text-sm text-sand-800">{t("quickRates")}</p>
-        )}
-        <span className="mt-3 text-sm font-semibold text-samarkand-700 group-hover:underline">
-          {t("cards.rates.cta")} →
-        </span>
-      </Card>
-    </Link>
+    <section className={className}>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-[18px] font-semibold text-[#0f172a]">{title}</h2>
+        {action}
+      </div>
+      <div className={`bank-card ${bodyClassName}`}>{children}</div>
+    </section>
   );
 }
 
-async function BudgetCard({
-  householdId,
-  locale,
-  primary,
-}: {
-  householdId: string;
-  locale: string;
-  primary: boolean;
-}) {
-  const t = await getTranslations("dashboard");
-  const summary = await getMonthSummary(householdId, currentPeriod());
-
-  return (
-    <Link href="/budget" className="group block h-full">
-      <Card accent={primary} className="flex h-full flex-col p-5 transition-shadow group-hover:shadow-lg">
-        <h2 className="font-display text-lg font-bold text-samarkand-950">
-          {t("cards.budget.title")}
-        </h2>
-        <dl className="mt-3 flex-1 space-y-1.5 text-sm">
-          <div className="flex justify-between gap-2">
-            <dt className="text-sand-700">{t("cards.budget.income")}</dt>
-            <dd className="font-semibold text-samarkand-800">
-              {formatMoney(summary.incomeUzs, "UZS", locale)}
-            </dd>
-          </div>
-          <div className="flex justify-between gap-2">
-            <dt className="text-sand-700">{t("cards.budget.spent")}</dt>
-            <dd className="font-semibold text-terracotta-800">
-              {formatMoney(summary.spentUzs, "UZS", locale)}
-            </dd>
-          </div>
-          <div className="flex justify-between gap-2">
-            <dt className="text-sand-700">{t("cards.budget.saved")}</dt>
-            <dd className="font-semibold text-ink">
-              {formatMoney(summary.savedUzs, "UZS", locale)}
-            </dd>
-          </div>
-        </dl>
-        <span className="mt-3 text-sm font-semibold text-samarkand-700 group-hover:underline">
-          {t("cards.budget.cta")} →
-        </span>
-      </Card>
-    </Link>
-  );
-}
-
-async function TrustCard({
-  householdId,
-  primary,
-}: {
-  householdId: string;
-  primary: boolean;
-}) {
-  const t = await getTranslations("dashboard");
-  const score = await getTrustScore(householdId);
-
-  return (
-    <Link href="/trust" className="group block h-full">
-      <Card accent={primary} className="flex h-full flex-col p-5 transition-shadow group-hover:shadow-lg">
-        <h2 className="font-display text-lg font-bold text-samarkand-950">
-          {t("cards.trust.title")}
-        </h2>
-        <div className="mt-3 flex flex-1 items-center gap-4">
-          <span className="font-display text-4xl font-extrabold text-samarkand-800">
-            {score}
-          </span>
-          <div className="flex-1">
-            <ProgressBar value={score} max={100} label={t("cards.trust.title")} />
-            <p className="mt-1.5 text-xs text-sand-700">{t("cards.trust.hint")}</p>
-          </div>
-        </div>
-        <span className="mt-3 text-sm font-semibold text-samarkand-700 group-hover:underline">
-          {t("cards.trust.cta")} →
-        </span>
-      </Card>
-    </Link>
-  );
-}
+const TX_META: Record<string, { grad: string; icon: string; sign: string; tone: string }> = {
+  REMITTANCE: { grad: "from-[#d1fae5] to-[#d1fae5]", icon: "M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z", sign: "+", tone: "text-[#059669]" },
+  INCOME: { grad: "from-[#dcfce7] to-[#bbf7d0]", icon: "M12 3v18m6-12l-6-6-6 6", sign: "+", tone: "text-[#059669]" },
+  EXPENSE: { grad: "from-[#fff1e0] to-[#ffe6cf]", icon: "M3 6h18v13a2 2 0 01-2 2H5a2 2 0 01-2-2zM3 10h18", sign: "−", tone: "text-[#ef4444]" },
+  SAVINGS: { grad: "from-[#dcfce7] to-[#bbf7d0]", icon: "M20 12V8H6a2 2 0 010-4h12v4M4 6v12a2 2 0 002 2h14v-4", sign: "→", tone: "text-[#0f172a]" },
+};
 
 export default async function DashboardPage({
   params: { locale },
@@ -153,71 +52,177 @@ export default async function DashboardPage({
 }) {
   setRequestLocale(locale);
   const user = await requireUser();
-  const t = await getTranslations("dashboard");
+  const t = await getTranslations("bank");
+  const tCat = await getTranslations("budget");
   const currentLocale = await getLocale();
+  const period = currentPeriod();
 
-  const [household, prefs] = await Promise.all([
+  const [household, summary, trend, categories, recent, goals] = await Promise.all([
     prisma.household.findUnique({
       where: { id: user.householdId },
-      select: { name: true, inviteCode: true },
+      select: {
+        name: true,
+        inviteCode: true,
+        users: { orderBy: { createdAt: "asc" }, select: { id: true, name: true, image: true, role: true } },
+      },
     }),
-    prisma.user.findUnique({
-      where: { id: user.id },
-      select: { usualSendAmount: true, usualSendCurrency: true },
+    getMonthSummary(user.householdId, period),
+    getMonthlyTrend(user.householdId, period, 6),
+    getCategorySpend(user.householdId, period),
+    prisma.transaction.findMany({
+      where: { householdId: user.householdId, status: "COMPLETED" },
+      orderBy: { date: "desc" },
+      take: 4,
+      select: { id: true, type: true, amount: true, currency: true, category: true, date: true },
     }),
+    getSavingsGoals(user.householdId),
   ]);
-  const usualAmount = prefs?.usualSendAmount?.toNumber() ?? 400;
-  const usualCurrency = prefs?.usualSendCurrency ?? "USD";
 
-  const isSender = user.role === "SENDER";
+  const goalsLite = goals.map((g) => ({
+    id: g.id,
+    name: g.name,
+    currentAmount: g.currentAmount,
+    targetAmount: g.targetAmount,
+  }));
 
-  const cards = isSender
-    ? [
-        <RatesCard key="rates" locale={currentLocale} primary usualAmount={usualAmount} usualCurrency={usualCurrency} />,
-        <BudgetCard key="budget" householdId={user.householdId} locale={currentLocale} primary={false} />,
-        <TrustCard key="trust" householdId={user.householdId} primary={false} />,
-      ]
-    : [
-        <BudgetCard key="budget" householdId={user.householdId} locale={currentLocale} primary />,
-        <TrustCard key="trust" householdId={user.householdId} primary />,
-        <RatesCard key="rates" locale={currentLocale} primary={false} usualAmount={usualAmount} usualCurrency={usualCurrency} />,
-      ];
+  const totalSaved = trend.reduce((a, p) => a + p.savedUzs, 0);
+  const now = new Date();
+  const validThru = `${String(now.getMonth() + 1).padStart(2, "0")}/${String((now.getFullYear() + 4) % 100).padStart(2, "0")}`;
+  const code = household?.inviteCode ?? "00000000";
+  const cardNumber = `•••• •••• •••• ${code.slice(-4)}`;
+
+  const barData = trend.map((p) => ({
+    name: formatMonth(p.monthStart, currentLocale),
+    primary: p.incomeUzs,
+    secondary: p.spentUzs,
+  }));
+
+  let running = 0;
+  const areaData = trend.map((p) => {
+    running += p.savedUzs;
+    return { name: formatMonth(p.monthStart, currentLocale), value: running };
+  });
+
+  const pieSlices = categories
+    .filter((c) => c.spentUzs > 0)
+    .sort((a, b) => b.spentUzs - a.spentUzs)
+    .slice(0, 5)
+    .map((c) => ({ label: tCat(`categories.${c.category}`), value: c.spentUzs }));
+
+  const members = (household?.users ?? [])
+    .filter((m) => m.id !== user.id)
+    .map((m) => ({ id: m.id, name: m.name, image: m.image ?? null, role: m.role }));
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold text-samarkand-950 sm:text-3xl">
-          {t("greeting", { name: user.name ?? "" })}
-        </h1>
-        <p className="mt-1 text-sand-800">
-          {household ? `${household.name} · ` : ""}
-          {t(isSender ? "subtitleSender" : "subtitleReceiver")}
-        </p>
-        <SuzaniDivider className="mt-3 h-4 w-44 text-terracotta-300" />
+    <div className="mx-auto max-w-[1180px] space-y-7">
+      {/* Row 1: My Cards + Recent Transaction */}
+      <div className="grid gap-7 xl:grid-cols-3">
+        <Card
+          title={t("myCards")}
+          className="xl:col-span-2"
+          bodyClassName="!bg-transparent !shadow-none"
+          action={
+            <div className="flex items-center gap-3">
+              {goalsLite.length > 0 && <AddFundsButton goals={goalsLite} />}
+              <Link href="/budget/manage" className="text-[15px] font-semibold text-[#0f172a] hover:text-[#0a7c53]">
+                {t("seeAll")}
+              </Link>
+            </div>
+          }
+        >
+          <div className="grid gap-6 sm:grid-cols-2">
+            <BankCreditCard
+              variant="filled"
+              balanceLabel={t("balance")}
+              balance={formatMoney(totalSaved || summary.savedUzs, "UZS", currentLocale)}
+              holderLabel={t("cardHolder")}
+              holder={user.name ?? "—"}
+              validLabel={t("validThru")}
+              valid={validThru}
+              number={cardNumber}
+            />
+            <BankCreditCard
+              variant="light"
+              balanceLabel={t("income")}
+              balance={formatMoney(summary.incomeUzs, "UZS", currentLocale)}
+              holderLabel={t("cardHolder")}
+              holder={household?.name ?? "—"}
+              validLabel={t("validThru")}
+              valid={validThru}
+              number={cardNumber}
+            />
+          </div>
+        </Card>
+
+        <Card title={t("recentTransaction")}>
+          <div className="px-6 py-2">
+            {recent.length === 0 ? (
+              <p className="py-8 text-center text-sm text-[#64748b]">{t("noRecipients")}</p>
+            ) : (
+              recent.map((tx) => {
+                const meta = TX_META[tx.type] ?? TX_META.EXPENSE;
+                const label =
+                  tx.type === "EXPENSE" && tx.category
+                    ? tCat(`categories.${tx.category}`)
+                    : t(tx.type === "EXPENSE" ? "expense" : tx.type === "SAVINGS" ? "totalSaving" : "income");
+                return (
+                  <div key={tx.id} className="flex items-center gap-4 py-3.5">
+                    <span className={`grid h-[50px] w-[50px] shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${meta.grad}`}>
+                      <svg viewBox="0 0 24 24" className="h-5 w-5 text-[#0f172a]" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                        <path d={meta.icon} strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[15px] font-semibold text-[#0f172a]">{label}</p>
+                      <p className="text-[13px] text-[#94a3b8]">{formatDate(tx.date, currentLocale)}</p>
+                    </div>
+                    <span className={`shrink-0 text-[15px] font-semibold tabular-nums ${meta.tone}`}>
+                      {meta.sign}
+                      {formatMoney(tx.amount.toNumber(), tx.currency, currentLocale)}
+                    </span>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">{cards}</div>
-
-      {household && (
-        <Link href="/household" className="group block">
-          <Card className="bg-ikat p-5 transition-shadow group-hover:shadow-lg">
-            <h2 className="font-display text-lg font-bold text-samarkand-950">
-              {t("inviteTitle")}
-            </h2>
-            <p className="mt-1 text-sm text-sand-800">
-              {t("inviteBody")}
-            </p>
-            <div className="mt-3 flex flex-wrap items-center gap-3">
-              <code className="inline-block rounded-lg bg-samarkand-50 px-4 py-2 font-mono text-lg font-bold tracking-widest text-samarkand-800">
-                {household.inviteCode}
-              </code>
-              <span className="text-sm font-semibold text-samarkand-700 group-hover:underline">
-                {t("manageHousehold")} →
-              </span>
+      {/* Row 2: Weekly Activity + Expense Statistics */}
+      <div className="grid gap-7 xl:grid-cols-3">
+        <Card
+          title={t("weeklyActivity")}
+          className="xl:col-span-2"
+          bodyClassName="px-5 py-6"
+          action={
+            <div className="flex items-center gap-5 text-[13px]">
+              <span className="flex items-center gap-2 text-[#64748b]"><span className="h-3 w-3 rounded-full bg-[#0a7c53]" />{t("deposit")}</span>
+              <span className="flex items-center gap-2 text-[#64748b]"><span className="h-3 w-3 rounded-full bg-[#34d399]" />{t("withdraw")}</span>
             </div>
-          </Card>
-        </Link>
-      )}
+          }
+        >
+          <BankGroupedBars data={barData} primaryColor="#0a7c53" secondaryColor="#34d399" ariaLabel={t("weeklyActivity")} />
+        </Card>
+
+        <Card title={t("expenseStatistics")} bodyClassName="px-3 py-4">
+          {pieSlices.length > 0 ? (
+            <BankExpensePie slices={pieSlices} ariaLabel={t("expenseStatistics")} />
+          ) : (
+            <p className="py-16 text-center text-sm text-[#64748b]">—</p>
+          )}
+        </Card>
+      </div>
+
+      {/* Row 3: Quick Transfer + Balance History */}
+      <div className="grid gap-7 xl:grid-cols-3">
+        <Card title={t("quickTransfer")} bodyClassName="px-6 py-6">
+          <QuickTransfer members={members} />
+        </Card>
+
+        <Card title={t("balanceHistory")} className="xl:col-span-2" bodyClassName="px-5 py-6">
+          <BankArea data={areaData} ariaLabel={t("balanceHistory")} />
+        </Card>
+      </div>
     </div>
   );
 }

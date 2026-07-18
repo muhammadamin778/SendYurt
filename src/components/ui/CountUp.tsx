@@ -1,5 +1,6 @@
 "use client";
 
+import { clsx } from "clsx";
 import { useEffect, useState } from "react";
 
 /**
@@ -45,5 +46,7 @@ export function CountUp({
     };
   }, [value, durationMs]);
 
-  return <span className={className}>{display}</span>;
+  // Tabular figures keep the number from reflowing as digits change during
+  // the count and align stat columns — a fintech readability staple.
+  return <span className={clsx("tabular-nums", className)}>{display}</span>;
 }

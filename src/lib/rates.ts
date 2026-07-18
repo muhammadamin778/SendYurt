@@ -41,8 +41,11 @@ export function computeQuotes(
   providers: RemittanceProvider[],
   amount: number,
   currency: string,
+  /** UZS-per-source-currency table; defaults to the static sample rates.
+   *  The rate finder passes live rates from `getUzsRates()` (src/lib/fx.ts). */
+  rates: Record<string, number> = MID_MARKET_UZS,
 ): Quote[] {
-  const midMarketRate = MID_MARKET_UZS[currency];
+  const midMarketRate = rates[currency];
   if (!midMarketRate || !Number.isFinite(amount) || amount <= 0) return [];
 
   const quotes: Quote[] = [];

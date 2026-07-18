@@ -6,7 +6,7 @@ import { routing } from "@/i18n/routing";
 const intlMiddleware = createIntlMiddleware(routing);
 
 // Path segments (after the locale prefix) that require a session.
-const PROTECTED = ["dashboard", "budget", "rates", "trust", "household", "welcome", "summary", "help"];
+const PROTECTED = ["dashboard", "budget", "rates", "trust", "household", "welcome", "summary", "help", "profile"];
 // Auth pages a logged-in user should be bounced away from.
 const AUTH_PAGES = ["login", "register", "forgot-password", "reset-password"];
 
@@ -27,9 +27,12 @@ function localeOf(pathname: string): string {
 
 export default async function middleware(req: NextRequest) {
   // The site's landing page is the pitch site — serve it at the root URL
-  // without a locale prefix or redirect.
+  // without a locale prefix or redirect. Preserve the query string so the
+  // landing's ?lang= language switch reaches the page.
   if (req.nextUrl.pathname === "/") {
-    return NextResponse.rewrite(new URL("/pitch", req.url));
+    const url = new URL("/pitch", req.url);
+    url.search = req.nextUrl.search;
+    return NextResponse.rewrite(url);
   }
 
   const segment = firstSegmentAfterLocale(req.nextUrl.pathname);

@@ -1,74 +1,126 @@
-/* Pitch-page-only styles. The page commits to a deep ink-navy world with
-   bone type, teal trust signals and one amber accent — independent from
-   the product app's palette. */
+/* Pitch-page-only styles — a Monzo-inspired world, tuned for SendYurt:
+   hot coral as the one loud accent, deep navy ink, warm soft-white paper,
+   and a handful of candy section colours for colour-blocked storytelling.
+   Big radii, big friendly grotesk type, generous whitespace. Independent
+   from the product app's palette. */
 
-.f-serif { font-family: var(--font-pitch-serif), Georgia, serif; }
-.f-sans  { font-family: var(--font-pitch-sans), system-ui, sans-serif; }
-.f-mono  { font-family: var(--font-pitch-mono), ui-monospace, monospace; }
+:root {
+  --coral: #ff4f3d; /* SendYurt hot coral — rhymes with our terracotta */
+  --coral-deep: #e23a29; /* hover / pressed */
+  --coral-soft: #ffe3dd; /* tinted section blocks */
+  --navy: #0b1a30; /* headline + dark section ink */
+  --ink: #0f1b2d; /* body text */
+  --slate: #5a6b82; /* muted body */
+  --paper: #fbf6f0; /* warm page background */
+  --white: #ffffff;
 
-/* 1px hairlines that read as editorial rules, not borders */
-.hairline   { border-color: rgba(244, 239, 228, 0.08); }
-.hairline-strong { border-color: rgba(244, 239, 228, 0.16); }
+  /* Candy section blocks (Monzo-style colour-coding) */
+  --mint: #c8efd8;
+  --mint-ink: #0c6b49;
+  --butter: #ffe4ac;
+  --butter-ink: #7c5310;
+  --sky: #cfe0ff;
+  --sky-ink: #1b3f8f;
+  --lilac: #e6ddff;
+  --lilac-ink: #4b3aa0;
 
-/* Faint radial glow + grain behind the hero. Grain is a tiny inline SVG
-   noise tile at whisper opacity — no asset request, no banding. */
-.hero-atmosphere {
-  background:
-    radial-gradient(52rem 30rem at 72% -6rem, rgba(45, 212, 191, 0.09), transparent 60%),
-    radial-gradient(40rem 26rem at 12% 12rem, rgba(232, 163, 61, 0.07), transparent 65%);
+  --trust-green: #129e63;
 }
-.grain::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.35;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+
+.f-display { font-family: var(--font-pitch-display), system-ui, sans-serif; }
+.f-sans    { font-family: var(--font-pitch-sans), system-ui, sans-serif; }
+
+/* Soft hairline that reads as a friendly divider, not a hard border */
+.hairline        { border-color: rgba(11, 26, 48, 0.10); }
+.hairline-strong { border-color: rgba(11, 26, 48, 0.18); }
+
+/* ---- Buttons: big rounded pills, the Monzo signature ------------------ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  line-height: 1;
+  transition: transform 0.15s ease, background-color 0.2s ease,
+    border-color 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+}
+.btn:active { transform: translateY(1px); }
+
+.btn-coral {
+  background: var(--coral);
+  color: var(--white);
+}
+.btn-coral:hover { background: var(--coral-deep); }
+
+.btn-navy {
+  background: var(--navy);
+  color: var(--paper);
+}
+.btn-navy:hover { background: #05101f; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--navy);
+  border: 1.5px solid rgba(11, 26, 48, 0.22);
+}
+.btn-ghost:hover { border-color: rgba(11, 26, 48, 0.5); }
+
+.btn-light {
+  background: var(--white);
+  color: var(--navy);
+}
+.btn-light:hover { background: #f1ece4; }
+
+/* ---- Pills / chips ---------------------------------------------------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
-/* Infinite marquee: track holds the list twice; translate by half. */
+/* ---- Infinite marquee (kept from before) ------------------------------ */
 .marquee { overflow: hidden; }
 .marquee-track {
   display: flex;
   width: max-content;
-  animation: pitch-marquee 30s linear infinite;
+  animation: pitch-marquee 32s linear infinite;
 }
 .marquee:hover .marquee-track { animation-play-state: paused; }
 @keyframes pitch-marquee {
   to { transform: translateX(-50%); }
 }
 
-/* Scroll reveal. Content is VISIBLE by default (see Reveal.tsx); the
-   component only hides clearly-below-the-fold elements and fades them in,
-   so a slow load or missing JS never leaves the page blank. */
+/* ---- Scroll reveal (visible by default; see Reveal.tsx) ---------------- */
 .reveal {
   transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Card hover lift — restrained, ~200ms */
-.lift {
-  transition: transform 0.2s ease, border-color 0.2s ease;
-}
+/* ---- Card hover lift --------------------------------------------------- */
+.lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
 .lift:hover {
-  transform: translateY(-3px);
-  border-color: rgba(244, 239, 228, 0.18);
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px -20px rgba(11, 26, 48, 0.35);
 }
 
 /* Visible focus for keyboard users, tuned to the palette */
 .pitch a:focus-visible,
 .pitch button:focus-visible {
-  outline: 2px solid #e8a33d;
+  outline: 2.5px solid var(--coral);
   outline-offset: 3px;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .marquee-track { animation: none; }
-  .reveal {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
+  .reveal { opacity: 1; transform: none; transition: none; }
   .lift, .lift:hover { transform: none; transition: none; }
+  .btn:active { transform: none; }
 }

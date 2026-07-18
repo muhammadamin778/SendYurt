@@ -75,8 +75,10 @@ export function DesktopNav() {
             aria-current={active ? "page" : undefined}
             className={clsx(
               "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors",
+              // Trust & Authority active state: a quiet cobalt pill with an
+              // inset ring — clearly current without shouting.
               active
-                ? "bg-samarkand-50 text-samarkand-800"
+                ? "bg-samarkand-100 text-samarkand-900 shadow-[inset_0_0_0_1px_theme(colors.samarkand.300)]"
                 : "text-sand-800 hover:bg-sand-100 hover:text-ink",
             )}
           >
@@ -107,8 +109,11 @@ export function MobileNav() {
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 className={clsx(
-                  "flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium",
-                  active ? "text-samarkand-700" : "text-sand-700",
+                  "relative flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors",
+                  // Active tab carries a cobalt top-accent bar + trust color.
+                  active
+                    ? "text-samarkand-700 before:absolute before:inset-x-5 before:top-0 before:h-[2px] before:rounded-full before:bg-samarkand-700"
+                    : "text-sand-700",
                 )}
               >
                 <NavIcon name={item.key} />
