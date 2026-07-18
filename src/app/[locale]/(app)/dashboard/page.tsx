@@ -3,6 +3,7 @@ import { Link } from "@/i18n/navigation";
 import { BankCreditCard } from "@/components/bank/BankCreditCard";
 import { QuickTransfer } from "@/components/bank/QuickTransfer";
 import { AddFundsButton } from "@/components/budget/AddFundsButton";
+import { AddCardButton } from "@/components/bank/AddCardButton";
 import {
   BankArea,
   BankExpensePie,
@@ -123,6 +124,7 @@ export default async function DashboardPage({
           bodyClassName="!bg-transparent !shadow-none"
           action={
             <div className="flex items-center gap-3">
+              <AddCardButton />
               {goalsLite.length > 0 && <AddFundsButton goals={goalsLite} />}
               <Link href="/budget/manage" className="text-[15px] font-semibold text-[#0f172a] hover:text-[#0a7c53]">
                 {t("seeAll")}

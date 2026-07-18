@@ -577,3 +577,13 @@ html.has-custom-cursor * { cursor: none !important; }
 .bankdash input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 .bankdash select,
 .bankdash textarea { color: #0f172a; }
+
+/* Floating card animation for the "card added" success screen. */
+@keyframes card-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+.animate-card-float { animation: card-float 6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-card-float { animation: none; }
+}
