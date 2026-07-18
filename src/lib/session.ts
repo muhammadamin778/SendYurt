@@ -14,6 +14,8 @@ export type SessionUser = {
   image?: string | null;
   name?: string | null;
   email?: string | null;
+  /** "USER" | "ADMIN" — platform admin access, read fresh from the DB. */
+  adminRole: string;
 };
 
 /**
@@ -35,7 +37,7 @@ export const requireUser = cache(async (): Promise<SessionUser> => {
 
   const dbUser = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, householdId: true, accessRole: true, image: true },
+    select: { id: true, householdId: true, accessRole: true, image: true, adminRole: true },
   });
   if (!dbUser || dbUser.householdId !== session.user.householdId) {
     // Server components can't delete cookies mid-render; a dedicated
@@ -43,5 +45,5 @@ export const requireUser = cache(async (): Promise<SessionUser> => {
     redirect("/api/clear-session");
   }
 
-  return { ...session.user, accessRole: dbUser.accessRole, image: dbUser.image };
+  return { ...session.user, accessRole: dbUser.accessRole, image: dbUser.image, adminRole: dbUser.adminRole };
 });

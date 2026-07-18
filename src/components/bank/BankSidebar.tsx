@@ -78,11 +78,14 @@ export function BankSidebar({
   initial,
   image,
   roleLabel,
+  isAdmin = false,
 }: {
   name: string;
   initial: string;
   image: string | null;
   roleLabel: string;
+  /** Shows the admin-only jump link to /admin when true. */
+  isAdmin?: boolean;
 }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
@@ -130,6 +133,18 @@ export function BankSidebar({
 
       {/* Footer: CTA + user card + controls */}
       <div className="space-y-3 border-t border-[#eef2f7] px-3 pb-4 pt-4">
+        {isAdmin && (
+          <a
+            href="/admin"
+            className="flex items-center justify-center gap-2 rounded-xl bg-[#0f172a] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1f2a44]"
+          >
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+              <path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6zM9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Admin panel
+          </a>
+        )}
+
         <Link
           href="/rates"
           className="flex items-center justify-center gap-2 rounded-xl bg-[#0a7c53] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#065f3e]"

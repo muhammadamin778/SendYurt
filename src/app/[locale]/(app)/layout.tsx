@@ -23,6 +23,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         initial={initial}
         image={user.image ?? null}
         roleLabel={roleLabel}
+        isAdmin={user.adminRole === "ADMIN"}
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
