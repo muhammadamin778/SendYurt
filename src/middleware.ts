@@ -6,7 +6,7 @@ import { routing } from "@/i18n/routing";
 const intlMiddleware = createIntlMiddleware(routing);
 
 // Path segments (after the locale prefix) that require a session.
-const PROTECTED = ["dashboard", "budget", "rates", "trust", "household", "welcome", "summary", "help", "profile"];
+const PROTECTED = ["dashboard", "budget", "rates", "trust", "household", "welcome", "summary", "help", "profile", "admin"];
 // Auth pages a logged-in user should be bounced away from.
 const AUTH_PAGES = ["login", "register", "forgot-password", "reset-password"];
 
@@ -57,5 +57,5 @@ export default async function middleware(req: NextRequest) {
 export const config = {
   // Everything except API routes, Next internals, static files, and the
   // standalone (non-localized) pitch site.
-  matcher: ["/((?!api|_next|_vercel|pitch|admin|.*\\..*).*)"],
+  matcher: ["/((?!api|_next|_vercel|pitch|.*\\..*).*)"],
 };

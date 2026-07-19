@@ -134,7 +134,7 @@ export function BankSidebar({
       {/* Footer: CTA + user card + controls */}
       <div className="space-y-3 border-t border-[#eef2f7] px-3 pb-4 pt-4">
         {isAdmin && (
-          <a
+          <Link
             href="/admin"
             className="flex items-center justify-center gap-2 rounded-xl bg-[#0f172a] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1f2a44]"
           >
@@ -142,7 +142,7 @@ export function BankSidebar({
               <path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6zM9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             Admin panel
-          </a>
+          </Link>
         )}
 
         <Link

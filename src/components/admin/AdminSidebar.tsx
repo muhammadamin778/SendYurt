@@ -11,17 +11,8 @@ const ICON = {
   settings: "M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 13a7.8 7.8 0 000-2l1.8-1.4-1.8-3.1-2.2.9a7.8 7.8 0 00-1.7-1l-.3-2.3H9.6l-.3 2.3a7.8 7.8 0 00-1.7 1l-2.2-.9L3.6 9.6 5.4 11a7.8 7.8 0 000 2l-1.8 1.4 1.8 3.1 2.2-.9a7.8 7.8 0 001.7 1l.3 2.3h3.8l.3-2.3a7.8 7.8 0 001.7-1l2.2.9 1.8-3.1z",
   help: "M12 3a9 9 0 100 18 9 9 0 000-18zM9.5 9.3a2.5 2.5 0 114.1 1.9c-.8.7-1.6 1.2-1.6 2.3M12 16.8v.2",
   logout: "M15 12H3m0 0l4-4m-4 4l4 4M13 4h6a2 2 0 012 2v12a2 2 0 01-2 2h-6",
-  wallet: "M20 12V8H6a2 2 0 010-4h12v4M4 6v12a2 2 0 002 2h14v-4M18 12a2 2 0 100 4h4v-4z",
   plus: "M12 5v14M5 12h14",
 };
-
-const NAV = [
-  { href: "/admin", label: "Dashboard", icon: ICON.dashboard, exact: true },
-  { href: "/admin/users", label: "Users", icon: ICON.users },
-  { href: "/admin/transactions", label: "Transactions", icon: ICON.tx },
-  { href: "/admin/support", label: "Support", icon: ICON.support },
-  { href: "/admin/settings", label: "Settings", icon: ICON.settings },
-];
 
 function Glyph({ d, className = "h-5 w-5" }: { d: string; className?: string }) {
   return (
@@ -31,10 +22,19 @@ function Glyph({ d, className = "h-5 w-5" }: { d: string; className?: string }) 
   );
 }
 
-export function AdminSidebar() {
+export function AdminSidebar({ locale }: { locale: string }) {
   const pathname = usePathname();
-  const isActive = (href: string, exact?: boolean) =>
-    exact ? pathname === href : pathname === href || pathname.startsWith(href + "/");
+  const base = `/${locale}/admin`;
+
+  // Only the Dashboard is built so far — the rest arrive with the next
+  // designs, so they render as disabled placeholders (never a dead 404 link).
+  const NAV = [
+    { label: "Dashboard", icon: ICON.dashboard, href: base, ready: true },
+    { label: "Users", icon: ICON.users, href: `${base}/users`, ready: false },
+    { label: "Transactions", icon: ICON.tx, href: `${base}/transactions`, ready: false },
+    { label: "Support", icon: ICON.support, href: `${base}/support`, ready: false },
+    { label: "Settings", icon: ICON.settings, href: `${base}/settings`, ready: false },
+  ];
 
   return (
     <aside className="fixed left-0 top-0 z-50 flex h-full w-[260px] flex-col border-r border-[#bec9c0] bg-[#f3f4f5] p-4">
@@ -62,19 +62,26 @@ export function AdminSidebar() {
       {/* Nav */}
       <nav className="flex-1 space-y-1 overflow-y-auto">
         {NAV.map((item) => {
-          const active = isActive(item.href, item.exact);
+          const active = item.ready && pathname === item.href;
+          const cls = clsx(
+            "flex items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-semibold uppercase tracking-[0.05em] transition-all",
+            active
+              ? "bg-[#006c49] text-white shadow-[0_0_15px_-3px_rgba(0,108,73,0.3)]"
+              : item.ready
+                ? "text-[#3f4943] hover:bg-[#e7e8e9] hover:text-[#005136]"
+                : "cursor-not-allowed text-[#6f7a72]/60",
+          );
+          if (!item.ready) {
+            return (
+              <div key={item.label} className={cls} aria-disabled="true" title="Coming soon">
+                <Glyph d={item.icon} />
+                <span className="flex-1">{item.label}</span>
+                <span className="rounded-full bg-[#e1e3e4] px-1.5 py-0.5 text-[9px] font-bold tracking-normal text-[#6f7a72]">SOON</span>
+              </div>
+            );
+          }
           return (
-            <a
-              key={item.href}
-              href={item.href}
-              aria-current={active ? "page" : undefined}
-              className={clsx(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-semibold uppercase tracking-[0.05em] transition-all",
-                active
-                  ? "bg-[#006c49] text-white shadow-[0_0_15px_-3px_rgba(0,108,73,0.3)]"
-                  : "text-[#3f4943] hover:bg-[#e7e8e9] hover:text-[#005136]",
-              )}
-            >
+            <a key={item.label} href={item.href} aria-current={active ? "page" : undefined} className={cls}>
               <Glyph d={item.icon} />
               {item.label}
             </a>
@@ -84,9 +91,13 @@ export function AdminSidebar() {
 
       {/* Footer */}
       <div className="mt-auto space-y-1 border-t border-[#bec9c0] pt-4">
-        <a href="/en/help" className="group flex items-center gap-3 rounded-lg px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#3f4943] transition-colors hover:bg-[#e7e8e9]">
+        <a href={`/${locale}/help`} className="group flex items-center gap-3 rounded-lg px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#3f4943] transition-colors hover:bg-[#e7e8e9]">
           <span className="text-[#3f4943] group-hover:text-[#005136]"><Glyph d={ICON.help} /></span>
           Help Center
+        </a>
+        <a href={`/${locale}/dashboard`} className="flex items-center gap-3 rounded-lg px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#3f4943] transition-colors hover:bg-[#e7e8e9]">
+          <Glyph d="M4 21V10l8-6 8 6v11M9 21v-6h6v6" />
+          User App
         </a>
         <a href="/api/auth/signout" className="flex items-center gap-3 rounded-lg px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#ba1a1a] transition-colors hover:bg-[#ba1a1a]/5">
           <Glyph d={ICON.logout} />

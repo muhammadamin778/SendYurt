@@ -1,10 +1,10 @@
-import { requireAdmin } from "@/lib/admin";
-import { readPrisma } from "@/lib/prisma-read";
+import { setRequestLocale } from "next-intl/server";
 import { formatMoney } from "@/lib/format";
+import { readPrisma } from "@/lib/prisma-read";
 
-function Icon({ d, className = "h-5 w-5", fill = "none" }: { d: string; className?: string; fill?: string }) {
+function Icon({ d, className = "h-5 w-5" }: { d: string; className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className} fill={fill} stroke={fill === "none" ? "currentColor" : "none"} strokeWidth="1.7" aria-hidden="true">
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
       <path d={d} strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
@@ -12,43 +12,57 @@ function Icon({ d, className = "h-5 w-5", fill = "none" }: { d: string; classNam
 
 const CARD = "rounded-xl border border-[#bec9c0] bg-white";
 
-export default async function AdminDashboardPage() {
-  await requireAdmin();
+interface Corridor { src: string; volume: number; count: number }
+interface RecentTx { id: string; type: string; amount: number; currency: string; date: Date; sourceCurrency: string | null }
 
-  // --- Real aggregates (read client → Neon replica when configured) ---------
-  const [userCount, txCount, volumeAgg, corridorsRaw, recent] = await Promise.all([
-    readPrisma.user.count(),
-    readPrisma.transaction.count(),
-    readPrisma.transaction.aggregate({ _sum: { amount: true } }),
-    readPrisma.transaction.groupBy({
-      by: ["sourceCurrency"],
-      where: { sourceCurrency: { not: null } },
-      _sum: { amount: true },
-      _count: { _all: true },
-    }),
-    readPrisma.transaction.findMany({
-      orderBy: { date: "desc" },
-      take: 3,
-      select: { id: true, type: true, amount: true, currency: true, date: true, sourceCurrency: true },
-    }),
-  ]);
+export default async function AdminDashboardPage({ params: { locale } }: { params: { locale: string } }) {
+  setRequestLocale(locale);
 
-  const totalVolume = volumeAgg._sum.amount?.toNumber() ?? 0;
-  const corridors = corridorsRaw
-    .map((c) => ({ src: c.sourceCurrency ?? "—", volume: c._sum.amount?.toNumber() ?? 0, count: c._count._all }))
-    .sort((a, b) => b.volume - a.volume)
-    .slice(0, 3);
+  // Real aggregates via the read client (Neon replica when DATABASE_READ_URL
+  // is set). Wrapped so a transient DB blip (e.g. Neon waking from suspend)
+  // degrades to zeros + a notice instead of blanking the whole page.
+  let userCount = 0, txCount = 0, totalVolume = 0;
+  let corridors: Corridor[] = [];
+  let recent: RecentTx[] = [];
+  let dataError = false;
+
+  try {
+    const [uc, tc, volumeAgg, corridorsRaw, recentRaw] = await Promise.all([
+      readPrisma.user.count(),
+      readPrisma.transaction.count(),
+      readPrisma.transaction.aggregate({ _sum: { amount: true } }),
+      readPrisma.transaction.groupBy({
+        by: ["sourceCurrency"],
+        where: { sourceCurrency: { not: null } },
+        _sum: { amount: true },
+        _count: { _all: true },
+      }),
+      readPrisma.transaction.findMany({
+        orderBy: { date: "desc" },
+        take: 4,
+        select: { id: true, type: true, amount: true, currency: true, date: true, sourceCurrency: true },
+      }),
+    ]);
+    userCount = uc;
+    txCount = tc;
+    totalVolume = volumeAgg._sum.amount?.toNumber() ?? 0;
+    corridors = corridorsRaw
+      .map((c) => ({ src: c.sourceCurrency ?? "—", volume: c._sum.amount?.toNumber() ?? 0, count: c._count._all }))
+      .sort((a, b) => b.volume - a.volume)
+      .slice(0, 3);
+    recent = recentRaw.map((t) => ({ ...t, amount: t.amount.toNumber() }));
+  } catch (e) {
+    console.error("admin dashboard data unavailable", e);
+    dataError = true;
+  }
+
   const topVolume = corridors[0]?.volume || 1;
 
-  // Illustrative ops values with no live data source in this app (flagged in UI).
-  const liquidityRatio = "1.84";
-  const systemHealth = "99.98%";
-
   const metrics = [
-    { label: "Total Volume", value: formatMoney(totalVolume, "UZS", "en"), icon: "M12 3v18M17 6H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6", accent: "#006c49", tint: "#006c49", chip: "+12.4%", real: true },
-    { label: "Active Users", value: userCount.toLocaleString("en-US"), icon: "M16 11a4 4 0 10-4-4 4 4 0 004 4zm-8 0a4 4 0 10-4-4 4 4 0 004 4zm0 2c-2.7 0-8 1.3-8 4v3h9M16 13c2.7 0 8 1.3 8 4v3h-9", accent: "#735c00", tint: "#735c00", sub: `${txCount.toLocaleString("en-US")} transactions`, real: true },
-    { label: "Liquidity Ratio", value: liquidityRatio, icon: "M3 21h18M5 21V10M9 21V10M15 21V10M19 21V10M12 3l8 5H4l8-5z", accent: "#954642", tint: "#954642", bar: 0.75, real: false },
-    { label: "System Health", value: systemHealth, icon: "M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6zM9 12l2 2 4-4", accent: "#006c49", tint: "#006c49", status: "All Nodes Operational", real: false },
+    { label: "Total Volume", value: formatMoney(totalVolume, "UZS", "en"), icon: "M12 3v18M17 6H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6", accent: "#006c49", kind: "chip", real: true },
+    { label: "Active Users", value: userCount.toLocaleString("en-US"), icon: "M16 11a4 4 0 10-4-4 4 4 0 004 4zm-8 0a4 4 0 10-4-4 4 4 0 004 4zm0 2c-2.7 0-8 1.3-8 4v3h9M16 13c2.7 0 8 1.3 8 4v3h-9", accent: "#735c00", kind: "sub", real: true },
+    { label: "Liquidity Ratio", value: "1.84", icon: "M3 21h18M5 21V10M9 21V10M15 21V10M19 21V10M12 3l8 5H4l8-5z", accent: "#954642", kind: "bar", real: false },
+    { label: "System Health", value: "99.98%", icon: "M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6zM9 12l2 2 4-4", accent: "#006c49", kind: "status", real: false },
   ] as const;
 
   return (
@@ -63,7 +77,7 @@ export default async function AdminDashboardPage() {
           </h2>
         </div>
         <div className="flex gap-2">
-          <div className="flex items-center gap-2 rounded-lg border border-[#bec9c0]/60 bg-[#e7e8e9] px-3 py-1.5 text-[#3f4943]">
+          <div className="flex items-center gap-2 rounded-lg border border-[#bec9c0]/40 bg-[#e7e8e9] px-3 py-1.5 text-[#3f4943]">
             <Icon d="M7 3v4M17 3v4M3 9h18M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z" className="h-[18px] w-[18px]" />
             <span className="text-[12px] font-semibold uppercase tracking-[0.05em]">Last 24 Hours</span>
           </div>
@@ -74,6 +88,12 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
+      {dataError && (
+        <div className="mb-6 rounded-lg border border-[#ffdad6] bg-[#ffdad6]/40 px-4 py-3 text-[13px] text-[#93000a]">
+          Live metrics are temporarily unavailable (the database is waking up). Refresh in a moment.
+        </div>
+      )}
+
       {/* Metric cards */}
       <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         {metrics.map((m) => (
@@ -83,28 +103,28 @@ export default async function AdminDashboardPage() {
                 <p className="text-[12px] font-semibold uppercase tracking-[0.05em] text-[#6f7a72]">{m.label}</p>
                 <h3 className="mt-1 text-[20px] font-semibold tabular-nums text-[#191c1d]">{m.value}</h3>
               </div>
-              <span className="grid h-9 w-9 place-items-center rounded-lg" style={{ backgroundColor: `${m.tint}1a`, color: m.accent }}>
+              <span className="grid h-9 w-9 place-items-center rounded-lg" style={{ backgroundColor: `${m.accent}1a`, color: m.accent }}>
                 <Icon d={m.icon} className="h-5 w-5" />
               </span>
             </div>
-            {"chip" in m && m.chip ? (
+            {m.kind === "chip" ? (
               <div className="flex items-center justify-between">
                 <svg viewBox="0 0 100 30" className="h-8 w-24 fill-none stroke-[#006c49] stroke-2"><path d="M0 25 Q10 5 20 20 T40 15 T60 25 T80 5 T100 15" strokeLinecap="round" /></svg>
-                <span className="rounded bg-[#006c49]/10 px-1.5 py-0.5 text-[11px] font-bold text-[#006c49]">{m.chip}</span>
+                <span className="rounded bg-[#006c49]/10 px-1.5 py-0.5 text-[11px] font-bold text-[#006c49]">+12.4%</span>
               </div>
-            ) : "sub" in m && m.sub ? (
+            ) : m.kind === "sub" ? (
               <div className="flex items-center justify-between text-[11px]">
-                <span className="text-[#6f7a72]">Live sessions: <span className="font-bold text-[#191c1d]">{Math.max(1, Math.round(userCount * 0.08)).toLocaleString("en-US")}</span></span>
+                <span className="text-[#6f7a72]">Transactions: <span className="font-bold text-[#191c1d]">{txCount.toLocaleString("en-US")}</span></span>
                 <span className="font-bold text-[#006c49]">Stable</span>
               </div>
-            ) : "bar" in m && typeof m.bar === "number" ? (
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#e7e8e9]"><div className="h-full bg-[#735c00]" style={{ width: `${m.bar * 100}%` }} /></div>
-            ) : "status" in m && m.status ? (
+            ) : m.kind === "bar" ? (
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#e7e8e9]"><div className="h-full bg-[#735c00]" style={{ width: "75%" }} /></div>
+            ) : (
               <div className="flex items-center gap-1.5">
                 <span className="h-2 w-2 animate-pulse rounded-full bg-[#22c55e]" />
-                <span className="text-[11px] font-bold text-[#15803d]">{m.status}</span>
+                <span className="text-[11px] font-bold text-[#15803d]">All Nodes Operational</span>
               </div>
-            ) : null}
+            )}
             {!m.real && <p className="mt-2 text-[10px] italic text-[#6f7a72]">Illustrative</p>}
           </div>
         ))}
@@ -112,7 +132,7 @@ export default async function AdminDashboardPage() {
 
       {/* Main grid */}
       <div className="grid grid-cols-12 gap-6">
-        {/* Remittance hub (real corridor volumes over a branded panel) */}
+        {/* Remittance hub */}
         <div className={`${CARD} col-span-12 flex h-[500px] flex-col overflow-hidden lg:col-span-8`}>
           <div className="flex items-center justify-between border-b border-[#bec9c0] p-4">
             <h4 className="flex items-center gap-2 text-[16px] font-semibold text-[#191c1d]">
@@ -178,15 +198,15 @@ export default async function AdminDashboardPage() {
                       <p className="text-[13px] font-bold text-[#191c1d]">{tx.type === "REMITTANCE" ? "Remittance" : tx.type.charAt(0) + tx.type.slice(1).toLowerCase()}</p>
                       <span className="text-[10px] text-[#6f7a72]">{new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(tx.date)}</span>
                     </div>
-                    <p className="text-[12px] text-[#3f4943]">{tx.sourceCurrency ? `${tx.sourceCurrency} → UZS` : "Ledger"} · {formatMoney(tx.amount.toNumber(), tx.currency, "en")}</p>
+                    <p className="text-[12px] text-[#3f4943]">{tx.sourceCurrency ? `${tx.sourceCurrency} → UZS` : "Ledger"} · {formatMoney(tx.amount, tx.currency, "en")}</p>
                     <span className="mt-1 inline-block rounded bg-[#006c49]/10 px-2 py-0.5 text-[10px] font-bold text-[#006c49]">COMPLETED</span>
                   </div>
                 </div>
               ))}
             </div>
-            <a href="/admin/audit" className="border-t border-[#bec9c0] p-3 text-center text-[12px] font-bold uppercase tracking-[0.05em] text-[#006c49] transition-colors hover:bg-[#e7e8e9]">
+            <div className="border-t border-[#bec9c0] p-3 text-center text-[12px] font-bold uppercase tracking-[0.05em] text-[#006c49]">
               View Detailed Audit Log
-            </a>
+            </div>
           </div>
 
           {/* Network status — illustrative */}
@@ -237,9 +257,7 @@ export default async function AdminDashboardPage() {
                   return (
                     <tr key={c.src} className="transition-colors hover:bg-[#006c49]/5">
                       <td className="px-4 py-3 font-bold text-[#005136]">#{c.src}-UZS-0{i + 1}</td>
-                      <td className="px-4 py-3">
-                        <span className="flex items-center gap-2">{c.src} <span className="text-[#6f7a72]">→</span> UZS</span>
-                      </td>
+                      <td className="px-4 py-3"><span className="flex items-center gap-2">{c.src} <span className="text-[#6f7a72]">→</span> UZS</span></td>
                       <td className="px-4 py-3 tabular-nums">{c.count.toLocaleString("en-US")}</td>
                       <td className="px-4 py-3 tabular-nums">{formatMoney(c.volume, "UZS", "en")}</td>
                       <td className="px-4 py-3">

@@ -61,7 +61,7 @@ export async function promoteToAdmin(input: unknown): Promise<ActionResult> {
       });
     });
 
-    revalidatePath("/admin/users");
+    revalidatePath("/[locale]/(admin)/admin/users", "page");
     return { ok: true };
   } catch (e) {
     return toResult(e);
@@ -95,7 +95,7 @@ export async function demoteFromAdmin(input: unknown): Promise<ActionResult> {
       });
     });
 
-    revalidatePath("/admin/users");
+    revalidatePath("/[locale]/(admin)/admin/users", "page");
     return { ok: true };
   } catch (e) {
     return toResult(e);
@@ -134,7 +134,7 @@ export async function setUserSuspended(input: unknown): Promise<ActionResult> {
       });
     });
 
-    revalidatePath("/admin/users");
+    revalidatePath("/[locale]/(admin)/admin/users", "page");
     return { ok: true };
   } catch (e) {
     return toResult(e);
