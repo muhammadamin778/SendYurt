@@ -26,14 +26,12 @@ export function AdminSidebar({ locale }: { locale: string }) {
   const pathname = usePathname();
   const base = `/${locale}/admin`;
 
-  // Only the Dashboard is built so far — the rest arrive with the next
-  // designs, so they render as disabled placeholders (never a dead 404 link).
   const NAV = [
     { label: "Dashboard", icon: ICON.dashboard, href: base, ready: true },
     { label: "Users", icon: ICON.users, href: `${base}/users`, ready: true },
     { label: "Transactions", icon: ICON.tx, href: `${base}/transactions`, ready: true },
-    { label: "Support", icon: ICON.support, href: `${base}/support`, ready: false },
-    { label: "Settings", icon: ICON.settings, href: `${base}/settings`, ready: false },
+    { label: "Support", icon: ICON.support, href: `${base}/support`, ready: true },
+    { label: "Settings", icon: ICON.settings, href: `${base}/settings`, ready: true },
   ];
 
   return (
