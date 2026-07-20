@@ -129,7 +129,7 @@ function LangSwitch({ lang }: { lang: PitchLang }) {
           key={code}
           href={code === "en" ? "/" : `/?lang=${code}`}
           className={[
-            "rounded-full px-2.5 py-1 text-[12px] font-semibold transition-colors",
+            "rounded-full px-2 py-1 text-[11px] font-semibold transition-colors sm:px-2.5 sm:text-[12px]",
             code === lang ? "bg-[#0B1A30] text-[#f7f9fb]" : "text-[#5A6B82] hover:text-[#0B1A30]",
           ].join(" ")}
         >
@@ -159,7 +159,7 @@ export default function PitchPage({
     <div className="relative">
       {/* 1 · Sticky nav */}
       <header className="hairline sticky top-0 z-50 border-b bg-[#f7f9fb]/85 backdrop-blur-md">
-        <nav aria-label="Main" className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-5">
+        <nav aria-label="Main" className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:gap-3 sm:px-5">
           <a href="#top" aria-label="SendYurt — back to top">
             <Wordmark />
           </a>
@@ -169,12 +169,12 @@ export default function PitchPage({
             <a href="#features" className="transition-colors hover:text-[#0B1A30]">{c.nav.features}</a>
             <a href="#investors" className="transition-colors hover:text-[#0B1A30]">{c.nav.investors}</a>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <LangSwitch lang={lang} />
-            <a href={href("/login")} className="hidden text-[14px] font-semibold text-[#0B1A30] transition-colors hover:text-[#0a7c53] sm:inline">
+            <a href={href("/login")} className="whitespace-nowrap text-[13px] font-semibold text-[#0B1A30] transition-colors hover:text-[#0a7c53] sm:text-[14px]">
               {c.nav.login}
             </a>
-            <DemoButton locale={lang} className="btn btn-coral px-5 py-2.5 text-[14px]">
+            <DemoButton locale={lang} className="btn btn-coral px-3.5 py-2 text-[13px] sm:px-5 sm:py-2.5 sm:text-[14px]">
               {c.nav.cta}
             </DemoButton>
           </div>

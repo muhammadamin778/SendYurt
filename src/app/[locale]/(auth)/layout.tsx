@@ -17,6 +17,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <LanguageSwitcher />
           </div>
 
+          {/* Mobile-only hero image — desktop shows it in the right pane instead. */}
+          <div className="mt-6 overflow-hidden rounded-2xl bg-[linear-gradient(135deg,#006c49_0%,#2d3133_100%)] lg:hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/auth-hero.jpg" alt="SendYurt" className="h-44 w-full object-cover" />
+          </div>
+
           <div className="flex flex-1 items-center py-8">
             <div className="w-full max-w-md">{children}</div>
           </div>

@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { BackButton } from "@/components/BackButton";
 import { NotificationBell } from "@/components/NotificationBell";
+import { LogoutButton } from "@/components/LogoutButton";
 
 function useTitle(): string {
   const pathname = usePathname();
@@ -53,6 +54,13 @@ export function BankTopbar({
           </label>
 
           <NotificationBell />
+
+          {/* Mobile-only logout — on desktop this lives in the sidebar. */}
+          <LogoutButton className="grid h-[50px] w-[50px] shrink-0 place-items-center rounded-full text-[#64748b] transition-colors hover:bg-[#e2e8f0] hover:text-[#0f172a] disabled:opacity-60 lg:hidden">
+            <svg viewBox="0 0 24 24" className="h-[22px] w-[22px]" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+              <path d="M15 12H3m0 0l4-4m-4 4l4 4M13 4h6a2 2 0 012 2v12a2 2 0 01-2 2h-6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </LogoutButton>
 
           <Link
             href="/profile"
