@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { OnboardingCarousel } from "@/components/onboarding/OnboardingCarousel";
-import { Logo } from "@/components/Logo";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
+
+// The onboarding reference is Inter-exclusive.
+const inter = Inter({ subsets: ["latin"], display: "swap" });
 
 export const dynamic = "force-dynamic";
 
@@ -34,14 +37,23 @@ export default async function WelcomePage({
     redirect(`/${locale}/dashboard`);
   }
 
+  // The reference greets by first name ("Welcome home, Muhammadamin").
+  const firstName = (dbUser?.name ?? "").trim().split(/\s+/)[0] ?? "";
+
   return (
-    <div className="flex min-h-screen flex-col bg-girih bg-sand-50">
-      <header className="flex h-16 items-center justify-center">
-        <Logo />
-      </header>
-      <main className="flex flex-1 items-start justify-center px-4 py-6 sm:items-center sm:py-10">
-        <OnboardingCarousel name={dbUser?.name ?? ""} />
-      </main>
+    <div
+      className={`${inter.className} relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 py-10`}
+      style={{
+        backgroundColor: "#f8f9fa",
+        backgroundImage: "radial-gradient(circle at 2px 2px, rgba(190,201,192,0.4) 1px, transparent 0)",
+        backgroundSize: "40px 40px",
+      }}
+    >
+      {/* Ambient glows */}
+      <div aria-hidden className="pointer-events-none fixed -right-24 -top-24 h-96 w-96 rounded-full bg-[#9df4c8]/10 blur-[140px]" />
+      <div aria-hidden className="pointer-events-none fixed -bottom-24 -left-24 h-80 w-80 rounded-full bg-[#fed65b]/10 blur-[120px]" />
+
+      <OnboardingCarousel name={firstName} />
     </div>
   );
 }

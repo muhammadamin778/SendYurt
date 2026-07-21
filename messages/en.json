@@ -622,22 +622,26 @@
     "progress": "Step {current} of {total}",
     "skip": "Skip for now",
     "next": "Next",
-    "start": "Let's begin",
+    "back": "Back",
+    "continue": "Continue",
+    "goDashboard": "Go to Dashboard",
+    "reviewSettings": "Review Settings",
     "family": {
-      "title": "Welcome, {name}",
-      "body": "SendYurt is one home for your family's money — for those working abroad and those keeping the house. Everything here is shared with your household, and only your household."
-    },
-    "rates": {
-      "title": "Send more of what you earn",
-      "body": "Before sending money home, compare routes side by side. We sort by what your family actually receives in soʻm — fees and exchange margins included."
+      "title": "Welcome home, {name}",
+      "body": "SendYurt is one home for your family's money — for those working abroad and those keeping the house."
     },
     "budget": {
-      "title": "One budget, one family",
+      "title": "Manage together",
+      "subtitle": "One budget, one family",
       "body": "Log expenses, set monthly limits by category, and grow savings goals together. Everyone in the household sees the same honest picture."
     },
-    "trust": {
-      "title": "Let steady habits speak for you",
-      "body": "Regular transfers and steady saving build your family's Trust Score — a transparent record you can share when it matters. It grows month by month."
+    "rates": {
+      "title": "Optimized Remittances",
+      "body": "Before sending money home, compare routes side by side. We sort by what your family actually receives in soʻm — fees and exchange margins included."
+    },
+    "finish": {
+      "title": "Your journey begins here",
+      "body": "You're all set to experience secure, transparent, and family-focused finance. Let's head to your dashboard."
     }
   },
   "trust": {

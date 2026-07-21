@@ -622,22 +622,26 @@
     "progress": "{total} bosqichdan {current}-si",
     "skip": "Hozircha oʻtkazib yuborish",
     "next": "Keyingisi",
-    "start": "Boshlaymiz",
+    "back": "Orqaga",
+    "continue": "Davom etish",
+    "goDashboard": "Boshqaruv paneliga oʻtish",
+    "reviewSettings": "Sozlamalarni koʻrish",
     "family": {
-      "title": "Xush kelibsiz, {name}",
-      "body": "SendYurt — oilangiz pullari uchun yagona maskan: chet elda ishlayotganlar va uyni yuritayotganlar uchun. Bu yerdagi hamma narsa faqat xonadoningiz bilan ulashiladi."
-    },
-    "rates": {
-      "title": "Topganingizning koʻprogʻini yuboring",
-      "body": "Uyga pul yuborishdan oldin yoʻllarni yonma-yon solishtiring. Komissiya va kurs farqi hisobga olingan holda, oilangiz qoʻliga aslida qancha soʻm yetib borishiga qarab saralaymiz."
+      "title": "Uyingizga xush kelibsiz, {name}",
+      "body": "SendYurt — oilangiz pullari uchun yagona maskan: chet elda ishlayotganlar va uyni yuritayotganlar uchun."
     },
     "budget": {
-      "title": "Bitta byudjet, bitta oila",
+      "title": "Birga boshqaring",
+      "subtitle": "Bitta byudjet, bitta oila",
       "body": "Xarajatlarni kiriting, toifalar boʻyicha oylik chegara qoʻying va jamgʻarma maqsadlarini birga oʻstiring. Xonadondagi har kim bir xil halol manzarani koʻradi."
     },
-    "trust": {
-      "title": "Barqaror odatlar siz uchun gapirsin",
-      "body": "Muntazam oʻtkazmalar va barqaror jamgʻarish oilangizning Ishonch balini shakllantiradi — kerak paytda koʻrsatsa boʻladigan shaffof tarix. U oydan-oyga oʻsib boradi."
+    "rates": {
+      "title": "Optimallashtirilgan pul oʻtkazmalari",
+      "body": "Uyga pul yuborishdan oldin yoʻllarni yonma-yon solishtiring. Komissiya va kurs farqi hisobga olingan holda, oilangiz qoʻliga aslida qancha soʻm yetib borishiga qarab saralaymiz."
+    },
+    "finish": {
+      "title": "Sayohatingiz shu yerdan boshlanadi",
+      "body": "Siz xavfsiz, shaffof va oilaga yoʻnaltirilgan moliyani his qilishga tayyorsiz. Keling, boshqaruv panelingizga oʻtamiz."
     }
   },
   "trust": {
