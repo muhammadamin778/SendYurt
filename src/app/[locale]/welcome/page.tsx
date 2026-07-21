@@ -42,12 +42,7 @@ export default async function WelcomePage({
 
   return (
     <div
-      className={`${inter.className} relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 py-10`}
-      style={{
-        backgroundColor: "#f8f9fa",
-        backgroundImage: "radial-gradient(circle at 2px 2px, rgba(190,201,192,0.4) 1px, transparent 0)",
-        backgroundSize: "40px 40px",
-      }}
+      className={`onb-shell onb-bg ${inter.className} relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 py-10`}
     >
       {/* Ambient glows */}
       <div aria-hidden className="pointer-events-none fixed -right-24 -top-24 h-96 w-96 rounded-full bg-[#9df4c8]/10 blur-[140px]" />

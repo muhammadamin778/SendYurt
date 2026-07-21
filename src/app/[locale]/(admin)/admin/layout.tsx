@@ -32,7 +32,7 @@ export default async function AdminLayout({
   const initial = (admin.name ?? admin.email ?? "?").trim().charAt(0).toUpperCase();
 
   return (
-    <div className={`${inter.className} min-h-screen bg-[#f8f9fa] text-[#191c1d] antialiased`}>
+    <div className={`admin-shell ${inter.className} min-h-screen bg-[#f8f9fa] text-[#191c1d] antialiased`}>
       <AdminSidebar locale={locale} />
       <AdminTopbar name={admin.name || admin.email} initial={initial} role="Super Admin" />
       <main className="ml-[260px] min-h-screen p-6 pt-[72px]">{children}</main>

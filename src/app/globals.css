@@ -528,55 +528,196 @@ html.has-custom-cursor * { cursor: none !important; }
   font-size: 13px !important;
 }
 
-/* Neutralise dark-mode token remaps for legacy components reused inside the
-   shell (LanguageSwitcher, Badge, native form controls). */
+/* ── BankDash dark theme ────────────────────────────────────────────────
+   The app shell is light by default; in `.dark` it becomes a night-indigo
+   surface. Following this file's strategy (remap here, not per-file), the
+   BankDash hardcoded hex palette is mapped to night values. Legacy token
+   classes and component `dark:` variants are left to the global `.dark`
+   layer above (which supplies their intended night styling). */
+.dark .bankdash {
+  --background: 15 23 41;
+  --foreground: 230 236 248;
+  --card: 24 34 56;
+  --card-foreground: 230 236 248;
+  --popover: 24 34 56;
+  --popover-foreground: 230 236 248;
+  --primary: 52 211 153;
+  --primary-foreground: 15 23 41;
+  --secondary: 28 39 64;
+  --secondary-foreground: 196 215 239;
+  --muted: 28 39 64;
+  --muted-foreground: 143 163 196;
+  --accent: 32 48 79;
+  --accent-foreground: 196 215 239;
+  --border: 38 49 75;
+  --input: 42 55 82;
+  --ring: 52 211 153;
+  --chart-grid: #26314b;
+  --chart-axis: #8fa3c4;
+  background-color: #0f1729;
+  color: #e6ecf8;
+}
+
+/* Surfaces */
 .dark .bankdash .bg-white,
-.dark .bankdash .bg-white\/90 { background-color: #ffffff !important; }
-.dark .bankdash .bg-sand-50 { background-color: #f7f9fb !important; }
-.dark .bankdash .bg-sand-100 { background-color: #f1f5f9 !important; }
-.dark .bankdash .bg-sand-200 { background-color: #e9eef4 !important; }
-.dark .bankdash .bg-samarkand-50 { background-color: #eafaf1 !important; }
-.dark .bankdash .bg-samarkand-100 { background-color: #dcfce7 !important; }
-.dark .bankdash .text-ink,
-.dark .bankdash .text-samarkand-950,
-.dark .bankdash .text-samarkand-900 { color: #0f172a !important; }
-.dark .bankdash .text-samarkand-800,
-.dark .bankdash .text-samarkand-700 { color: #0a7c53 !important; }
-.dark .bankdash .text-sand-900,
-.dark .bankdash .text-sand-800,
-.dark .bankdash .text-sand-700 { color: #475569 !important; }
-.dark .bankdash .text-sand-600,
-.dark .bankdash .text-sand-500 { color: #64748b !important; }
-.dark .bankdash .border-sand-100,
-.dark .bankdash .border-sand-200,
-.dark .bankdash .border-sand-300 { border-color: #e2e8f0 !important; }
-.dark .bankdash .divide-sand-100 > :not([hidden]) ~ :not([hidden]) { border-color: #eef2f7 !important; }
-.dark .bankdash .hover\:bg-sand-100:hover { background-color: #f1f5f9 !important; }
-.dark .bankdash input::placeholder,
-.dark .bankdash textarea::placeholder { color: #94a3b8 !important; }
-/* Neutralise `dark:` variant utilities carried by reused legacy components
-   (GoalCard, budget forms) so they don't flip dark inside the light shell. */
-.dark .bankdash .dark\:bg-night-raised { background-color: #ffffff !important; }
-.dark .bankdash .dark\:border-night-line { border-color: #e2e8f0 !important; }
-.dark .bankdash .dark\:text-white { color: #0f172a !important; }
-.dark .bankdash .dark\:text-night-soft { color: #64748b !important; }
-.dark .bankdash .dark\:text-samarkand-100 { color: #0f172a !important; }
-.dark .bankdash .dark\:text-samarkand-300,
-.dark .bankdash .dark\:text-samarkand-200 { color: #0a7c53 !important; }
-.dark .bankdash .dark\:hover\:text-white:hover { color: #0f172a !important; }
-.dark .bankdash .dark\:bg-night,
-.dark .bankdash .dark\:bg-night-raised { background-color: #ffffff !important; }
-.dark .bankdash .dark\:bg-samarkand-600 { background-color: #0a7c53 !important; }
-.dark .bankdash .dark\:bg-zar-950 { background-color: #fbf7ec !important; }
-.dark .bankdash .dark\:border-zar-700,
-.dark .bankdash .dark\:border-zar-800 { border-color: #e7d29a !important; }
-.dark .bankdash .dark\:text-night-line { color: #e2e8f0 !important; }
-.dark .bankdash .dark\:text-zar-400 { color: #a67c28 !important; }
+.dark .bankdash .bg-\[\#ffffff\] { background-color: #182238 !important; }
+.dark .bankdash .bg-white\/90 { background-color: rgb(24 34 56 / 0.92) !important; }
+.dark .bankdash .bg-\[\#f8fafc\],
+.dark .bankdash .bg-\[\#f7f9fb\] { background-color: #0f1729 !important; }
+.dark .bankdash .bg-\[\#f1f5f9\],
+.dark .bankdash .bg-\[\#f2f4f6\],
+.dark .bankdash .bg-\[\#eef2f7\],
+.dark .bankdash .bg-\[\#eef2f6\] { background-color: #1c2740 !important; }
+/* Any translucent white (floating widgets, knobs, pills) → dark glass */
+.dark .bankdash [class*="bg-white/"] { background-color: rgb(24 34 56 / 0.9) !important; }
+.dark .bankdash .bg-\[\#f1f5f9\]\/85 { background-color: rgb(15 23 41 / 0.85) !important; }
+.dark .bankdash .bg-\[\#f1f5f9\]\/70 { background-color: rgb(15 23 41 / 0.7) !important; }
+.dark .bankdash .bg-\[\#e6e8ea\],
+.dark .bankdash .bg-\[\#e9eef4\],
+.dark .bankdash .bg-\[\#e0e3e5\],
+.dark .bankdash .bg-\[\#e2e8f0\] { background-color: #243352 !important; }
+
+/* Text */
+.dark .bankdash .text-\[\#0f172a\],
+.dark .bankdash .text-\[\#131b2e\] { color: #e6ecf8 !important; }
+.dark .bankdash .text-\[\#64748b\] { color: #8fa3c4 !important; }
+.dark .bankdash .text-\[\#94a3b8\],
+.dark .bankdash .text-\[\#848484\],
+.dark .bankdash .text-\[\#7e7576\] { color: #6f83a6 !important; }
+.dark .bankdash .text-\[\#0a7c53\],
+.dark .bankdash .text-\[\#065f3e\],
+.dark .bankdash .text-\[\#059669\],
+.dark .bankdash .text-\[\#00714d\] { color: #34d399 !important; }
+.dark .bankdash .text-\[\#653e00\] { color: #f5b544 !important; }
+
+/* Lines */
+.dark .bankdash .border-\[\#e2e8f0\],
+.dark .bankdash .border-\[\#eef2f7\],
+.dark .bankdash .border-\[\#eef2f6\],
+.dark .bankdash .border-\[\#e8edf3\] { border-color: #26314b !important; }
+.dark .bankdash .border-\[\#cbd5e1\],
+.dark .bankdash .border-\[\#cfc4c5\] { border-color: #2a3752 !important; }
+.dark .bankdash .divide-\[\#eef2f7\] > :not([hidden]) ~ :not([hidden]),
+.dark .bankdash .divide-\[\#e2e8f0\] > :not([hidden]) ~ :not([hidden]) { border-color: #26314b !important; }
+
+/* Pastel tints → subtle night tints */
+.dark .bankdash .bg-\[\#dcfce7\],
+.dark .bankdash .bg-\[\#d1fae5\],
+.dark .bankdash .bg-\[\#bbf7d0\] { background-color: rgb(52 211 153 / 0.14) !important; }
+.dark .bankdash .bg-\[\#fff5d9\],
+.dark .bankdash .bg-\[\#ffddb8\],
+.dark .bankdash .bg-\[\#fff1e0\],
+.dark .bankdash .bg-\[\#ffe6cf\],
+.dark .bankdash .bg-\[\#fff0d1\] { background-color: rgb(217 164 65 / 0.16) !important; }
+.dark .bankdash .bg-\[\#fee2e2\],
+.dark .bankdash .bg-\[\#ffdad6\] { background-color: rgb(239 68 68 / 0.16) !important; }
+
+/* Card / input / chrome */
+.dark .bankdash .bank-card {
+  background-color: #182238;
+  border-color: #26314b;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+.dark .bankdash .bank-input {
+  background-color: #182238;
+  border-color: #2a3752;
+  color: #e6ecf8;
+}
+.dark .bankdash .bank-input::placeholder { color: #5c6f8f; }
+.dark .bankdash .bank-input:focus { border-color: #34d399; box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.18); }
+.dark .bankdash .hover\:bg-sand-100:hover { background-color: #1c2740 !important; }
 /* Score dial track reads on a white card */
 .bankdash .dial-track { stroke: #eef2f7; }
 .bankdash input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 .bankdash select,
 .bankdash textarea { color: #0f172a; }
+
+/* App chrome, night variant */
+.dark .bankdash .dial-track { stroke: #26314b; }
+.dark .bankdash input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.dark .bankdash select,
+.dark .bankdash textarea { color: #e6ecf8; }
+.dark .bankdash input::placeholder,
+.dark .bankdash textarea::placeholder { color: #5c6f8f; }
+.dark .bankdash .recharts-text { fill: #8fa3c4; }
+.dark .bankdash .recharts-cartesian-grid line { stroke: #26314b; }
+.dark .bankdash .recharts-default-tooltip {
+  background-color: #182238 !important;
+  border-color: #26314b !important;
+  color: #dce4f2;
+}
+.dark .bankdash .recharts-legend-item-text { color: #aab8d2 !important; }
+
+/* =====================================================================
+   Admin console + onboarding — dark theme.
+   Both use the Material-3 green token palette (light hex baked into the
+   markup). In `.dark` they adopt the same night-indigo surfaces as the
+   app. Scoped to `.admin-shell` / `.onb-shell` so the remaps never leak.
+===================================================================== */
+.dark .admin-shell,
+.dark .onb-shell {
+  background-color: #0f1729;
+  color: #e6ecf8;
+}
+/* Surfaces */
+.dark .admin-shell .bg-white,
+.dark .onb-shell .bg-white,
+.dark .admin-shell .bg-\[\#ffffff\],
+.dark .onb-shell .bg-\[\#ffffff\] { background-color: #182238 !important; }
+.dark .admin-shell .bg-\[\#f8f9fa\],
+.dark .onb-shell .bg-\[\#f8f9fa\] { background-color: #0f1729 !important; }
+.dark .admin-shell .bg-\[\#f3f4f5\],
+.dark .onb-shell .bg-\[\#f3f4f5\],
+.dark .admin-shell .bg-\[\#edeeef\],
+.dark .onb-shell .bg-\[\#edeeef\] { background-color: #1c2740 !important; }
+.dark .admin-shell .bg-\[\#e7e8e9\],
+.dark .onb-shell .bg-\[\#e7e8e9\],
+.dark .admin-shell .bg-\[\#e1e3e4\],
+.dark .onb-shell .bg-\[\#e1e3e4\],
+.dark .admin-shell .bg-\[\#bec9c0\],
+.dark .onb-shell .bg-\[\#bec9c0\] { background-color: #243352 !important; }
+/* Text */
+.dark .admin-shell .text-\[\#191c1d\],
+.dark .onb-shell .text-\[\#191c1d\] { color: #e6ecf8 !important; }
+.dark .admin-shell .text-\[\#3f4943\],
+.dark .onb-shell .text-\[\#3f4943\] { color: #aab8d2 !important; }
+.dark .admin-shell .text-\[\#6f7a72\],
+.dark .onb-shell .text-\[\#6f7a72\] { color: #8fa3c4 !important; }
+.dark .admin-shell .text-\[\#005136\],
+.dark .onb-shell .text-\[\#005136\],
+.dark .admin-shell .text-\[\#006c49\],
+.dark .onb-shell .text-\[\#006c49\] { color: #81d8ad !important; }
+/* Lines */
+.dark .admin-shell .border-\[\#bec9c0\],
+.dark .onb-shell .border-\[\#bec9c0\] { border-color: #26314b !important; }
+.dark .admin-shell .divide-\[\#bec9c0\] > :not([hidden]) ~ :not([hidden]),
+.dark .onb-shell .divide-\[\#bec9c0\] > :not([hidden]) ~ :not([hidden]) { border-color: #26314b !important; }
+/* Opacity variants of the neutral outline token (border-[#bec9c0]/30, /40, /60) */
+.dark .admin-shell [class*="border-[#bec9c0]"],
+.dark .onb-shell [class*="border-[#bec9c0]"] { border-color: #26314b !important; }
+/* Green heading token incl. opacity variants (e.g. the onboarding subtitle) */
+.dark .onb-shell [class*="text-[#005136]"] { color: #81d8ad !important; }
+/* Native form controls + recharts */
+.dark .admin-shell input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.dark .admin-shell select,
+.dark .admin-shell textarea,
+.dark .onb-shell input,
+.dark .onb-shell textarea { color: #e6ecf8; }
+.dark .admin-shell input::placeholder,
+.dark .admin-shell textarea::placeholder { color: #5c6f8f; }
+.dark .admin-shell .recharts-text { fill: #8fa3c4; }
+.dark .admin-shell .recharts-cartesian-grid line { stroke: #26314b; }
+
+/* Onboarding dotted-pattern canvas — theme-aware. */
+.onb-bg {
+  background-color: #f8f9fa;
+  background-image: radial-gradient(circle at 2px 2px, rgba(190, 201, 192, 0.4) 1px, transparent 0);
+  background-size: 40px 40px;
+}
+.dark .onb-bg {
+  background-color: #0f1729;
+  background-image: radial-gradient(circle at 2px 2px, rgba(140, 165, 210, 0.1) 1px, transparent 0);
+}
 
 /* Floating card animation for the "card added" success screen. */
 @keyframes card-float {
