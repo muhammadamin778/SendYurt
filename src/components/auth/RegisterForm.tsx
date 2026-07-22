@@ -103,7 +103,6 @@ export function RegisterForm() {
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
-  const [formInfo, setFormInfo] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const pw = useMemo(() => passwordStrength(password), [password]);
@@ -123,47 +122,44 @@ export function RegisterForm() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setFormError(null);
-    setFormInfo(null);
     if (!validate()) return;
 
     setSubmitting(true);
     try {
-      // Sign up with Supabase Auth. The database trigger creates the
-      // profile + wallet(0); the family role and household choice ride in
-      // user metadata and are applied when the account first reaches the app.
+      // Create the account via a server-side RPC that provisions an
+      // already-confirmed user (the DB trigger then creates the profile +
+      // wallet(0)). This avoids Supabase's confirmation email — whose small
+      // built-in quota otherwise fails sign-up with "email rate limit
+      // exceeded". The family role + household choice ride in user metadata
+      // and are applied when the account first reaches the app.
       const supabase = createBrowserSupabase();
-      const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/${locale}/welcome`,
-          data: {
-            full_name: name.trim(),
-            role,
-            household_mode: householdMode,
-            household_name: householdMode === "create" ? householdName.trim() : undefined,
-            invite_code: householdMode === "join" ? inviteCode.trim().toUpperCase() : undefined,
-          },
-        },
+      const { error: signupError } = await supabase.rpc("app_signup", {
+        p_email: email.trim(),
+        p_password: password,
+        p_full_name: name.trim(),
+        p_role: role,
+        p_household_mode: householdMode,
+        p_household_name: householdMode === "create" ? householdName.trim() : null,
+        p_invite_code: householdMode === "join" ? inviteCode.trim().toUpperCase() : null,
       });
 
-      if (error) {
-        if (/already registered|already exists|user already/i.test(error.message)) {
-          setFieldErrors({ email: t("errorEmailTaken") });
-        } else if (/rate limit/i.test(error.message)) {
-          setFormError(t("errorRateLimited"));
-        } else {
-          setFormError(error.message || t("errorGeneric"));
-        }
+      if (signupError) {
+        const msg = signupError.message || "";
+        if (/EMAIL_TAKEN/.test(msg)) setFieldErrors({ email: t("errorEmailTaken") });
+        else if (/INVALID_EMAIL/.test(msg)) setFieldErrors({ email: t("errorInvalidEmail") });
+        else if (/WEAK_PASSWORD/.test(msg)) setFieldErrors({ password: t("errorPasswordWeak") });
+        else setFormError(msg || t("errorGeneric"));
         setSubmitting(false);
         return;
       }
 
-      // When email confirmation is enabled, there's no session yet — the user
-      // must click the link in their inbox. Otherwise we're signed in.
-      if (!data.session) {
-        setFormInfo(t("checkEmailToConfirm"));
-        setSubmitting(false);
+      // Sign straight in with the same credentials.
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (signInError) {
+        window.location.assign(`/${locale}/login`);
         return;
       }
       window.location.assign(`/${locale}/welcome`);
@@ -182,11 +178,6 @@ export function RegisterForm() {
         {formError && (
           <p role="alert" className="rounded-xl border border-[#fecaca] bg-[#fef2f2] px-3.5 py-2.5 text-[13px] font-medium text-[#b91c1c]">
             {formError}
-          </p>
-        )}
-        {formInfo && (
-          <p role="status" className="rounded-xl border border-[#0a7c53]/25 bg-[#0a7c53]/[0.06] px-3.5 py-2.5 text-[13px] font-medium text-[#065f3e]">
-            {formInfo}
           </p>
         )}
 

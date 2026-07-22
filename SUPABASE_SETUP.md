@@ -18,12 +18,18 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_xns7Vtxbr0hqeE21U59M8Q_khDkx1RF
 (The existing `DATABASE_URL` / Neon and `NEXTAUTH_*` vars stay as they are.)
 The publishable key is safe to expose to the browser.
 
-## 2. Supabase dashboard settings
+## 2. Sign-up flow (no email required)
 
-- **Email confirmations** (Authentication → Sign In / Providers → Email):
-  - Leave **on** → new sign-ups must click a link in their inbox before they
-    can log in (the register form shows a "check your email" message).
-  - Turn **off** → sign-ups are logged in immediately (smoother for a demo).
+Sign-up goes through the `app_signup()` database function, which creates an
+**already-confirmed** user and signs them straight in — so it never sends a
+confirmation email. This deliberately sidesteps Supabase's built-in email
+service, whose tiny hourly quota was failing sign-ups with
+`over_email_send_rate_limit` ("email rate limit exceeded" / HTTP 429).
+
+You therefore do **not** need to touch the "Confirm email" setting for sign-up
+to work. If you later want the standard emailed-confirmation flow instead,
+configure custom SMTP (Authentication → Emails) for a real sending quota.
+
 - **Google OAuth** (deferred): to enable the "Continue with Google" flow later,
   add your Google client ID/secret under Authentication → Providers → Google
   and set the redirect URL. The button isn't wired yet.
@@ -34,6 +40,8 @@ The publishable key is safe to expose to the browser.
   rows; all money movement is via RPC only (no direct table writes).
 - Trigger `on_auth_user_created` → creates a `profile` + `wallet` (balance 0) for
   every new auth user.
+- `app_signup(email, password, …)` — creates a confirmed auth user + identity
+  (so sign-up never needs a confirmation email); the client then signs in.
 - `transfer_funds(recipient_email, amount, note)` — atomic: checks funds, debits
   sender, credits recipient, logs the transaction, and rolls the whole thing back
   on insufficient funds or an unknown recipient.
