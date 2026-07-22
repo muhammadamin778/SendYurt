@@ -1,9 +1,7 @@
 import { AdminRole } from "@prisma/client";
-import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { cache } from "react";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { getAppSession } from "@/lib/supabase/app-session";
 
 export interface AdminUser {
   id: string;
@@ -13,26 +11,23 @@ export interface AdminUser {
 
 /**
  * Server-side admin guard for layouts and pages (React Server Components).
- * The admin role is read fresh from the database on every request — a JWT
- * can outlive a demotion — and the check redirects rather than throwing so
- * it composes with `/admin/layout.tsx`. Wrapped in `cache()` so the layout
- * and the page it wraps share a single lookup per request.
+ * The admin role is read fresh from the database (via the bridged session) on
+ * every request — a stale session can outlive a demotion — and the check
+ * redirects rather than throwing so it composes with `/admin/layout.tsx`.
+ * Wrapped in `cache()` so the layout and page share a single lookup.
  *
  * Redirects: unauthenticated → login; authenticated-but-not-admin → home
  * (a soft 403 that doesn't reveal the admin area exists).
  */
 export const requireAdmin = cache(async (): Promise<AdminUser> => {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) redirect("/en/login");
+  const session = await getAppSession();
+  if (!session) redirect("/en/login");
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { id: true, email: true, name: true, adminRole: true, suspended: true },
-  });
-  if (!user || user.suspended || user.adminRole !== AdminRole.ADMIN) {
+  const { db } = session;
+  if (db.suspended || db.adminRole !== AdminRole.ADMIN) {
     redirect("/");
   }
-  return { id: user.id, email: user.email, name: user.name };
+  return { id: db.id, email: db.email, name: db.name };
 });
 
 /**
@@ -40,18 +35,15 @@ export const requireAdmin = cache(async (): Promise<AdminUser> => {
  * redirecting (redirects are meaningless in an action), so a mutation aborts
  * before it touches the database when the caller isn't an admin. Returns the
  * acting admin's id for the audit trail. Read fresh from the DB every call —
- * never trust the session's cached role for a privileged write.
+ * never trust a cached role for a privileged write.
  */
 export async function assertAdmin(): Promise<{ adminId: string }> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) throw new Error("unauthorized");
+  const session = await getAppSession();
+  if (!session) throw new Error("unauthorized");
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { id: true, adminRole: true, suspended: true },
-  });
-  if (!user || user.suspended || user.adminRole !== AdminRole.ADMIN) {
+  const { db } = session;
+  if (db.suspended || db.adminRole !== AdminRole.ADMIN) {
     throw new Error("forbidden");
   }
-  return { adminId: user.id };
+  return { adminId: db.id };
 }

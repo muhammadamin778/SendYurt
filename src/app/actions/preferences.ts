@@ -1,9 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getServerSession } from "next-auth";
 import { z } from "zod";
-import { authOptions } from "@/lib/auth";
+import { getAppSession } from "@/lib/supabase/app-session";
 import { prisma } from "@/lib/prisma";
 import { SOURCE_CURRENCIES } from "@/lib/rates";
 
@@ -16,7 +15,7 @@ const usualSchema = z.object({
 export async function saveUsualPreference(
   input: unknown,
 ): Promise<{ ok: boolean }> {
-  const session = await getServerSession(authOptions);
+  const session = await getAppSession();
   if (!session?.user?.id) return { ok: false };
 
   const parsed = usualSchema.safeParse(input);

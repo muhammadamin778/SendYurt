@@ -1,9 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getServerSession } from "next-auth";
 import { z } from "zod";
-import { authOptions } from "@/lib/auth";
+import { getAppSession } from "@/lib/supabase/app-session";
 import { prisma } from "@/lib/prisma";
 
 const schema = z.object({
@@ -23,7 +22,7 @@ const removeSchema = z.object({ memberId: z.string().min(1) });
 export type HouseholdActionResult = { ok: true } | { ok: false; error: string };
 
 async function requireAdmin(): Promise<{ userId: string; householdId: string } | null> {
-  const session = await getServerSession(authOptions);
+  const session = await getAppSession();
   if (!session?.user?.id) return null;
   const actor = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -101,7 +100,7 @@ export async function removeMember(input: unknown): Promise<HouseholdActionResul
  * role — that guarantees at least one admin (the actor) always remains.
  */
 export async function setMemberAccess(input: unknown): Promise<HouseholdActionResult> {
-  const session = await getServerSession(authOptions);
+  const session = await getAppSession();
   if (!session?.user?.id) return { ok: false, error: "unauthorized" };
 
   const parsed = schema.safeParse(input);

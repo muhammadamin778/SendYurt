@@ -24,7 +24,8 @@
     "help": "Yordam",
     "sendMoney": "Pul yuborish",
     "support": "Yordam markazi",
-    "history": "Tarix"
+    "history": "Tarix",
+    "wallet": "Hamyon"
   },
   "profile": {
     "title": "Profilingiz",
@@ -234,6 +235,7 @@
     "errorHouseholdNameShort": "Iltimos, xonadonga nom bering.",
     "errorInviteCodeFormat": "Taklif kodi 8 ta belgidan iborat.",
     "errorEmailTaken": "Bu email bilan hisob allaqachon mavjud.",
+    "checkEmailToConfirm": "Deyarli tayyor — emailingizni tekshiring va hisobingizni faollashtirish uchun tasdiqlash havolasini bosing.",
     "errorInviteCodeInvalid": "Bu kod bilan xonadon topilmadi. Oilangiz bilan tekshirib koʻring.",
     "errorRateLimited": "Urinishlar juda koʻp. Biroz kutib, qaytadan urinib koʻring.",
     "errorPasswordMismatch": "Parollar mos kelmadi.",

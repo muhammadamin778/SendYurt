@@ -1,12 +1,11 @@
 "use server";
 
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getAppSession } from "@/lib/supabase/app-session";
 import { prisma } from "@/lib/prisma";
 
 /** Marks the first-run walkthrough as seen (finished or skipped). */
 export async function completeOnboarding(): Promise<{ ok: boolean }> {
-  const session = await getServerSession(authOptions);
+  const session = await getAppSession();
   if (!session?.user?.id) return { ok: false };
 
   try {

@@ -10,6 +10,7 @@ import { LogoutButton } from "@/components/LogoutButton";
 
 type IconName =
   | "dashboard"
+  | "wallet"
   | "rates"
   | "budget"
   | "trust"
@@ -21,6 +22,7 @@ type IconName =
 
 const NAV: { href: string; key: string; icon: IconName }[] = [
   { href: "/dashboard", key: "dashboard", icon: "dashboard" },
+  { href: "/wallet", key: "wallet", icon: "wallet" },
   { href: "/rates", key: "rates", icon: "rates" },
   { href: "/budget", key: "budget", icon: "budget" },
   { href: "/trust", key: "trust", icon: "trust" },
@@ -37,6 +39,10 @@ function NavGlyph({ name }: { name: IconName }) {
     case "dashboard":
       return (
         <svg {...p}><path d="M4 21V10l8-6 8 6v11" strokeLinecap="round" strokeLinejoin="round" /><path d="M9 21v-7h6v7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      );
+    case "wallet":
+      return (
+        <svg {...p}><path d="M3 7a2 2 0 012-2h13a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z" strokeLinecap="round" strokeLinejoin="round" /><path d="M16 12h4v-2h-4a1 1 0 000 2z" strokeLinecap="round" strokeLinejoin="round" /></svg>
       );
     case "rates":
       return (

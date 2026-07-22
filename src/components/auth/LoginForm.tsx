@@ -1,12 +1,12 @@
 "use client";
 
-import { signIn } from "next-auth/react";
 import { useTranslations, useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Link } from "@/i18n/navigation";
 import { AuthField } from "@/components/auth/AuthField";
 import { toast } from "@/components/ui/toast";
+import { createBrowserSupabase } from "@/lib/supabase/client";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -54,9 +54,12 @@ export function LoginForm() {
     }
     setSubmitting(true);
     try {
-      const res = await signIn("credentials", { email: email.trim(), password, redirect: false });
-      if (res?.error) {
-        setError(res.error === "rate_limited" ? t("errorRateLimited") : t("errorInvalidCredentials"));
+      const supabase = createBrowserSupabase();
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (error) {
+        // "Email not confirmed" is a distinct, actionable case; everything
+        // else collapses to the neutral invalid-credentials message.
+        setError(/confirm/i.test(error.message) ? error.message : t("errorInvalidCredentials"));
         setSubmitting(false);
         return;
       }

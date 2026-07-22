@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { getServerSession } from "next-auth";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
-import { authOptions } from "@/lib/auth";
+import { getAppSession } from "@/lib/supabase/app-session";
 import {
   ASSISTANT_KNOWLEDGE,
   ASSISTANT_LOCALES,
@@ -46,7 +45,7 @@ function getClient(): Anthropic | null {
 }
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
+  const session = await getAppSession();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }

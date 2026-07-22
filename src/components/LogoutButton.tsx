@@ -1,8 +1,8 @@
 "use client";
 
-import { signOut } from "next-auth/react";
 import { useTranslations, useLocale } from "next-intl";
 import { useState } from "react";
+import { createBrowserSupabase } from "@/lib/supabase/client";
 
 export function LogoutButton({
   className,
@@ -23,7 +23,9 @@ export function LogoutButton({
       aria-label={t("logOut")}
       onClick={async () => {
         setBusy(true);
-        await signOut({ callbackUrl: `/${locale}` });
+        const supabase = createBrowserSupabase();
+        await supabase.auth.signOut();
+        window.location.assign(`/${locale}`);
       }}
       className={
         className ??

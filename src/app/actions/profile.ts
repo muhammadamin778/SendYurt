@@ -2,10 +2,9 @@
 
 import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
-import { getServerSession } from "next-auth";
 import { hash } from "bcryptjs";
 import { z } from "zod";
-import { authOptions } from "@/lib/auth";
+import { getAppSession } from "@/lib/supabase/app-session";
 import { prisma } from "@/lib/prisma";
 
 export type ProfileResult<T extends object = object> =
@@ -24,7 +23,7 @@ const imageSchema = z
   .max(700_000, "image too large");
 
 export async function updateProfileImage(dataUrl: unknown): Promise<ProfileResult> {
-  const session = await getServerSession(authOptions);
+  const session = await getAppSession();
   if (!session?.user?.id) return { ok: false, error: "unauthorized" };
 
   const parsed = imageSchema.safeParse(dataUrl);
@@ -44,7 +43,7 @@ export async function updateProfileImage(dataUrl: unknown): Promise<ProfileResul
 }
 
 export async function removeProfileImage(): Promise<ProfileResult> {
-  const session = await getServerSession(authOptions);
+  const session = await getAppSession();
   if (!session?.user?.id) return { ok: false, error: "unauthorized" };
   try {
     await prisma.user.update({ where: { id: session.user.id }, data: { image: null } });
@@ -63,7 +62,7 @@ export async function removeProfileImage(): Promise<ProfileResult> {
 const nameSchema = z.string().trim().min(2, "too short").max(80, "too long");
 
 export async function updateProfileName(name: unknown): Promise<ProfileResult> {
-  const session = await getServerSession(authOptions);
+  const session = await getAppSession();
   if (!session?.user?.id) return { ok: false, error: "unauthorized" };
 
   const parsed = nameSchema.safeParse(name);
@@ -110,7 +109,7 @@ function slug(name: string): string {
 export async function addHouseholdMember(
   input: unknown,
 ): Promise<ProfileResult<{ email: string; tempPassword: string }>> {
-  const session = await getServerSession(authOptions);
+  const session = await getAppSession();
   if (!session?.user?.id) return { ok: false, error: "unauthorized" };
 
   const parsed = memberSchema.safeParse(input);

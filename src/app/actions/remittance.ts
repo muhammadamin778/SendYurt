@@ -1,8 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getAppSession } from "@/lib/supabase/app-session";
 import { getUzsRates } from "@/lib/fx";
 import { prisma } from "@/lib/prisma";
 import { computeQuotes } from "@/lib/rates";
@@ -23,7 +22,7 @@ function fail(error: string): ActionResult {
  */
 export async function createRemittance(input: unknown): Promise<ActionResult> {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAppSession();
     if (!session?.user?.id) return fail("unauthorized");
 
     const dbUser = await prisma.user.findUnique({

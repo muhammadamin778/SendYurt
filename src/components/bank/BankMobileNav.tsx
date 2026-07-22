@@ -6,6 +6,7 @@ import { Link, usePathname } from "@/i18n/navigation";
 
 const ITEMS = [
   { href: "/dashboard", key: "dashboard", d: "M4 21V10l8-6 8 6v11M9 21v-7h6v7" },
+  { href: "/wallet", key: "wallet", d: "M3 7a2 2 0 012-2h13a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2zM16 12h4v-2h-4a1 1 0 000 2z" },
   { href: "/rates", key: "rates", d: "M4 17l5-5 4 4 7-8M15 8h5v5" },
   { href: "/budget", key: "budget", d: "M3 6h18v13H3zM3 10h18" },
   { href: "/trust", key: "trust", d: "M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6zM9 12l2 2 4-4" },
@@ -21,7 +22,7 @@ export function BankMobileNav() {
       aria-label="Main"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-[#e2e8f0] bg-white pb-[env(safe-area-inset-bottom)] print:hidden lg:hidden"
     >
-      <ul className="grid grid-cols-5">
+      <ul className="grid grid-cols-6">
         {ITEMS.map((item) => {
           const active =
             pathname === item.href || pathname.startsWith(`${item.href}/`);

@@ -1,11 +1,12 @@
 "use client";
 
-import { signIn } from "next-auth/react";
 import { useState } from "react";
+import { createBrowserSupabase } from "@/lib/supabase/client";
 
 /**
  * Landing-page "Demo" CTA — signs straight into the seeded demo SENDER account
- * and lands on the dashboard, so visitors can try the app with one click.
+ * (Supabase Auth) and lands on the dashboard, so visitors can try the app with
+ * one click.
  */
 export function DemoButton({
   locale,
@@ -20,11 +21,16 @@ export function DemoButton({
 
   async function onClick() {
     setBusy(true);
-    await signIn("credentials", {
+    const supabase = createBrowserSupabase();
+    const { error } = await supabase.auth.signInWithPassword({
       email: "demo.sender@sendyurt.uz",
       password: "Demo1234",
-      callbackUrl: `/${locale}/dashboard`,
     });
+    if (error) {
+      window.location.assign(`/${locale}/login`);
+      return;
+    }
+    window.location.assign(`/${locale}/dashboard`);
   }
 
   return (

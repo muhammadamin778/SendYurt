@@ -1,12 +1,12 @@
 "use client";
 
-import { signIn } from "next-auth/react";
 import { useTranslations, useLocale } from "next-intl";
 import { useMemo, useState, type FormEvent } from "react";
 import { clsx } from "clsx";
 import { Link } from "@/i18n/navigation";
 import { AuthField } from "@/components/auth/AuthField";
 import { passwordStrength } from "@/lib/password-strength";
+import { createBrowserSupabase } from "@/lib/supabase/client";
 
 type Role = "SENDER" | "RECEIVER";
 type HouseholdMode = "create" | "join";
@@ -103,6 +103,7 @@ export function RegisterForm() {
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
+  const [formInfo, setFormInfo] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const pw = useMemo(() => passwordStrength(password), [password]);
@@ -122,37 +123,47 @@ export function RegisterForm() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setFormError(null);
+    setFormInfo(null);
     if (!validate()) return;
 
     setSubmitting(true);
     try {
-      const res = await fetch("/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: name.trim(),
-          email: email.trim(),
-          password,
-          role,
-          householdMode,
-          householdName: householdMode === "create" ? householdName.trim() : undefined,
-          inviteCode: householdMode === "join" ? inviteCode.trim().toUpperCase() : undefined,
-        }),
+      // Sign up with Supabase Auth. The database trigger creates the
+      // profile + wallet(0); the family role and household choice ride in
+      // user metadata and are applied when the account first reaches the app.
+      const supabase = createBrowserSupabase();
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/${locale}/welcome`,
+          data: {
+            full_name: name.trim(),
+            role,
+            household_mode: householdMode,
+            household_name: householdMode === "create" ? householdName.trim() : undefined,
+            invite_code: householdMode === "join" ? inviteCode.trim().toUpperCase() : undefined,
+          },
+        },
       });
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        if (res.status === 429) setFormError(t("errorRateLimited"));
-        else if (data.error === "email_taken") setFieldErrors({ email: t("errorEmailTaken") });
-        else if (data.error === "invalid_invite_code") setFieldErrors({ inviteCode: t("errorInviteCodeInvalid") });
-        else setFormError(t("errorGeneric"));
+      if (error) {
+        if (/already registered|already exists|user already/i.test(error.message)) {
+          setFieldErrors({ email: t("errorEmailTaken") });
+        } else if (/rate limit/i.test(error.message)) {
+          setFormError(t("errorRateLimited"));
+        } else {
+          setFormError(error.message || t("errorGeneric"));
+        }
         setSubmitting(false);
         return;
       }
 
-      const login = await signIn("credentials", { email: email.trim(), password, redirect: false });
-      if (login?.error) {
-        window.location.assign(`/${locale}/login`);
+      // When email confirmation is enabled, there's no session yet — the user
+      // must click the link in their inbox. Otherwise we're signed in.
+      if (!data.session) {
+        setFormInfo(t("checkEmailToConfirm"));
+        setSubmitting(false);
         return;
       }
       window.location.assign(`/${locale}/welcome`);
@@ -171,6 +182,11 @@ export function RegisterForm() {
         {formError && (
           <p role="alert" className="rounded-xl border border-[#fecaca] bg-[#fef2f2] px-3.5 py-2.5 text-[13px] font-medium text-[#b91c1c]">
             {formError}
+          </p>
+        )}
+        {formInfo && (
+          <p role="status" className="rounded-xl border border-[#0a7c53]/25 bg-[#0a7c53]/[0.06] px-3.5 py-2.5 text-[13px] font-medium text-[#065f3e]">
+            {formInfo}
           </p>
         )}
 

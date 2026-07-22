@@ -24,7 +24,8 @@
     "help": "Help",
     "sendMoney": "Send Money",
     "support": "Support",
-    "history": "History"
+    "history": "History",
+    "wallet": "Wallet"
   },
   "profile": {
     "title": "Your profile",
@@ -234,6 +235,7 @@
     "errorHouseholdNameShort": "Please name your household.",
     "errorInviteCodeFormat": "The invite code is 8 characters long.",
     "errorEmailTaken": "An account with this email already exists.",
+    "checkEmailToConfirm": "Almost there — check your email and click the confirmation link to activate your account.",
     "errorInviteCodeInvalid": "We couldn't find a household with that code. Please check it with your family.",
     "errorRateLimited": "Too many attempts. Please wait a little and try again.",
     "errorPasswordMismatch": "The passwords don't match.",

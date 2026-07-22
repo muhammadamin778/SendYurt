@@ -11,6 +11,7 @@ function useTitle(): string {
   const nav = useTranslations("nav");
   const bank = useTranslations("bank");
   if (pathname.startsWith("/dashboard")) return bank("overview");
+  if (pathname.startsWith("/wallet")) return nav("wallet");
   if (pathname.startsWith("/rates")) return nav("rates");
   if (pathname.startsWith("/budget") || pathname.startsWith("/summary")) return nav("budget");
   if (pathname.startsWith("/trust")) return nav("trust");

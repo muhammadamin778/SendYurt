@@ -1,9 +1,8 @@
 ﻿"use server";
 
 import { revalidatePath } from "next/cache";
-import { getServerSession } from "next-auth";
 import { z } from "zod";
-import { authOptions } from "@/lib/auth";
+import { getAppSession } from "@/lib/supabase/app-session";
 import { isCategory } from "@/lib/categories";
 import { crossedNearThreshold, notifyHousehold } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
@@ -24,7 +23,7 @@ export type ActionResult = { ok: true } | { ok: false; error: string };
  * demotion takes effect immediately, not at next login.
  */
 async function requireHousehold(): Promise<{ householdId: string; userId: string }> {
-  const session = await getServerSession(authOptions);
+  const session = await getAppSession();
   if (!session?.user?.id) {
     throw new Error("unauthorized");
   }
