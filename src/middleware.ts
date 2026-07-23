@@ -76,5 +76,5 @@ export default async function middleware(req: NextRequest) {
 export const config = {
   // Everything except API routes, Next internals, static files, and the
   // standalone (non-localized) pitch site.
-  matcher: ["/((?!api|_next|_vercel|pitch|.*\\..*).*)"],
+  matcher: ["/((?!api|_next|_vercel|pitch|auth|.*\\..*).*)"],
 };

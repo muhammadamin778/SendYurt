@@ -18,30 +18,62 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_xns7Vtxbr0hqeE21U59M8Q_khDkx1RF
 (The existing `DATABASE_URL` / Neon and `NEXTAUTH_*` vars stay as they are.)
 The publishable key is safe to expose to the browser.
 
-## 2. Sign-up flow (no email required)
+## 2. Redirect URLs (needed for email links + Google)
 
-Sign-up goes through the `app_signup()` database function, which creates an
-**already-confirmed** user and signs them straight in — so it never sends a
-confirmation email. This deliberately sidesteps Supabase's built-in email
-service, whose tiny hourly quota was failing sign-ups with
-`over_email_send_rate_limit` ("email rate limit exceeded" / HTTP 429).
+Supabase → **Authentication → URL Configuration**:
 
-You therefore do **not** need to touch the "Confirm email" setting for sign-up
-to work. If you later want the standard emailed-confirmation flow instead,
-configure custom SMTP (Authentication → Emails) for a real sending quota.
+- **Site URL**: your app origin (e.g. `https://send-yurt.vercel.app`, or
+  `http://localhost:3000` for local).
+- **Redirect URLs** — add every origin you use, with the callback path:
+  ```
+  http://localhost:3000/auth/callback
+  https://send-yurt.vercel.app/auth/callback
+  ```
+  The app sends confirmation-email and OAuth users to `/auth/callback`, which
+  exchanges the code for a session (`src/app/auth/callback/route.ts`).
 
-- **Google OAuth** (deferred): to enable the "Continue with Google" flow later,
-  add your Google client ID/secret under Authentication → Providers → Google
-  and set the redirect URL. The button isn't wired yet.
+## 3. Email verification
 
-## 3. Database objects (already applied via migrations)
+The register form uses the standard `supabase.auth.signUp` flow and adapts to
+your Email settings (Authentication → **Providers → Email**):
+
+- **Confirm email = ON** → the user gets a verification link; the form shows a
+  "check your email" notice, and clicking the link lands on `/auth/callback`
+  and signs them in.
+- **Confirm email = OFF** → sign-up returns a session immediately (no email).
+
+⚠️ **Email delivery:** Supabase's *built-in* email sender is capped at a few
+messages per hour and returns `over_email_send_rate_limit` when exhausted (this
+was the "email verification not working" symptom). For reliable delivery,
+configure **custom SMTP** under Authentication → Emails (e.g. Resend, SendGrid,
+Postmark — Resend has a free tier and takes ~3 minutes). Until SMTP is set up,
+either keep sign-up volume tiny or turn **Confirm email OFF**.
+
+## 4. Google sign-in ("Continue with Google")
+
+The button is wired (`supabase.auth.signInWithOAuth({ provider: 'google' })`).
+To enable it:
+
+1. **Google Cloud Console** → APIs & Services → Credentials → *Create OAuth
+   client ID* → Web application. Add the authorized redirect URI:
+   ```
+   https://iseuyrgyiybnugrybxfr.supabase.co/auth/v1/callback
+   ```
+   Copy the **Client ID** and **Client Secret**.
+2. **Supabase** → Authentication → **Providers → Google** → enable, paste the
+   Client ID + Secret, save.
+3. Make sure your app origins are in the Redirect URLs list (section 2).
+
+That's it — the button then redirects to Google and back to `/auth/callback`.
+
+## 5. Database objects (already applied via migrations)
 
 - `profiles`, `wallets`, `transactions` tables — RLS: users read only their own
   rows; all money movement is via RPC only (no direct table writes).
 - Trigger `on_auth_user_created` → creates a `profile` + `wallet` (balance 0) for
   every new auth user.
-- `app_signup(email, password, …)` — creates a confirmed auth user + identity
-  (so sign-up never needs a confirmation email); the client then signs in.
+- `app_signup(email, password, …)` — legacy no-email sign-up path (kept in the
+  DB but no longer called; the app now uses the standard email-verification flow).
 - `transfer_funds(recipient_email, amount, note)` — atomic: checks funds, debits
   sender, credits recipient, logs the transaction, and rolls the whole thing back
   on insufficient funds or an unknown recipient.
@@ -49,14 +81,14 @@ configure custom SMTP (Authentication → Emails) for a real sending quota.
 - `my_transactions(limit)` — the caller's ledger with counterparty names resolved.
 - Realtime is enabled on `wallets` + `transactions` so the UI updates live.
 
-## 4. Demo accounts
+## 6. Demo accounts
 
 `demo.sender@sendyurt.uz` / `demo.receiver@sendyurt.uz` (password `Demo1234`)
 exist as confirmed Supabase Auth users. The sender wallet is pre-funded so
 transfers can be tried immediately. The landing-page **Demo** button signs into
 the sender account.
 
-## 5. Try it
+## 7. Try it
 
 Log in → **Wallet** (sidebar) → top up or send money to another account's email.
 Balance and history update in real time; sending more than your balance or to an

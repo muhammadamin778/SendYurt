@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Link } from "@/i18n/navigation";
 import { AuthField } from "@/components/auth/AuthField";
-import { toast } from "@/components/ui/toast";
 import { createBrowserSupabase } from "@/lib/supabase/client";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -70,6 +69,18 @@ export function LoginForm() {
       setError(t("errorGeneric"));
       setSubmitting(false);
     }
+  }
+
+  async function onGoogle() {
+    setError(null);
+    const supabase = createBrowserSupabase();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=/${locale}/dashboard` },
+    });
+    // On success the browser is redirected to Google, so only errors land here
+    // (e.g. the provider isn't enabled yet in the Supabase dashboard).
+    if (error) setError(error.message);
   }
 
   return (
@@ -146,7 +157,7 @@ export function LoginForm() {
         {/* Google SSO (presentational — no OAuth backend yet) */}
         <button
           type="button"
-          onClick={() => toast(t("googleUnavailable"))}
+          onClick={onGoogle}
           className="flex w-full items-center justify-center gap-3 rounded-xl border-2 border-[#0f172a] bg-transparent py-3.5 text-[15px] font-semibold text-[#0f172a] transition-colors hover:bg-[#f2f4f6]"
         >
           <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">

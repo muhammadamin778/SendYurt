@@ -235,6 +235,7 @@
     "errorHouseholdNameShort": "Iltimos, xonadonga nom bering.",
     "errorInviteCodeFormat": "Taklif kodi 8 ta belgidan iborat.",
     "errorEmailTaken": "Bu email bilan hisob allaqachon mavjud.",
+    "errorEmailSend": "Hozircha tasdiqlash xatini yubora olmadik. Birozdan keyin qayta urinib koʻring.",
     "checkEmailToConfirm": "Deyarli tayyor — emailingizni tekshiring va hisobingizni faollashtirish uchun tasdiqlash havolasini bosing.",
     "errorInviteCodeInvalid": "Bu kod bilan xonadon topilmadi. Oilangiz bilan tekshirib koʻring.",
     "errorRateLimited": "Urinishlar juda koʻp. Biroz kutib, qaytadan urinib koʻring.",
