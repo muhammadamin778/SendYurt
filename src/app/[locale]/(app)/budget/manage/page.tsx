@@ -6,12 +6,6 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { BankCreditCard } from "@/components/bank/BankCreditCard";
 import { BankExpensePie, BankGroupedBars } from "@/components/bank/charts";
-import {
-  AddGoalButton,
-  AddGoalForm,
-  EditBudgetButton,
-  SetBudgetForm,
-} from "@/components/budget/BudgetForms";
 import { GoalCard } from "@/components/budget/GoalCard";
 import { DeleteTransactionButton } from "@/components/budget/DeleteTransactionButton";
 import {
@@ -292,9 +286,16 @@ export default async function BudgetPage({
       <section aria-label={t("allocations.title")}>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-[18px] font-semibold text-[#0f172a]">{t("allocations.title")}</h2>
-          {canEdit && <EditBudgetButton />}
+          {canEdit && (
+            <Link
+              href="/budget/allocations/new"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#0a7c53] px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#065f3e] active:scale-95"
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              {t("allocations.edit")}
+            </Link>
+          )}
         </div>
-        {canEdit && <SetBudgetForm period={period} />}
         {categories.length === 0 ? (
           <div className="bank-card p-8"><EmptyState>{t("allocations.empty")}</EmptyState></div>
         ) : (
@@ -333,9 +334,16 @@ export default async function BudgetPage({
       <section aria-label={t("goals.title")}>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-[18px] font-semibold text-[#0f172a]">{t("goals.title")}</h2>
-          {canEdit && <AddGoalButton />}
+          {canEdit && (
+            <Link
+              href="/budget/goals/new"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#0a7c53] px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#065f3e] active:scale-95"
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              {t("goals.add")}
+            </Link>
+          )}
         </div>
-        {canEdit && <AddGoalForm />}
         {goals.length === 0 ? (
           <div className="bank-card p-8"><EmptyState>{t("goals.empty")}</EmptyState></div>
         ) : (
