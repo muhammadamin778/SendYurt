@@ -13,10 +13,15 @@ Local dev already has these in `.env`. **You must add them to Vercel**
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://iseuyrgyiybnugrybxfr.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_xns7Vtxbr0hqeE21U59M8Q_khDkx1RF
+SUPABASE_SERVICE_ROLE_KEY=<from Supabase → Project Settings → API → service_role secret>
 ```
 
 (The existing `DATABASE_URL` / Neon and `NEXTAUTH_*` vars stay as they are.)
-The publishable key is safe to expose to the browser.
+The publishable key is safe to expose to the browser. **`SUPABASE_SERVICE_ROLE_KEY`
+must never be `NEXT_PUBLIC_`** — it grants full DB access and is used only in
+trusted server code (`src/lib/supabase/admin.ts`) for the admin panel's activity
+feed and auth-user listing. Add it to `.env` (local) **and** Vercel. Until it is
+set, the admin activity tables render an "add the key" notice instead of data.
 
 ## 2. Redirect URLs (needed for email links + Google)
 

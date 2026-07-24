@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminTopbar } from "@/components/admin/AdminTopbar";
+import { VisitLogger } from "@/components/VisitLogger";
 import { requireAdmin } from "@/lib/admin";
 
 // The admin design system is Inter-exclusive (data-dense, tabular figures).
@@ -36,6 +37,7 @@ export default async function AdminLayout({
       <AdminSidebar locale={locale} />
       <AdminTopbar name={admin.name || admin.email} initial={initial} role="Super Admin" />
       <main className="ml-[260px] min-h-screen p-6 pt-[72px]">{children}</main>
+      <VisitLogger />
     </div>
   );
 }

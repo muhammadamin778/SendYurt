@@ -5,11 +5,45 @@ import { UserRowActions } from "@/components/admin/UserRowActions";
 import { requireAdmin } from "@/lib/admin";
 import { paginate, parsePageParams } from "@/lib/pagination";
 import { readPrisma } from "@/lib/prisma-read";
+import { createAdminSupabase } from "@/lib/supabase/admin";
 
 function accountAge(createdAt: Date): string {
   const months = Math.max(0, Math.round((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24 * 30)));
   if (months < 12) return `${months} Month${months === 1 ? "" : "s"}`;
   return `${(months / 12).toFixed(1)} Years`;
+}
+
+/** Compact relative time for the activity tables ("Just now", "3 mins ago"). */
+function timeAgo(iso: string | null): string {
+  if (!iso) return "Never";
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return "—";
+  const s = Math.floor((Date.now() - then) / 1000);
+  if (s < 45) return "Just now";
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m} min${m === 1 ? "" : "s"} ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} hour${h === 1 ? "" : "s"} ago`;
+  const d = Math.floor(h / 24);
+  if (d < 30) return `${d} day${d === 1 ? "" : "s"} ago`;
+  return new Date(iso).toISOString().slice(0, 10);
+}
+
+function isoDate(iso: string | null): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? "—" : d.toISOString().slice(0, 10);
+}
+
+function providerLabel(p: string): string {
+  const map: Record<string, string> = { google: "Google", email: "Email", github: "GitHub", apple: "Apple", phone: "Phone" };
+  return map[p] ?? (p ? p.charAt(0).toUpperCase() + p.slice(1) : "Email");
+}
+
+/** A sign-in within the last 10 minutes is highlighted as "recent". */
+function isRecent(iso: string | null): boolean {
+  if (!iso) return false;
+  return Date.now() - new Date(iso).getTime() < 10 * 60 * 1000;
 }
 
 type Status = "verified" | "pending" | "flagged";
@@ -95,6 +129,44 @@ export default async function AdminUsersPage({
       });
       for (const s of snaps) if (!trustByHousehold.has(s.householdId)) trustByHousehold.set(s.householdId, s.score);
     } catch { /* trust column optional */ }
+  }
+
+  // ── Activity tracking (Supabase, service-role — bypasses RLS) ────────────
+  type VisitRow = { email: string | null; path: string | null; created_at: string };
+  type SignInRow = { id: string; email: string; provider: string; created_at: string; last_sign_in_at: string | null };
+
+  const supaAdmin = createAdminSupabase();
+  const activityConfigured = supaAdmin !== null;
+  let visits: VisitRow[] = [];
+  let signIns: SignInRow[] = [];
+
+  if (supaAdmin) {
+    const [logsRes, usersRes] = await Promise.allSettled([
+      supaAdmin
+        .from("activity_logs")
+        .select("email, path, created_at")
+        .order("created_at", { ascending: false })
+        .limit(25),
+      supaAdmin.auth.admin.listUsers({ page: 1, perPage: 25 }),
+    ]);
+
+    if (logsRes.status === "fulfilled" && !logsRes.value.error) {
+      visits = (logsRes.value.data ?? []) as VisitRow[];
+    } else {
+      console.error("activity_logs fetch failed", logsRes.status === "fulfilled" ? logsRes.value.error : logsRes.reason);
+    }
+
+    if (usersRes.status === "fulfilled" && !usersRes.value.error) {
+      signIns = usersRes.value.data.users.map((u) => ({
+        id: u.id,
+        email: u.email ?? "—",
+        provider: (u.app_metadata?.provider as string | undefined) ?? "email",
+        created_at: u.created_at,
+        last_sign_in_at: u.last_sign_in_at ?? null,
+      }));
+    } else {
+      console.error("listUsers failed", usersRes.status === "fulfilled" ? usersRes.value.error : usersRes.reason);
+    }
   }
 
   const total = page.total;
@@ -234,6 +306,81 @@ export default async function AdminUsersPage({
             <a aria-disabled={!page.hasNext} href={page.hasNext ? q({ page: page.page + 1 }) : undefined} className={`grid h-8 w-8 place-items-center rounded border border-[#bec9c0] bg-white ${page.hasNext ? "hover:bg-[#e7e8e9]" : "pointer-events-none opacity-50"}`}>
               <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Activity tracking: recent sign-ins + live page visits */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* User Sign-Ins & Status */}
+        <div className="flex flex-col overflow-hidden rounded-xl border border-[#bec9c0] bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-[#bec9c0] bg-[#edeeef] px-6 py-4">
+            <h4 className="text-[16px] font-semibold text-[#191c1d]">User Sign-Ins &amp; Status</h4>
+            <span className="text-[12px] font-semibold uppercase tracking-[0.05em] text-[#3f4943]">Recent Auth</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left">
+              <thead>
+                <tr className="border-b border-[#bec9c0] bg-[#f3f4f5]">
+                  {["Email", "Provider", "Created", "Last Sign-In"].map((h) => (
+                    <th key={h} className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.05em] text-[#3f4943]">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#bec9c0]">
+                {!activityConfigured && (
+                  <tr><td colSpan={4} className="px-4 py-6 text-center text-[13px] text-[#6f7a72]">Set <code className="rounded bg-[#edeeef] px-1">SUPABASE_SERVICE_ROLE_KEY</code> to load sign-in data.</td></tr>
+                )}
+                {activityConfigured && signIns.length === 0 && (
+                  <tr><td colSpan={4} className="px-4 py-6 text-center text-[13px] text-[#6f7a72]">No registered users yet.</td></tr>
+                )}
+                {signIns.map((u, i) => (
+                  <tr key={u.id} className={`transition-colors hover:bg-[#006c49]/5 ${i % 2 === 1 ? "bg-[#f3f4f5]" : ""}`}>
+                    <td className="px-4 py-3 text-[13px] text-[#191c1d]">{u.email}</td>
+                    <td className="px-4 py-3"><span className="rounded bg-[#e7e8e9] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#3f4943]">{providerLabel(u.provider)}</span></td>
+                    <td className="px-4 py-3 text-[13px] text-[#6f7a72]">{isoDate(u.created_at)}</td>
+                    <td className={`px-4 py-3 text-[13px] ${isRecent(u.last_sign_in_at) ? "font-medium text-[#006c49]" : "text-[#3f4943]"}`}>{timeAgo(u.last_sign_in_at)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Live Page Visits */}
+        <div className="flex flex-col overflow-hidden rounded-xl border border-[#bec9c0] bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-[#bec9c0] bg-[#edeeef] px-6 py-4">
+            <div className="flex items-center gap-2">
+              <h4 className="text-[16px] font-semibold text-[#191c1d]">Live Page Visits</h4>
+              <span className="h-2 w-2 animate-ping rounded-full bg-[#006c49]" />
+            </div>
+            <span className="text-[12px] font-bold uppercase tracking-[0.05em] text-[#006c49]">Live</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left">
+              <thead>
+                <tr className="border-b border-[#bec9c0] bg-[#f3f4f5]">
+                  {["User Email", "Visited Path", "Time"].map((h) => (
+                    <th key={h} className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.05em] text-[#3f4943]">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#bec9c0]">
+                {!activityConfigured && (
+                  <tr><td colSpan={3} className="px-4 py-6 text-center text-[13px] text-[#6f7a72]">Set <code className="rounded bg-[#edeeef] px-1">SUPABASE_SERVICE_ROLE_KEY</code> to load visit data.</td></tr>
+                )}
+                {activityConfigured && visits.length === 0 && (
+                  <tr><td colSpan={3} className="px-4 py-6 text-center text-[13px] text-[#6f7a72]">No page visits recorded yet.</td></tr>
+                )}
+                {visits.map((v, i) => (
+                  <tr key={i} className={`transition-colors hover:bg-[#006c49]/5 ${i % 2 === 1 ? "bg-[#f3f4f5]" : ""}`}>
+                    <td className="px-4 py-3 text-[13px] text-[#191c1d]">{v.email ?? "—"}</td>
+                    <td className="px-4 py-3 font-mono text-[13px] font-medium text-[#006c49]">{v.path ?? "/"}</td>
+                    <td className="px-4 py-3 text-[13px] text-[#3f4943]">{timeAgo(v.created_at)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
