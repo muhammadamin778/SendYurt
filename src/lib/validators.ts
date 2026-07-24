@@ -86,6 +86,23 @@ export const remittanceSchema = z.object({
   providerId: z.string().min(1),
   amount: z.coerce.number().positive().max(1_000_000),
   currency: z.enum(["USD", "RUB", "KZT", "EUR"]),
+  // Optional funding card. When present, the transfer is paid from this card
+  // and its UZS balance is checked and debited server-side.
+  cardId: z.string().min(1).optional(),
+});
+
+export const CARD_BRANDS = ["visa", "mc", "humo", "uzcard", "card"] as const;
+
+// Adding a funding card. The full number is accepted for validation but only
+// the last four digits are ever persisted (see the addCard action / Card model).
+export const addCardSchema = z.object({
+  holderName: z.string().trim().min(2).max(80),
+  cardNumber: z.preprocess(
+    (v) => String(v ?? "").replace(/\D/g, ""),
+    z.string().min(12).max(19),
+  ),
+  expiry: z.string().trim().regex(/^(0[1-9]|1[0-2])\/\d{2}$/),
+  brand: z.enum(CARD_BRANDS).default("card"),
 });
 
 export const contributionSchema = z.object({

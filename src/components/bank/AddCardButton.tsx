@@ -5,15 +5,16 @@ import { useRouter } from "@/i18n/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { clsx } from "clsx";
 import { toast } from "@/components/ui/toast";
+import { addCard } from "@/app/actions/cards";
 
 /**
  * "Add new card" trigger + modal for the dashboard, matching the Stitch
  * "Add New Payment Method" design.
  *
- * IMPORTANT: this is presentational. SendYurt has no payment processor, and
- * storing raw card numbers / CVC would be a PCI-DSS violation — so nothing
- * here is persisted or transmitted. It formats input and confirms locally,
- * then clears. Real card capture would go through a tokenising processor
+ * PCI-DSS: the full card number and CVC never leave the browser. On submit we
+ * send only the last four digits (plus holder/expiry/brand) to the `addCard`
+ * server action, which persists that masked record — never the full PAN and
+ * never the CVC. Real card capture would go through a tokenising processor
  * (Stripe/Payme/Click) that returns a token; only the token would be stored.
  */
 
@@ -86,20 +87,29 @@ export function AddCardButton({ className }: { className?: string }) {
     setPostal(""); setCity("");
   }
 
-  function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (holder.trim().length < 2 || digits.length < 12 || expiry.length < 5 || cvc.length < 3) {
       toast(t("errorFields"), "error");
       return;
     }
-    // Presentational only — never persist card data (see file header).
     setBusy(true);
-    setTimeout(() => {
-      setBusy(false);
-      reset();
-      setOpen(false);
-      setSuccess(true); // celebration screen replaces the modal
-    }, 700);
+    // Only the last four digits leave the browser — never the PAN or CVC.
+    const result = await addCard({
+      holderName: holder.trim(),
+      cardNumber: digits,
+      expiry,
+      brand: brand ?? "card",
+    });
+    setBusy(false);
+    if (!result.ok) {
+      toast(t("errorSave"), "error");
+      return;
+    }
+    reset();
+    setOpen(false);
+    router.refresh(); // surface the new card on the dashboard
+    setSuccess(true); // celebration screen replaces the modal
   }
 
   function closeSuccess() {

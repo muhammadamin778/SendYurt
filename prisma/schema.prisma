@@ -79,6 +79,34 @@ model User {
   passwordResetTokens PasswordResetToken[]
   notifications    Notification[]
   auditLogs        AuditLog[]    @relation("AdminAuditLogs")
+  cards            Card[]
+}
+
+// A payment card linked as a funding source for transfers.
+//
+// PCI-DSS: we deliberately store ONLY the last four digits (a masked, non-
+// sensitive value) plus the holder name and expiry — never the full PAN and
+// never the CVC. `balance` is a demo stored-value amount in UZS; the transfer
+// flow debits it and a DB CHECK keeps it from going negative (see the
+// `Card_balance_nonneg` constraint added in the db-push follow-up SQL).
+model Card {
+  id         String   @id @default(cuid())
+  userId     String
+  // Detected network: "visa" | "mc" | "humo" | "uzcard" | "card"
+  brand      String   @default("card")
+  // Last four digits only — the rest of the number is never stored.
+  last4      String
+  holderName String
+  // "MM/YY"
+  expiry     String
+  // Stored-value balance in UZS. Debited on transfer; never negative.
+  balance    Decimal  @default(0)
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 // Platform admin access. A real Postgres enum (the app moved off SQLite),

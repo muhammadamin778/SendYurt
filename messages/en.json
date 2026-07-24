@@ -337,7 +337,9 @@
       "cancel": "Cancel transfer",
       "encryption": "Bank-level 256-bit encryption",
       "sendSuccess": "Transfer recorded — it now appears on your dashboard.",
-      "sendError": "We couldn’t complete the transfer. Please try again."
+      "sendError": "We couldn’t complete the transfer. Please try again.",
+      "cardBalance": "Balance: {amount}",
+      "insufficientFunds": "Insufficient funds. Your card balance is {balance} UZS, but you are trying to send {amount} UZS."
     }
   },
   "budget": {
@@ -977,9 +979,10 @@
     "cKazakhstan": "Kazakhstan",
     "submit": "Securely Add Card",
     "sslNote": "Encrypted 256-bit SSL secure payment processing",
-    "demoNote": "Demo only — card details are never stored.",
+    "demoNote": "For your security, only the last 4 digits are stored — never the full number or CVC.",
     "success": "Card added to your wallet.",
     "errorFields": "Please fill in your card details.",
+    "errorSave": "We couldn’t save your card. Please try again.",
     "cancel": "Cancel",
     "successTitle": "Success!",
     "successBody": "Your payment method has been verified and added to your wallet.",

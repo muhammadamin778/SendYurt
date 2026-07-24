@@ -3,6 +3,7 @@ import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { ConfirmTransfer } from "@/components/rates/ConfirmTransfer";
 import { PaymentSelector } from "@/components/rates/PaymentSelector";
+import { TransferProvider } from "@/components/rates/TransferContext";
 import { formatMoney, formatNumber } from "@/lib/format";
 import { getUzsRates } from "@/lib/fx";
 import { prisma } from "@/lib/prisma";
@@ -63,7 +64,7 @@ export default async function ReviewTransferPage({
     redirect(`/${locale}/rates`);
   }
 
-  const [provider, fx, household] = await Promise.all([
+  const [provider, fx, household, cards] = await Promise.all([
     prisma.remittanceProvider.findUnique({ where: { id: providerId } }),
     getUzsRates(),
     prisma.household.findUnique({
@@ -76,11 +77,27 @@ export default async function ReviewTransferPage({
         },
       },
     }),
+    prisma.card.findMany({
+      where: { userId: user.id },
+      orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }],
+      select: { id: true, brand: true, last4: true, holderName: true, balance: true },
+    }),
   ]);
 
   if (!provider) redirect(`/${locale}/rates`);
   const [quote] = computeQuotes([provider!], amount, currency, fx.rates);
   if (!quote) redirect(`/${locale}/rates`);
+
+  // Funding cards (plain JSON) + the UZS amount a card must cover — shared with
+  // the payment selector and confirm button via TransferProvider.
+  const plainCards = cards.map((c) => ({
+    id: c.id,
+    brand: c.brand,
+    last4: c.last4,
+    holderName: c.holderName,
+    balance: c.balance.toNumber(),
+  }));
+  const uzsCost = Math.round(quote!.receivedUzs);
 
   const receiver = household?.users.find((u) => u.role === "RECEIVER");
   const recipientName = receiver?.name ?? household?.name ?? "—";
@@ -141,6 +158,7 @@ export default async function ReviewTransferPage({
         </div>
       </div>
 
+      <TransferProvider cards={plainCards} uzsCost={uzsCost}>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* Left: details */}
         <div className="flex flex-col gap-4 lg:col-span-7">
@@ -248,6 +266,7 @@ export default async function ReviewTransferPage({
           </div>
         </div>
       </div>
+      </TransferProvider>
     </div>
   );
 }

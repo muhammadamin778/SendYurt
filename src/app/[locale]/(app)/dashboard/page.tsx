@@ -58,7 +58,7 @@ export default async function DashboardPage({
   const currentLocale = await getLocale();
   const period = currentPeriod();
 
-  const [household, summary, trend, categories, recent, goals] = await Promise.all([
+  const [household, summary, trend, categories, recent, goals, cards] = await Promise.all([
     prisma.household.findUnique({
       where: { id: user.householdId },
       select: {
@@ -77,7 +77,22 @@ export default async function DashboardPage({
       select: { id: true, type: true, amount: true, currency: true, category: true, date: true },
     }),
     getSavingsGoals(user.householdId),
+    prisma.card.findMany({
+      where: { userId: user.id },
+      orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }],
+      select: { id: true, brand: true, last4: true, holderName: true, expiry: true, balance: true },
+    }),
   ]);
+
+  // Real linked cards drive the "My Cards" panel when present, showing each
+  // card's stored last-4, holder, expiry and (debitable) balance.
+  const realCards = cards.map((c) => ({
+    id: c.id,
+    balance: formatMoney(c.balance.toNumber(), "UZS", currentLocale),
+    holder: c.holderName,
+    valid: c.expiry,
+    number: `•••• •••• •••• ${c.last4}`,
+  }));
 
   const goalsLite = goals.map((g) => ({
     id: g.id,
@@ -133,26 +148,44 @@ export default async function DashboardPage({
           }
         >
           <div className="grid gap-6 sm:grid-cols-2">
-            <BankCreditCard
-              variant="filled"
-              balanceLabel={t("balance")}
-              balance={formatMoney(totalSaved || summary.savedUzs, "UZS", currentLocale)}
-              holderLabel={t("cardHolder")}
-              holder={user.name ?? "—"}
-              validLabel={t("validThru")}
-              valid={validThru}
-              number={cardNumber}
-            />
-            <BankCreditCard
-              variant="light"
-              balanceLabel={t("income")}
-              balance={formatMoney(summary.incomeUzs, "UZS", currentLocale)}
-              holderLabel={t("cardHolder")}
-              holder={household?.name ?? "—"}
-              validLabel={t("validThru")}
-              valid={validThru}
-              number={cardNumber}
-            />
+            {realCards.length > 0 ? (
+              realCards.map((c, i) => (
+                <BankCreditCard
+                  key={c.id}
+                  variant={i === 0 ? "filled" : "light"}
+                  balanceLabel={t("balance")}
+                  balance={c.balance}
+                  holderLabel={t("cardHolder")}
+                  holder={c.holder}
+                  validLabel={t("validThru")}
+                  valid={c.valid}
+                  number={c.number}
+                />
+              ))
+            ) : (
+              <>
+                <BankCreditCard
+                  variant="filled"
+                  balanceLabel={t("balance")}
+                  balance={formatMoney(totalSaved || summary.savedUzs, "UZS", currentLocale)}
+                  holderLabel={t("cardHolder")}
+                  holder={user.name ?? "—"}
+                  validLabel={t("validThru")}
+                  valid={validThru}
+                  number={cardNumber}
+                />
+                <BankCreditCard
+                  variant="light"
+                  balanceLabel={t("income")}
+                  balance={formatMoney(summary.incomeUzs, "UZS", currentLocale)}
+                  holderLabel={t("cardHolder")}
+                  holder={household?.name ?? "—"}
+                  validLabel={t("validThru")}
+                  valid={validThru}
+                  number={cardNumber}
+                />
+              </>
+            )}
           </div>
         </Card>
 

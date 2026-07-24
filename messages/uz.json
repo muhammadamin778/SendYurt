@@ -337,7 +337,9 @@
       "cancel": "Oʻtkazmani bekor qilish",
       "encryption": "Bank darajasidagi 256-bitli shifrlash",
       "sendSuccess": "Oʻtkazma saqlandi — u boshqaruv panelida koʻrinadi.",
-      "sendError": "Oʻtkazmani yakunlab boʻlmadi. Qaytadan urinib koʻring."
+      "sendError": "Oʻtkazmani yakunlab boʻlmadi. Qaytadan urinib koʻring.",
+      "cardBalance": "Balans: {amount}",
+      "insufficientFunds": "Mablagʻ yetarli emas. Karta balansingiz {balance} UZS, lekin siz {amount} UZS yubormoqchisiz."
     }
   },
   "budget": {
@@ -977,9 +979,10 @@
     "cKazakhstan": "Qozogʻiston",
     "submit": "Kartani xavfsiz qoʻshish",
     "sslNote": "256-bitli SSL shifrlash bilan xavfsiz toʻlov",
-    "demoNote": "Demo — karta maʼlumotlari saqlanmaydi.",
+    "demoNote": "Xavfsizlik uchun faqat oxirgi 4 raqam saqlanadi — toʻliq raqam yoki CVC hech qachon saqlanmaydi.",
     "success": "Karta hamyoningizga qoʻshildi.",
     "errorFields": "Iltimos, karta maʼlumotlarini toʻldiring.",
+    "errorSave": "Kartani saqlab boʻlmadi. Qaytadan urinib koʻring.",
     "cancel": "Bekor qilish",
     "successTitle": "Muvaffaqiyat!",
     "successBody": "Toʻlov usulingiz tasdiqlandi va hamyoningizga qoʻshildi.",
