@@ -30,7 +30,7 @@ export async function GET(request: Request) {
       // from the identity bridge the first time the app loads.)
       const user = exchange?.user;
       if (user?.email) {
-        void sendTelegramLog({
+        await sendTelegramLog({
           category: "login",
           title: user.email,
           fields: { Method: "Google / email link" },

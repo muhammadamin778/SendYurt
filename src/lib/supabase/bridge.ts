@@ -61,7 +61,7 @@ export async function bridgeUser(supaUser: SupabaseUser): Promise<BridgedUser | 
           data: { name, email, passwordHash: PLACEHOLDER_HASH, role, householdId: household.id },
           select: BRIDGE_USER_SELECT,
         });
-        void sendTelegramLog({
+        await sendTelegramLog({
           category: "signup",
           title: `${joined.name} <${joined.email}>`,
           fields: { Role: joined.role, Household: `joined “${household.name}” via invite ${inviteCode}` },
@@ -93,7 +93,7 @@ export async function bridgeUser(supaUser: SupabaseUser): Promise<BridgedUser | 
       }
     }
     const firstMember = household.users[0];
-    void sendTelegramLog({
+    await sendTelegramLog({
       category: "signup",
       title: `${firstMember.name} <${firstMember.email}>`,
       fields: { Role: firstMember.role, Household: `created “${householdName}”` },

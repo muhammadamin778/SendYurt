@@ -53,7 +53,7 @@ export async function POST(req: Request) {
       `[investor] ${data.kind} inquiry from ${data.name} <${data.email}>` +
         (data.organization ? ` (${data.organization})` : ""),
     );
-    void sendTelegramLog({
+    await sendTelegramLog({
       category: "investor",
       title: `${data.name} <${data.email}>`,
       fields: {
