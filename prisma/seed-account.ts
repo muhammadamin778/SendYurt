@@ -145,6 +145,25 @@ const cents = (usd: number) => BigInt(Math.round(usd * 100));
 
   await prisma.transaction.createMany({ data: txs });
 
+  // Every transaction carries a creation event, so the transition log is
+  // complete for seeded history too — the admin timeline is never blank.
+  const seeded = await prisma.transaction.findMany({
+    where: { householdId, isDemo: true },
+    select: { id: true, status: true, createdAt: true },
+  });
+  await prisma.transactionEvent.createMany({
+    data: seeded.map((t) => ({
+      transactionId: t.id,
+      fromStatus: null,
+      toStatus: t.status,
+      event: "CREATE",
+      actorId: null,
+      reasonCode: "CREATED",
+      createdAt: t.createdAt,
+    })),
+  });
+
+
   await prisma.savingsGoal.createMany({
     data: [
       { householdId, name: "Toʻy fund (wedding)", targetAmount: tiyin(18_000_000), currentAmount: tiyin(Math.round(savingsTotal * 0.55)), targetDate: monthsAgo(-9, 1) },

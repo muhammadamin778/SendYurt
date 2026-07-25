@@ -1,6 +1,8 @@
 import { setRequestLocale } from "next-intl/server";
 import { toMinor, ZERO, type Minor } from "@/lib/money";
+import { TransactionRowActions } from "@/components/admin/TransactionRowActions";
 import { formatMoney } from "@/lib/format";
+import { isTransactionState, TRANSACTION_STATES } from "@/lib/transaction-state";
 import { requireAdmin } from "@/lib/admin";
 import { paginate, parsePageParams } from "@/lib/pagination";
 import { readPrisma } from "@/lib/prisma-read";
@@ -18,6 +20,8 @@ const STATUS_STYLE: Record<string, { label: string; chip: string }> = {
   COMPLETED: { label: "Completed", chip: "bg-[#006c49] text-white" },
   PENDING: { label: "Pending", chip: "bg-[#fed65b] text-[#745c00] ring-1 ring-[#735c00]/20" },
   FAILED: { label: "Flagged", chip: "bg-[#ba1a1a] text-white" },
+  DISPUTED: { label: "Disputed", chip: "bg-[#772f2c] text-white" },
+  REVERSED: { label: "Reversed", chip: "bg-[#bec9c0] text-[#3f4943]" },
 };
 const PROVIDER_COLOR = ["#006c49", "#735c00", "#772f2c", "#005136", "#954642"];
 
@@ -32,7 +36,9 @@ export default async function AdminTransactionsPage({
   await requireAdmin();
 
   const params = parsePageParams({ page: searchParams.page }, { defaultSize: 10 });
-  const status = ["COMPLETED", "PENDING", "FAILED"].includes(searchParams.status ?? "") ? searchParams.status : undefined;
+  // Whitelist derived from the state machine so a new state can't be
+  // silently un-filterable.
+  const status = isTransactionState(searchParams.status ?? "") ? searchParams.status : undefined;
   const providerId = searchParams.provider || undefined;
   const corridor = searchParams.corridor || undefined;
 
@@ -146,9 +152,10 @@ export default async function AdminTransactionsPage({
           <p className="mb-1 ml-1 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#6f7a72]">Status</p>
           <select name="status" defaultValue={status ?? ""} className={selCls}>
             <option value="">All Statuses</option>
-            <option value="COMPLETED">Completed</option>
-            <option value="PENDING">Pending</option>
-            <option value="FAILED">Flagged</option>
+            {/* Driven by the state machine so every state is filterable. */}
+            {TRANSACTION_STATES.map((s) => (
+              <option key={s} value={s}>{STATUS_STYLE[s]?.label ?? s}</option>
+            ))}
           </select>
         </div>
         <div className="min-w-[200px] flex-1">
@@ -174,7 +181,7 @@ export default async function AdminTransactionsPage({
           <table className="w-full border-collapse text-left">
             <thead>
               <tr className="border-b border-[#bec9c0] bg-[#edeeef]">
-                {["Transaction ID", "Sender", "Receiver", "Corridor", "Provider", "Amount", "Status", "Time"].map((h, i) => (
+                {["Transaction ID", "Sender", "Receiver", "Corridor", "Provider", "Amount", "Status", "Time", "Actions"].map((h, i) => (
                   <th key={h} className={`p-4 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#3f4943] ${[3, 6].includes(i) ? "text-center" : ""} ${i === 5 ? "text-right" : ""}`}>{h}</th>
                 ))}
               </tr>
@@ -204,6 +211,10 @@ export default async function AdminTransactionsPage({
                       <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${st.chip}`}>{st.label}</span>
                     </td>
                     <td className="p-4 text-[13px] text-[#3f4943]">{timeAgo(t.date)}</td>
+                    <td className="p-4">
+                      {/* Only the transitions this state permits are offered. */}
+                      <TransactionRowActions id={t.id} status={t.status} />
+                    </td>
                   </tr>
                 );
               })}

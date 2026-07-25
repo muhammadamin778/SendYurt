@@ -270,6 +270,25 @@ const cents = (usd: number) => BigInt(Math.round(usd * 100));
 
   await prisma.transaction.createMany({ data: txs });
 
+  // Every transaction carries a creation event, so the transition log is
+  // complete for seeded history too — the admin timeline is never blank.
+  const seeded = await prisma.transaction.findMany({
+    where: { householdId: household.id },
+    select: { id: true, status: true, createdAt: true },
+  });
+  await prisma.transactionEvent.createMany({
+    data: seeded.map((t) => ({
+      transactionId: t.id,
+      fromStatus: null,
+      toStatus: t.status,
+      event: "CREATE",
+      actorId: null,
+      reasonCode: "CREATED",
+      createdAt: t.createdAt,
+    })),
+  });
+
+
   // A fresh "transfer arrived" notification for both members, so the
   // bell has something real to show in a live demo.
   const lastRemit = [...txs]

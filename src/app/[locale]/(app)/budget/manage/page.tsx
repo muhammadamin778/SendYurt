@@ -8,7 +8,7 @@ import { BankCreditCard } from "@/components/bank/BankCreditCard";
 import { BankExpensePie, BankGroupedBars } from "@/components/bank/charts";
 import { subMinor } from "@/lib/money";
 import { GoalCard } from "@/components/budget/GoalCard";
-import { DeleteTransactionButton } from "@/components/budget/DeleteTransactionButton";
+import { ReverseTransactionButton } from "@/components/budget/ReverseTransactionButton";
 import {
   AddTransactionButton,
   TransactionForm,
@@ -240,6 +240,9 @@ export default async function BudgetPage({
             ) : (
               transactions.map((tx) => {
                 const meta = TX_META[tx.type] ?? TX_META.EXPENSE;
+                // Reversed rows stay visible — history is append-only — but are
+                // struck through and excluded from every total.
+                const reversed = tx.status === "REVERSED";
                 const label =
                   tx.type === "EXPENSE" && tx.category
                     ? t(`categories.${tx.category}`)
@@ -253,8 +256,9 @@ export default async function BudgetPage({
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-x-2">
-                        <span className="truncate text-[15px] font-semibold text-[#0f172a]">{label}</span>
+                        <span className={`truncate text-[15px] font-semibold text-[#0f172a] ${reversed ? "line-through opacity-60" : ""}`}>{label}</span>
                         {tx.isDemo && <Badge variant="muted" className="text-[10px]">{t("transactions.demoBadge")}</Badge>}
+                        {reversed && <Badge variant="muted" className="text-[10px]">{t("reversedBadge")}</Badge>}
                       </div>
                       <p className="mt-0.5 truncate text-[13px] text-[#94a3b8]">
                         {formatDate(tx.date, currentLocale)}
@@ -262,11 +266,12 @@ export default async function BudgetPage({
                         {tx.note && <> · {tx.note}</>}
                       </p>
                     </div>
-                    <span className={`shrink-0 text-[15px] font-bold tabular-nums ${meta.tone}`}>
+                    <span className={`shrink-0 text-[15px] font-bold tabular-nums ${meta.tone} ${reversed ? "line-through opacity-60" : ""}`}>
                       {meta.sign}
                       {formatMoney(tx.amount, tx.currency, currentLocale)}
                     </span>
-                    {canEdit && <DeleteTransactionButton id={tx.id} />}
+                    {/* A reversed row is terminal — there is nothing left to do to it. */}
+                    {canEdit && !reversed && <ReverseTransactionButton id={tx.id} />}
                   </div>
                 );
               })

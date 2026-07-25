@@ -21,7 +21,7 @@ export async function generateMetadata({
 
 const PAGE_SIZE = 8;
 type Kind = "remittance" | "savings" | "trust";
-type Status = "completed" | "processing" | "applied" | "failed";
+type Status = "completed" | "processing" | "applied" | "failed" | "reversed";
 
 interface Row {
   id: string;
@@ -48,6 +48,7 @@ const STATUS_STYLE: Record<Status, string> = {
   processing: "bg-[#ffddb8] text-[#b87500]",
   applied: "bg-[#dae2fd] text-[#3f465c]",
   failed: "bg-[#ffdad6] text-[#93000a]",
+  reversed: "bg-[#e2e8f0] text-[#475569]",
 };
 
 function firstName(name: string) {
@@ -92,7 +93,16 @@ export default async function HistoryPage({
     if (tx.type === "REMITTANCE") {
       const description = tx.receiver ? t("sentTo", { name: tx.receiver.name }) : tx.note ?? t("typeRemittance");
       const sub = tx.provider ? t("via", { provider: tx.provider.name }) : undefined;
-      const status: Status = tx.status === "COMPLETED" ? "completed" : tx.status === "FAILED" ? "failed" : "processing";
+      // A reversed transfer stays in history, visibly marked — the record is
+      // never destroyed, only excluded from totals.
+      const status: Status =
+        tx.status === "COMPLETED"
+          ? "completed"
+          : tx.status === "FAILED"
+            ? "failed"
+            : tx.status === "REVERSED"
+              ? "reversed"
+              : "processing";
       rows.push({
         id: tx.id, date: tx.date, kind: "remittance", member, description, sub,
         amount: `-${formatMoney(amt, tx.currency, currentLocale)}`,
