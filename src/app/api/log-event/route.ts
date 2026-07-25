@@ -55,15 +55,18 @@ export async function POST(req: Request) {
     }
 
     const attempted = email || "(unknown email)";
+    // AWAIT the send: on serverless (Vercel) the function is frozen/killed the
+    // instant we return, which would cut off a fire-and-forget request before
+    // it reaches Telegram. sendTelegramLog never throws, so awaiting is safe.
     if (type === "login_failed") {
-      void sendTelegramLog({
+      await sendTelegramLog({
         category: "login",
         ok: false,
         title: attempted,
         fields: { Method: method || "Email + password", Code: code, Reason: reason },
       });
     } else {
-      void sendTelegramLog({
+      await sendTelegramLog({
         category: "signup",
         ok: false,
         title: attempted,
@@ -89,13 +92,13 @@ export async function POST(req: Request) {
   }
 
   if (type === "login") {
-    void sendTelegramLog({
+    await sendTelegramLog({
       category: "login",
       title: user.email,
       fields: { Method: "Email + password" },
     });
   } else {
-    void sendTelegramLog({
+    await sendTelegramLog({
       category: "visit",
       title: user.email,
       fields: { Path: path },

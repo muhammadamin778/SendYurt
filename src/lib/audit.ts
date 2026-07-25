@@ -47,7 +47,7 @@ export async function logAudit(db: AuditDb, entry: AuditEntry): Promise<void> {
     },
   });
 
-  void sendTelegramLog({
+  await sendTelegramLog({
     category: "admin",
     title: entry.action,
     fields: {
