@@ -94,4 +94,8 @@ export const LIMITS = {
   // an active session legitimately navigates many pages, but capped so a
   // misbehaving client can't flood the logs group.
   logEvent: { max: 120, windowMs: 60 * 1000 },
+  // Unauthenticated failure events (failed login / signup have no session).
+  // Keyed by IP and capped tighter so a brute-force loop can't spam the group
+  // — excess attempts are dropped here but still recorded in Supabase's logs.
+  logEventPublic: { max: 30, windowMs: 60 * 1000 },
 } as const;

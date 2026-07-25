@@ -152,6 +152,23 @@ export function RegisterForm() {
 
       if (error) {
         const msg = error.message || "";
+        // Best-effort failure log to the Telegram group (public relay path —
+        // a failed signup has no session). Carries the reason + code.
+        void fetch("/api/log-event", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "signup_failed",
+            email: email.trim() || undefined,
+            code:
+              (error as { code?: string; status?: number }).code ??
+              ((error as { status?: number }).status != null
+                ? String((error as { status?: number }).status)
+                : undefined),
+            reason: msg,
+          }),
+          keepalive: true,
+        }).catch(() => {});
         if (/already registered|already exists|user already/i.test(msg)) setFieldErrors({ email: t("errorEmailTaken") });
         else if (/email rate limit|over_email_send/i.test(msg)) setFormError(t("errorEmailSend"));
         else setFormError(msg || t("errorGeneric"));

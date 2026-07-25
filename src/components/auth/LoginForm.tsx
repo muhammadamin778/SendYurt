@@ -34,6 +34,32 @@ function EyeButton({ shown, onClick, label }: { shown: boolean; onClick: () => v
   );
 }
 
+/**
+ * Best-effort report of a FAILED login attempt to the Telegram logs group.
+ * A failed sign-in has no Supabase session, so it goes through the relay's
+ * public path (IP-rate-limited server-side). We pass the attempted email plus
+ * the provider's failure code + message so the log says *why* it failed.
+ * `keepalive` lets it finish even if the page changes; errors are swallowed.
+ */
+function reportLoginFailure(
+  attemptedEmail: string,
+  method: string,
+  err: { message?: string; code?: string; status?: number } | null,
+): void {
+  void fetch("/api/log-event", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      type: "login_failed",
+      email: attemptedEmail || undefined,
+      method,
+      code: err?.code ?? (err?.status != null ? String(err.status) : undefined),
+      reason: err?.message,
+    }),
+    keepalive: true,
+  }).catch(() => {});
+}
+
 export function LoginForm() {
   const t = useTranslations("auth");
   const locale = useLocale();
@@ -56,6 +82,7 @@ export function LoginForm() {
       const supabase = createBrowserSupabase();
       const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (error) {
+        reportLoginFailure(email.trim(), "Email + password", error);
         // "Email not confirmed" is a distinct, actionable case; everything
         // else collapses to the neutral invalid-credentials message.
         setError(/confirm/i.test(error.message) ? error.message : t("errorInvalidCredentials"));
@@ -89,7 +116,10 @@ export function LoginForm() {
     });
     // On success the browser is redirected to Google, so only errors land here
     // (e.g. the provider isn't enabled yet in the Supabase dashboard).
-    if (error) setError(error.message);
+    if (error) {
+      reportLoginFailure("(Google sign-in)", "Google", error);
+      setError(error.message);
+    }
   }
 
   return (

@@ -37,6 +37,12 @@ export interface TelegramLog {
   category: LogCategory;
   /** Headline line — usually who did it (name / email). */
   title: string;
+  /**
+   * Outcome. `undefined`/`true` → a normal (success) event. `false` → a
+   * failed attempt: the header switches to ❌ "… failed" so it stands out,
+   * and the message should carry `Code` / `Reason` fields explaining why.
+   */
+  ok?: boolean;
   /** Optional detail lines. Entries with nullish/empty values are dropped. */
   fields?: Record<string, string | number | null | undefined>;
 }
@@ -62,9 +68,12 @@ function timestamp(): string {
   return `${formatted} (Tashkent)`;
 }
 
-function formatMessage({ category, title, fields }: TelegramLog): string {
+function formatMessage({ category, title, ok, fields }: TelegramLog): string {
   const { emoji, label } = CATEGORY_META[category];
-  const lines = [`${emoji} <b>${escapeHtml(label)}</b>`, escapeHtml(title)];
+  const failed = ok === false;
+  const headEmoji = failed ? "❌" : emoji;
+  const headLabel = failed ? `${label} failed` : label;
+  const lines = [`${headEmoji} <b>${escapeHtml(headLabel)}</b>`, escapeHtml(title)];
 
   if (fields) {
     for (const [key, raw] of Object.entries(fields)) {
