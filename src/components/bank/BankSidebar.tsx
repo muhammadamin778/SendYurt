@@ -111,7 +111,7 @@ export function BankSidebar({
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-3 py-1" aria-label="Main">
+      <nav className="scroll-slim scroll-hover-reveal flex-1 overflow-y-auto px-3 py-1" aria-label="Main">
         <ul className="space-y-1">
           {NAV.map((item) => {
             const active =
