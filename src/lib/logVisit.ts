@@ -25,6 +25,16 @@ export async function logUserVisit(path: string): Promise<void> {
       email: user.email ?? null,
       path,
     });
+
+    // Also mirror the visit to the Telegram logs group (server-side relay
+    // reads the session cookie and posts). Fire-and-forget; `keepalive` lets
+    // it complete across a route change.
+    void fetch("/api/log-event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "visit", path }),
+      keepalive: true,
+    }).catch(() => {});
   } catch {
     // Swallow all errors — logging must never affect the user experience.
   }

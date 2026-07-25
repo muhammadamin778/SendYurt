@@ -62,6 +62,15 @@ export function LoginForm() {
         setSubmitting(false);
         return;
       }
+      // Best-effort log to the Telegram logs group. `keepalive` lets the
+      // request finish even though we navigate away on the next line.
+      void fetch("/api/log-event", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "login" }),
+        keepalive: true,
+      }).catch(() => {});
+
       const from = searchParams.get("from");
       const safeFrom = from && from.startsWith("/") && !from.startsWith("//") ? from : null;
       window.location.assign(safeFrom ?? `/${locale}/dashboard`);

@@ -2,6 +2,7 @@ import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { generateInviteCode } from "@/lib/invite-code";
+import { sendTelegramLog } from "@/lib/telegram";
 
 /**
  * Identity bridge. Supabase Auth owns identity (login/signup); the legacy
@@ -56,10 +57,16 @@ export async function bridgeUser(supaUser: SupabaseUser): Promise<BridgedUser | 
     if (meta.household_mode === "join" && inviteCode) {
       const household = await prisma.household.findUnique({ where: { inviteCode } });
       if (household) {
-        return await prisma.user.create({
+        const joined = await prisma.user.create({
           data: { name, email, passwordHash: PLACEHOLDER_HASH, role, householdId: household.id },
           select: BRIDGE_USER_SELECT,
         });
+        void sendTelegramLog({
+          category: "signup",
+          title: `${joined.name} <${joined.email}>`,
+          fields: { Role: joined.role, Household: `joined “${household.name}” via invite ${inviteCode}` },
+        });
+        return joined;
       }
     }
 
@@ -85,7 +92,13 @@ export async function bridgeUser(supaUser: SupabaseUser): Promise<BridgedUser | 
         throw e;
       }
     }
-    return household.users[0];
+    const firstMember = household.users[0];
+    void sendTelegramLog({
+      category: "signup",
+      title: `${firstMember.name} <${firstMember.email}>`,
+      fields: { Role: firstMember.role, Household: `created “${householdName}”` },
+    });
+    return firstMember;
   } catch (e) {
     // Lost a race to create the same email — just read the winner's row.
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
