@@ -5,14 +5,15 @@ import { getAppSession } from "@/lib/supabase/app-session";
 import { evaluateFunding } from "@/lib/funding";
 import { getUzsRates } from "@/lib/fx";
 import { prisma } from "@/lib/prisma";
+import { toBigInt, toMinor, type Minor } from "@/lib/money";
 import { computeQuotes } from "@/lib/rates";
 import { remittanceSchema } from "@/lib/validators";
 
 export type ActionResult =
   | { ok: true }
-  // On "insufficient_funds", `balance` and `amount` (both UZS) are included so
-  // the client can render the exact decline message.
-  | { ok: false; error: string; balance?: number; amount?: number };
+  // On "insufficient_funds", `balance` and `amount` (both UZS minor units)
+  // are included so the client can render the exact decline message.
+  | { ok: false; error: string; balance?: Minor; amount?: Minor };
 
 function fail(error: string): ActionResult {
   return { ok: false, error };
@@ -54,9 +55,10 @@ export async function createRemittance(input: unknown): Promise<ActionResult> {
     const [quote] = computeQuotes([provider], amount, currency, fx.rates);
     if (!quote) return fail("validation");
 
-    // The UZS amount the funding card must cover (matches the "recipient
-    // receives exactly" figure shown on the Review step).
-    const uzsCost = Math.round(quote.receivedUzs);
+    // The UZS the funding card must cover, in minor units (tiyin) — matches
+    // the "recipient receives exactly" figure on the Review step. Already
+    // rounded once inside computeQuotes, so there is no second rounding here.
+    const uzsCost = quote.receivedUzs;
 
     // A funding source is MANDATORY. Previously `cardId` was optional and the
     // whole balance check sat behind `if (cardId)`, so a request that simply
@@ -70,7 +72,7 @@ export async function createRemittance(input: unknown): Promise<ActionResult> {
       select: { id: true, balance: true },
     });
     if (!found) return fail("card_not_found");
-    const balance = found.balance.toNumber();
+    const balance = toMinor(found.balance);
 
     // Same rules the client used to disable the button — re-evaluated here,
     // where they're authoritative. Re-checked atomically in the transaction
@@ -96,9 +98,12 @@ export async function createRemittance(input: unknown): Promise<ActionResult> {
         // Conditional debit: only decrements when the balance still covers the
         // cost, so two concurrent transfers can't overdraw. The DB CHECK
         // (Card_balance_nonneg) is the last line of defense.
+        // Both operands are minor units, written as BigInt so the comparison
+        // and the decrement happen in exact integer arithmetic in Postgres.
+        const costBig = toBigInt(uzsCost);
         const debited = await tx.card.updateMany({
-          where: { id: card.id, userId: dbUser.id, balance: { gte: uzsCost } },
-          data: { balance: { decrement: uzsCost } },
+          where: { id: card.id, userId: dbUser.id, balance: { gte: costBig } },
+          data: { balance: { decrement: costBig } },
         });
         if (debited.count !== 1) throw new InsufficientFundsError();
 
@@ -109,9 +114,11 @@ export async function createRemittance(input: unknown): Promise<ActionResult> {
             senderId: dbUser.id,
             receiverId: receiver?.id ?? null,
             providerId: provider.id,
-            amount: uzsCost,
+            // `amount` is UZS minor units; `sourceAmount` is minor units of
+            // `currency` — two different currencies in the same row.
+            amount: costBig,
             currency: "UZS",
-            sourceAmount: amount,
+            sourceAmount: toBigInt(amount),
             sourceCurrency: currency,
             date: new Date(),
             status: "COMPLETED",
@@ -122,9 +129,11 @@ export async function createRemittance(input: unknown): Promise<ActionResult> {
       if (e instanceof InsufficientFundsError) {
         // Lost the race to a concurrent transfer. Re-read the (unchanged)
         // balance for the message; the debit rolled back.
-        const fresh =
-          (await prisma.card.findUnique({ where: { id: card.id }, select: { balance: true } }))?.balance.toNumber() ??
-          card.balance;
+        const row = await prisma.card.findUnique({
+          where: { id: card.id },
+          select: { balance: true },
+        });
+        const fresh = row ? toMinor(row.balance) : card.balance;
         return { ok: false, error: "insufficient_funds", balance: fresh, amount: uzsCost };
       }
       throw e;

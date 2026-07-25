@@ -3,6 +3,7 @@
 import { clsx } from "clsx";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { formatMoney } from "@/lib/format";
+import { fromMajor, isCurrencyCode, type CurrencyCode } from "@/lib/money";
 import { createBrowserSupabase } from "@/lib/supabase/client";
 import { toast } from "@/components/ui/toast";
 
@@ -42,6 +43,20 @@ function Icon({ d, className = "h-5 w-5" }: { d: string; className?: string }) {
       <path d={d} strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
+}
+
+/**
+ * The Supabase wallet is a SEPARATE money store from the Prisma card/ledger
+ * data, and it still holds MAJOR units (its `transfer_funds` / `deposit_funds`
+ * RPCs take and return whole so'm). It was deliberately left out of the
+ * minor-units migration, so every amount here is converted at the point of
+ * display with `fromMajor`. Do not copy this pattern for Prisma-sourced money
+ * — that is already minor units.
+ */
+/** Wallet amounts arrive in major units — convert for display only. */
+function walletMoney(value: number, currency: string, locale: string): string {
+  const code: CurrencyCode = isCurrencyCode(currency) ? currency : "UZS";
+  return formatMoney(fromMajor(value, code), code, locale);
 }
 
 export function WalletBoard({ locale, userEmail, initialBalance, currency, initialTx }: WalletBoardProps) {
@@ -107,7 +122,7 @@ export function WalletBoard({ locale, userEmail, initialBalance, currency, initi
     setRecipient("");
     setAmount("");
     setNote("");
-    toast(`Sent ${formatMoney(value, currency, locale)} to ${recipient.trim()}.`);
+    toast(`Sent ${walletMoney(value, currency, locale)} to ${recipient.trim()}.`);
     void refetch();
   }
 
@@ -122,7 +137,7 @@ export function WalletBoard({ locale, userEmail, initialBalance, currency, initi
     }
     const newBalance = data && typeof data === "object" && "new_balance" in data ? Number((data as { new_balance: number }).new_balance) : null;
     if (newBalance != null) setBalance(newBalance);
-    toast(`Added ${formatMoney(value, currency, locale)} to your wallet.`);
+    toast(`Added ${walletMoney(value, currency, locale)} to your wallet.`);
     void refetch();
   }
 
@@ -133,7 +148,7 @@ export function WalletBoard({ locale, userEmail, initialBalance, currency, initi
         <div className="relative overflow-hidden rounded-[24px] bg-gradient-to-br from-[#0a7c53] to-[#065f3e] p-6 text-white shadow-[0_10px_30px_-12px_rgba(10,124,83,0.6)]">
           <div aria-hidden className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
           <p className="text-[13px] font-medium uppercase tracking-wider text-white/70">Wallet balance</p>
-          <p className="mt-2 font-sans text-[34px] font-bold tabular-nums">{formatMoney(balance, currency, locale)}</p>
+          <p className="mt-2 font-sans text-[34px] font-bold tabular-nums">{walletMoney(balance, currency, locale)}</p>
           <p className="mt-4 text-[12px] text-white/70">Your pay-in address</p>
           <p className="text-[14px] font-semibold">{userEmail}</p>
         </div>
@@ -150,7 +165,7 @@ export function WalletBoard({ locale, userEmail, initialBalance, currency, initi
                 onClick={() => onTopUp(v)}
                 className="rounded-xl border border-[#e2e8f0] px-3.5 py-2 text-[13px] font-semibold text-[#0a7c53] transition-colors hover:bg-[#0a7c53]/[0.06] disabled:opacity-60"
               >
-                + {formatMoney(v, currency, locale)}
+                + {walletMoney(v, currency, locale)}
               </button>
             ))}
           </div>
@@ -259,7 +274,7 @@ export function WalletBoard({ locale, userEmail, initialBalance, currency, initi
                   </div>
                   <p className={clsx("shrink-0 text-[15px] font-bold tabular-nums", incoming ? "text-[#0a7c53]" : "text-[#0f172a]")}>
                     {incoming ? "+" : "−"}
-                    {formatMoney(Number(t.amount), t.currency || currency, locale)}
+                    {walletMoney(Number(t.amount), t.currency || currency, locale)}
                   </p>
                 </li>
               );

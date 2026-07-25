@@ -9,16 +9,18 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { toast } from "@/components/ui/toast";
 import { formatMoney } from "@/lib/format";
+import { addMinor, HOME_CURRENCY, parseMoney, ZERO, type Minor } from "@/lib/money";
 
-function parseAmount(raw: string): number {
-  return Number(raw.replace(/\s/g, "").replace(",", "."));
+/** Exact string → minor units; `null` when the input isn't valid money. */
+function parseAmount(raw: string): Minor | null {
+  return parseMoney(raw, HOME_CURRENCY);
 }
 
 export interface GoalActionProps {
   id: string;
   name: string;
-  targetAmount: number;
-  currentAmount: number;
+  targetAmount: Minor;
+  currentAmount: Minor;
   targetDateIso: string | null;
 }
 
@@ -58,8 +60,8 @@ export function GoalDetailActions({ goal, canEdit }: { goal: GoalActionProps; ca
     return () => document.removeEventListener("keydown", onKey);
   }, [modal]);
 
-  const amt = Math.max(0, parseAmount(amount) || 0);
-  const after = goal.currentAmount + amt;
+  const amt = parseAmount(amount) ?? ZERO;
+  const after = addMinor(goal.currentAmount, amt > 0 ? amt : ZERO);
   const pctNow = goal.targetAmount > 0 ? Math.min(100, (goal.currentAmount / goal.targetAmount) * 100) : 0;
   const pctAfter = goal.targetAmount > 0 ? Math.min(100, (after / goal.targetAmount) * 100) : 0;
   const delta = Math.round(pctAfter) - Math.round(pctNow);
@@ -89,7 +91,7 @@ export function GoalDetailActions({ goal, canEdit }: { goal: GoalActionProps; ca
   async function onEditGoal(e: FormEvent) {
     e.preventDefault();
     const value = parseAmount(target);
-    if (name.trim().length < 2 || !Number.isFinite(value) || value <= 0) {
+    if (name.trim().length < 2 || value === null || value <= 0) {
       setEditError(t("form.errorGeneric"));
       return;
     }

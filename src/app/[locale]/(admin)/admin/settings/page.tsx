@@ -1,6 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 import { SettingsBoard, type AuditItem, type ProviderHealth } from "@/components/admin/SettingsBoard";
 import { requireAdmin } from "@/lib/admin";
+import { toMinor, ZERO } from "@/lib/money";
 import { formatMoney, formatNumber } from "@/lib/format";
 import { getUzsRates } from "@/lib/fx";
 import { readPrisma } from "@/lib/prisma-read";
@@ -42,7 +43,7 @@ export default async function AdminSettingsPage({ params: { locale } }: { params
   let ratesLive = false;
   let providers: ProviderHealth[] = [];
   let audit: AuditItem[] = [];
-  let volume24h = formatMoney(0, "UZS", "en");
+  let volume24h = formatMoney(ZERO, "UZS", "en");
   const reserveBalance = "$2,410,500.00"; // illustrative reserve pool
 
   try {
@@ -85,7 +86,7 @@ export default async function AdminSettingsPage({ params: { locale } }: { params
       };
     });
 
-    volume24h = formatMoney(volAgg._sum.amount?.toNumber() ?? 0, "UZS", "en");
+    volume24h = formatMoney(volAgg._sum.amount == null ? ZERO : toMinor(volAgg._sum.amount), "UZS", "en");
   } catch (e) {
     console.error("admin settings data unavailable", e);
   }

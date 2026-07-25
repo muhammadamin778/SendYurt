@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { type Minor } from "@/lib/money";
 import { evaluateFunding, type FundingDecision } from "@/lib/funding";
 
 export type PlainCard = {
@@ -8,14 +9,14 @@ export type PlainCard = {
   brand: string;
   last4: string;
   holderName: string;
-  /** Stored-value balance in UZS. */
-  balance: number;
+  /** Stored-value balance in UZS MINOR units (tiyin). */
+  balance: Minor;
 };
 
 type TransferCtx = {
   cards: PlainCard[];
-  /** UZS amount the funding card must cover for this transfer. */
-  uzsCost: number;
+  /** UZS minor units the funding card must cover for this transfer. */
+  uzsCost: Minor;
   /** Selected funding card id, or null when paying from the SendYurt balance. */
   selectedCardId: string | null;
   setSelectedCardId: (id: string | null) => void;
@@ -44,7 +45,7 @@ export function TransferProvider({
   children,
 }: {
   cards: PlainCard[];
-  uzsCost: number;
+  uzsCost: Minor;
   children: ReactNode;
 }) {
   // Default to the first (default) card when the user has linked any.

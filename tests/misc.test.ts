@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { generateInviteCode } from "@/lib/invite-code";
 import { passwordStrength } from "@/lib/password-strength";
 import { isValidPeriod, periodRange, shiftPeriod } from "@/lib/budget-data";
+import { parseMoney, type Minor } from "@/lib/money";
 import { formatMoney } from "@/lib/format";
 
 describe("generateInviteCode", () => {
@@ -56,12 +57,17 @@ describe("budget period helpers", () => {
 
 describe("formatMoney", () => {
   it("renders UZS without decimals", () => {
-    const s = formatMoney(1_234_567.89, "UZS", "en");
+    // 1 234 567.89 UZS expressed in tiyin.
+    const s = formatMoney(parseMoney("1234567.89", "UZS")!, "UZS", "en");
     expect(s).toContain("1,234,568");
     expect(s).not.toContain(".89");
   });
 
+  it("renders a two-decimal currency from minor units", () => {
+    expect(formatMoney(parseMoney("400.55", "USD")!, "USD", "en")).toContain("400.55");
+  });
+
   it("falls back gracefully for unknown currency codes", () => {
-    expect(() => formatMoney(100, "NOT_A_CODE", "en")).not.toThrow();
+    expect(() => formatMoney(100 as Minor, "NOT_A_CODE", "en")).not.toThrow();
   });
 });

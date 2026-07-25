@@ -11,6 +11,7 @@ import {
 } from "@/components/bank/charts";
 import { currentPeriod, getCategorySpend, getMonthSummary, getMonthlyTrend, getSavingsGoals } from "@/lib/budget-data";
 import { formatDate, formatMoney, formatMonth } from "@/lib/format";
+import { addMinor, sumMinor, toMinor, ZERO, type Minor } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 
@@ -88,7 +89,7 @@ export default async function DashboardPage({
   // card's stored last-4, holder, expiry and (debitable) balance.
   const realCards = cards.map((c) => ({
     id: c.id,
-    balance: formatMoney(c.balance.toNumber(), "UZS", currentLocale),
+    balance: formatMoney(toMinor(c.balance), "UZS", currentLocale),
     holder: c.holderName,
     valid: c.expiry,
     number: `•••• •••• •••• ${c.last4}`,
@@ -101,7 +102,7 @@ export default async function DashboardPage({
     targetAmount: g.targetAmount,
   }));
 
-  const totalSaved = trend.reduce((a, p) => a + p.savedUzs, 0);
+  const totalSaved = sumMinor(trend.map((p) => p.savedUzs));
   const now = new Date();
   const validThru = `${String(now.getMonth() + 1).padStart(2, "0")}/${String((now.getFullYear() + 4) % 100).padStart(2, "0")}`;
   const code = household?.inviteCode ?? "00000000";
@@ -113,9 +114,9 @@ export default async function DashboardPage({
     secondary: p.spentUzs,
   }));
 
-  let running = 0;
+  let running: Minor = ZERO;
   const areaData = trend.map((p) => {
-    running += p.savedUzs;
+    running = addMinor(running, p.savedUzs);
     return { name: formatMonth(p.monthStart, currentLocale), value: running };
   });
 
@@ -213,7 +214,7 @@ export default async function DashboardPage({
                     </div>
                     <span className={`shrink-0 text-[15px] font-semibold tabular-nums ${meta.tone}`}>
                       {meta.sign}
-                      {formatMoney(tx.amount.toNumber(), tx.currency, currentLocale)}
+                      {formatMoney(toMinor(tx.amount), tx.currency, currentLocale)}
                     </span>
                   </div>
                 );

@@ -1,5 +1,6 @@
 import type { TimelineMonth } from "@/components/trust/RemittanceTimeline";
 import { computeMilestones, type Milestone } from "@/lib/milestones";
+import { addMinor, toMinor, ZERO, type Minor } from "@/lib/money";
 import { isSignificantScoreChange, notifyHousehold } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 import { computeTrustScore, type TrustScoreResult } from "@/lib/trust-score";
@@ -45,7 +46,7 @@ export async function getTrustData(householdId: string): Promise<TrustData> {
   const result = computeTrustScore(
     transactions.map((t) => ({
       type: t.type,
-      amount: t.amount.toNumber(),
+      amount: toMinor(t.amount),
       date: t.date,
     })),
   );
@@ -84,11 +85,11 @@ export async function getTrustData(householdId: string): Promise<TrustData> {
   }
 
   // Last 12 calendar months of remittance arrivals, oldest first.
-  const byMonth = new Map<string, number>();
+  const byMonth = new Map<string, Minor>();
   for (const tx of transactions) {
     if (tx.type !== "REMITTANCE") continue;
     const key = `${tx.date.getUTCFullYear()}-${String(tx.date.getUTCMonth() + 1).padStart(2, "0")}`;
-    byMonth.set(key, (byMonth.get(key) ?? 0) + tx.amount.toNumber());
+    byMonth.set(key, addMinor(byMonth.get(key) ?? ZERO, toMinor(tx.amount)));
   }
   const now = new Date();
   const timeline: TimelineMonth[] = [];
@@ -106,8 +107,8 @@ export async function getTrustData(householdId: string): Promise<TrustData> {
   const milestones = computeMilestones(
     transactions.map((t) => ({ type: t.type, date: t.date })),
     goals.map((g) => ({
-      currentAmount: g.currentAmount.toNumber(),
-      targetAmount: g.targetAmount.toNumber(),
+      currentAmount: toMinor(g.currentAmount),
+      targetAmount: toMinor(g.targetAmount),
     })),
   );
 

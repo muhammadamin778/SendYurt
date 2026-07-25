@@ -1,4 +1,79 @@
 import { z } from "zod";
+import { HOME_CURRENCY, parseMoney, type CurrencyCode, type Minor } from "@/lib/money";
+import { SOURCE_CURRENCIES } from "@/lib/rates";
+
+/**
+ * A monetary field. Accepts what the forms send (a string like "400.55" or
+ * "1 234,50", or a number) and yields exact integer MINOR units — never a
+ * float. Bounds are given in MAJOR units for readability and converted once.
+ *
+ * `parseMoney` rejects more decimal places than the currency has, so a user
+ * cannot silently lose sub-unit precision.
+ */
+function moneyField(opts: {
+  currency: CurrencyCode;
+  /** Inclusive, in major units. */
+  maxMajor: number;
+  /** Defaults to "must be > 0"; pass 0 to allow zero. */
+  minMajor?: number;
+}) {
+  const { currency, maxMajor, minMajor } = opts;
+  return z.union([z.string(), z.number()]).transform((raw, ctx) => {
+    const parsed = parseMoney(raw, currency);
+    if (parsed === null) {
+      ctx.addIssue({ code: "custom", message: "invalid_amount" });
+      return z.NEVER;
+    }
+    const min = parseMoney(String(minMajor ?? 0), currency)!;
+    const max = parseMoney(String(maxMajor), currency)!;
+    if (minMajor === undefined ? parsed <= min : parsed < min) {
+      ctx.addIssue({ code: "custom", message: "amount_too_small" });
+      return z.NEVER;
+    }
+    if (parsed > max) {
+      ctx.addIssue({ code: "custom", message: "amount_too_large" });
+      return z.NEVER;
+    }
+    return parsed as Minor;
+  });
+}
+
+/** UZS amounts (budgets, expenses, goals) share the same generous cap. */
+const uzsAmount = (minMajor?: number) =>
+  moneyField({ currency: HOME_CURRENCY, maxMajor: 10_000_000_000, minMajor });
+
+// Derived from the single currency registry so the list can't drift.
+const sourceCurrencyEnum = z.enum(
+  SOURCE_CURRENCIES as [CurrencyCode, ...CurrencyCode[]],
+);
+
+const MAX_SEND_MAJOR = 1_000_000;
+
+/**
+ * Parse a send-side amount against the currency chosen in the SAME object —
+ * a send amount is denominated in its own currency, so it can't be parsed by
+ * a field-level rule that doesn't know which one was picked.
+ */
+function parseSendAmount(
+  raw: string | number,
+  currency: CurrencyCode,
+  ctx: z.RefinementCtx,
+): Minor | typeof z.NEVER {
+  const parsed = parseMoney(raw, currency);
+  if (parsed === null) {
+    ctx.addIssue({ code: "custom", message: "invalid_amount", path: ["amount"] });
+    return z.NEVER;
+  }
+  if (parsed <= 0) {
+    ctx.addIssue({ code: "custom", message: "amount_too_small", path: ["amount"] });
+    return z.NEVER;
+  }
+  if (parsed > parseMoney(String(MAX_SEND_MAJOR), currency)!) {
+    ctx.addIssue({ code: "custom", message: "amount_too_large", path: ["amount"] });
+    return z.NEVER;
+  }
+  return parsed;
+}
 
 export const ROLES = ["SENDER", "RECEIVER"] as const;
 export type Role = (typeof ROLES)[number];
@@ -52,44 +127,56 @@ export const loginSchema = z.object({
   password: z.string().min(1),
 });
 
-export const rateQuerySchema = z.object({
-  amount: z.coerce.number().positive().max(1_000_000),
-  sourceCurrency: z.enum(["USD", "RUB", "KZT", "EUR"]),
-});
+export const rateQuerySchema = z
+  .object({
+    amount: z.union([z.string(), z.number()]),
+    sourceCurrency: sourceCurrencyEnum,
+  })
+  .transform((v, ctx) => ({
+    amount: parseSendAmount(v.amount, v.sourceCurrency, ctx),
+    sourceCurrency: v.sourceCurrency,
+  }));
 
 export const expenseSchema = z.object({
-  amount: z.coerce.number().positive().max(10_000_000_000),
+  amount: uzsAmount(),
   category: z.string().min(1).max(40),
   note: z.string().trim().max(200).optional(),
   date: z.coerce.date(),
 });
 
 export const incomeSchema = z.object({
-  amount: z.coerce.number().positive().max(10_000_000_000),
+  amount: uzsAmount(),
   note: z.string().trim().max(200).optional(),
   date: z.coerce.date(),
 });
 
 export const budgetSchema = z.object({
   category: z.string().min(1).max(40),
-  amountAllocated: z.coerce.number().min(0).max(10_000_000_000),
+  amountAllocated: uzsAmount(0),
   period: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/),
 });
 
 export const savingsGoalSchema = z.object({
   name: z.string().trim().min(2).max(80),
-  targetAmount: z.coerce.number().positive().max(10_000_000_000),
+  targetAmount: uzsAmount(),
   targetDate: z.coerce.date().optional(),
 });
 
-export const remittanceSchema = z.object({
-  providerId: z.string().min(1),
-  amount: z.coerce.number().positive().max(1_000_000),
-  currency: z.enum(["USD", "RUB", "KZT", "EUR"]),
-  // Optional funding card. When present, the transfer is paid from this card
-  // and its UZS balance is checked and debited server-side.
-  cardId: z.string().min(1).optional(),
-});
+export const remittanceSchema = z
+  .object({
+    providerId: z.string().min(1),
+    amount: z.union([z.string(), z.number()]),
+    currency: sourceCurrencyEnum,
+    // Optional at the schema level so the action can return the precise
+    // `card_required` error rather than a generic validation failure.
+    cardId: z.string().min(1).optional(),
+  })
+  .transform((v, ctx) => ({
+    providerId: v.providerId,
+    amount: parseSendAmount(v.amount, v.currency, ctx),
+    currency: v.currency,
+    cardId: v.cardId,
+  }));
 
 export const CARD_BRANDS = ["visa", "mc", "humo", "uzcard", "card"] as const;
 
@@ -107,13 +194,13 @@ export const addCardSchema = z.object({
 
 export const contributionSchema = z.object({
   goalId: z.string().min(1),
-  amount: z.coerce.number().positive().max(10_000_000_000),
+  amount: uzsAmount(),
   note: z.string().trim().max(120).optional(),
 });
 
 export const updateGoalSchema = z.object({
   goalId: z.string().min(1),
   name: z.string().trim().min(2).max(80),
-  targetAmount: z.coerce.number().positive().max(10_000_000_000),
+  targetAmount: uzsAmount(),
   targetDate: z.coerce.date().optional(),
 });

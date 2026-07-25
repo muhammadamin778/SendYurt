@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getAppSession } from "@/lib/supabase/app-session";
+import { HOME_CURRENCY, parseMoney, toBigInt, toMinor, type Minor } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { addCardSchema } from "@/lib/validators";
 
@@ -11,7 +12,7 @@ export type PlainCard = {
   last4: string;
   holderName: string;
   expiry: string;
-  balance: number;
+  balance: Minor;
   isDefault: boolean;
 };
 
@@ -23,7 +24,8 @@ export type AddCardResult =
 // stored-value balance (UZS) purely so transfers can be tried and the
 // insufficient-funds path can be demonstrated. Real integration would charge
 // the card through a tokenising processor instead of holding a balance.
-const DEMO_CARD_BALANCE = 3_000_000;
+// 3 000 000 UZS expressed in minor units (tiyin).
+const DEMO_CARD_BALANCE = parseMoney("3000000", HOME_CURRENCY)!;
 
 /**
  * Links a funding card. PCI-DSS: only the last four digits are persisted —
@@ -49,7 +51,7 @@ export async function addCard(input: unknown): Promise<AddCardResult> {
         last4,
         holderName,
         expiry,
-        balance: DEMO_CARD_BALANCE,
+        balance: toBigInt(DEMO_CARD_BALANCE),
         isDefault: isFirst,
       },
       select: {
@@ -64,7 +66,7 @@ export async function addCard(input: unknown): Promise<AddCardResult> {
     });
 
     revalidatePath("/[locale]/(app)/dashboard", "page");
-    return { ok: true, card: { ...card, balance: card.balance.toNumber() } };
+    return { ok: true, card: { ...card, balance: toMinor(card.balance) } };
   } catch (e) {
     console.error("addCard failed", e);
     return { ok: false, error: "server" };
@@ -88,5 +90,5 @@ export async function listCards(): Promise<PlainCard[]> {
       isDefault: true,
     },
   });
-  return cards.map((c) => ({ ...c, balance: c.balance.toNumber() }));
+  return cards.map((c) => ({ ...c, balance: toMinor(c.balance) }));
 }

@@ -7,7 +7,7 @@
  *
  * The rules, in order:
  *   1. A transfer must have a funding source — no card, no transfer.
- *   2. The amount must be a positive, finite number.
+ *   2. The amount must be a positive integer count of minor units.
  *   3. A card with a zero balance can never fund a transfer.
  *   4. The balance must cover the full amount — no overdraft, no partial send.
  *
@@ -16,24 +16,29 @@
  * race between two concurrent transfers) → the `Card_balance_nonneg` DB CHECK.
  */
 
+import type { Minor } from "@/lib/money";
+
 export type FundingDecision =
   | { ok: true }
   | { ok: false; reason: "no_card" | "invalid_amount" | "zero_balance" | "insufficient_funds" };
 
 export interface FundingInput {
-  /** Balance of the chosen card in UZS, or null/undefined when none is chosen. */
-  balance?: number | null;
-  /** UZS the card must cover for this transfer. */
-  cost: number;
+  /**
+   * Balance of the chosen card in MINOR units (tiyin), or null/undefined
+   * when no card is chosen.
+   */
+  balance?: Minor | null;
+  /** Minor units the card must cover for this transfer. */
+  cost: Minor;
 }
 
 export function evaluateFunding({ balance, cost }: FundingInput): FundingDecision {
   // 1. A funding source is mandatory.
-  if (balance == null || !Number.isFinite(balance)) {
+  if (balance == null || !Number.isSafeInteger(balance)) {
     return { ok: false, reason: "no_card" };
   }
-  // 2. Reject non-positive / non-finite amounts before any comparison.
-  if (!Number.isFinite(cost) || cost <= 0) {
+  // 2. Reject non-positive / non-integer amounts before any comparison.
+  if (!Number.isSafeInteger(cost) || cost <= 0) {
     return { ok: false, reason: "invalid_amount" };
   }
   // 3. An empty card is called out separately so the UI can say "top up"

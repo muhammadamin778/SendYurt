@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { NewBudgetForm } from "@/components/budget/NewBudgetForm";
 import { currentPeriod, getCategorySpend } from "@/lib/budget-data";
 import { isCategory } from "@/lib/categories";
+import { ZERO, type Minor } from "@/lib/money";
 import { formatMoney } from "@/lib/format";
 import { requireUser } from "@/lib/session";
 
@@ -54,7 +55,7 @@ export default async function NewBudgetPage({
   const budgeted = categories
     .filter((c) => c.allocatedUzs !== null)
     .map((c) => {
-      const allocated = c.allocatedUzs as number;
+      const allocated = c.allocatedUzs as Minor;
       const pct = allocated > 0 ? Math.min(100, Math.round((c.spentUzs / allocated) * 100)) : 0;
       return { category: c.category, spent: c.spentUzs, allocated, pct, healthy: pct < 80 };
     });
@@ -62,7 +63,7 @@ export default async function NewBudgetPage({
   // Progress preview card shows the most-utilised budgeted category.
   const progress =
     [...budgeted].sort((a, b) => b.pct - a.pct)[0] ??
-    { category: initialCategory, spent: 0, allocated: 0, pct: 0, healthy: true };
+    { category: initialCategory, spent: ZERO, allocated: ZERO, pct: 0, healthy: true };
 
   return (
     <div className="mx-auto max-w-[1180px]">

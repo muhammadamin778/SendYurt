@@ -1,4 +1,5 @@
 import { setRequestLocale } from "next-intl/server";
+import { toMinor, ZERO, type Minor } from "@/lib/money";
 import { formatMoney } from "@/lib/format";
 import { requireAdmin } from "@/lib/admin";
 import { paginate, parsePageParams } from "@/lib/pagination";
@@ -45,7 +46,8 @@ export default async function AdminTransactionsPage({
   const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
   let page = { items: [] as Awaited<ReturnType<typeof load>>["items"], page: 1, pageSize: 10, total: 0, totalPages: 1, hasNext: false, hasPrev: false };
-  let volume24h = 0, activeCount = 0, flaggedCount = 0;
+  let activeCount = 0, flaggedCount = 0;
+  let volume24h: Minor = ZERO;
   let providers: { id: string; name: string }[] = [];
   let corridors: string[] = [];
   let dataError = false;
@@ -79,7 +81,7 @@ export default async function AdminTransactionsPage({
       readPrisma.transaction.groupBy({ by: ["sourceCurrency"], where: { type: "REMITTANCE", sourceCurrency: { not: null } } }),
     ]);
     page = p;
-    volume24h = volAgg._sum.amount?.toNumber() ?? 0;
+    volume24h = volAgg._sum.amount == null ? ZERO : toMinor(volAgg._sum.amount);
     activeCount = active;
     flaggedCount = flagged;
     providers = provs;
@@ -196,7 +198,7 @@ export default async function AdminTransactionsPage({
                     <td className="p-4 text-center text-[14px]">{t.sourceCurrency ?? "—"} → UZS</td>
                     <td className="p-4"><span className="flex items-center gap-2 text-[14px] text-[#191c1d]"><span className="h-4 w-4 rounded-sm" style={{ backgroundColor: pc }} /> {t.provider?.name ?? "—"}</span></td>
                     <td className={`p-4 text-right text-[16px] font-semibold tabular-nums ${flagged ? "text-[#ba1a1a]" : "text-[#191c1d]"}`}>
-                      {t.sourceAmount != null ? formatMoney(t.sourceAmount.toNumber(), t.sourceCurrency ?? "USD", "en") : formatMoney(t.amount.toNumber(), t.currency, "en")}
+                      {t.sourceAmount != null ? formatMoney(toMinor(t.sourceAmount), t.sourceCurrency ?? "USD", "en") : formatMoney(toMinor(t.amount), t.currency, "en")}
                     </td>
                     <td className="p-4 text-center">
                       <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${st.chip}`}>{st.label}</span>

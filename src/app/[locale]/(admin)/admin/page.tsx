@@ -1,4 +1,5 @@
 import { setRequestLocale } from "next-intl/server";
+import { toMinor, ZERO, type Minor } from "@/lib/money";
 import { formatMoney } from "@/lib/format";
 import { readPrisma } from "@/lib/prisma-read";
 
@@ -12,8 +13,8 @@ function Icon({ d, className = "h-5 w-5" }: { d: string; className?: string }) {
 
 const CARD = "rounded-xl border border-[#bec9c0] bg-white";
 
-interface Corridor { src: string; volume: number; count: number }
-interface RecentTx { id: string; type: string; amount: number; currency: string; date: Date; sourceCurrency: string | null }
+interface Corridor { src: string; volume: Minor; count: number }
+interface RecentTx { id: string; type: string; amount: Minor; currency: string; date: Date; sourceCurrency: string | null }
 
 export default async function AdminDashboardPage({ params: { locale } }: { params: { locale: string } }) {
   setRequestLocale(locale);
@@ -21,7 +22,8 @@ export default async function AdminDashboardPage({ params: { locale } }: { param
   // Real aggregates via the read client (Neon replica when DATABASE_READ_URL
   // is set). Wrapped so a transient DB blip (e.g. Neon waking from suspend)
   // degrades to zeros + a notice instead of blanking the whole page.
-  let userCount = 0, txCount = 0, totalVolume = 0;
+  let userCount = 0, txCount = 0;
+  let totalVolume: Minor = ZERO;
   let corridors: Corridor[] = [];
   let recent: RecentTx[] = [];
   let dataError = false;
@@ -45,18 +47,18 @@ export default async function AdminDashboardPage({ params: { locale } }: { param
     ]);
     userCount = uc;
     txCount = tc;
-    totalVolume = volumeAgg._sum.amount?.toNumber() ?? 0;
+    totalVolume = volumeAgg._sum.amount == null ? ZERO : toMinor(volumeAgg._sum.amount);
     corridors = corridorsRaw
-      .map((c) => ({ src: c.sourceCurrency ?? "—", volume: c._sum.amount?.toNumber() ?? 0, count: c._count._all }))
+      .map((c) => ({ src: c.sourceCurrency ?? "—", volume: c._sum.amount == null ? ZERO : toMinor(c._sum.amount), count: c._count._all }))
       .sort((a, b) => b.volume - a.volume)
       .slice(0, 3);
-    recent = recentRaw.map((t) => ({ ...t, amount: t.amount.toNumber() }));
+    recent = recentRaw.map((t) => ({ ...t, amount: toMinor(t.amount) }));
   } catch (e) {
     console.error("admin dashboard data unavailable", e);
     dataError = true;
   }
 
-  const topVolume = corridors[0]?.volume || 1;
+  const topVolume = corridors[0]?.volume || 1; // guard against divide-by-zero
 
   const metrics = [
     { label: "Total Volume", value: formatMoney(totalVolume, "UZS", "en"), icon: "M12 3v18M17 6H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6", accent: "#006c49", kind: "chip", real: true },

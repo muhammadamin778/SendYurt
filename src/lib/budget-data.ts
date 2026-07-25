@@ -1,9 +1,11 @@
+import { addMinor, toMinor, ZERO, type Minor } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 
 export interface MonthSummary {
-  incomeUzs: number; // INCOME + REMITTANCE received
-  spentUzs: number; // EXPENSE
-  savedUzs: number; // SAVINGS
+  // All in UZS minor units (tiyin) — see src/lib/money.ts.
+  incomeUzs: Minor; // INCOME + REMITTANCE received
+  spentUzs: Minor; // EXPENSE
+  savedUzs: Minor; // SAVINGS
 }
 
 export interface MonthPoint extends MonthSummary {
@@ -13,29 +15,29 @@ export interface MonthPoint extends MonthSummary {
 
 export interface CategorySpend {
   category: string;
-  spentUzs: number;
-  allocatedUzs: number | null;
+  spentUzs: Minor;
+  allocatedUzs: Minor | null;
 }
 
 export interface TransactionRow {
   id: string;
   type: string;
-  amount: number;
+  amount: Minor;
   currency: string;
   category: string | null;
   note: string | null;
   date: Date;
   isDemo: boolean;
   providerName: string | null;
-  sourceAmount: number | null;
+  sourceAmount: Minor | null;
   sourceCurrency: string | null;
 }
 
 export interface GoalRow {
   id: string;
   name: string;
-  targetAmount: number;
-  currentAmount: number;
+  targetAmount: Minor;
+  currentAmount: Minor;
   targetDate: Date | null;
 }
 
@@ -66,7 +68,7 @@ async function sumByTypes(
   householdId: string,
   start: Date,
   end: Date,
-): Promise<Record<string, number>> {
+): Promise<Record<string, Minor>> {
   const groups = await prisma.transaction.groupBy({
     by: ["type"],
     where: {
@@ -76,9 +78,9 @@ async function sumByTypes(
     },
     _sum: { amount: true },
   });
-  const result: Record<string, number> = {};
+  const result: Record<string, Minor> = {};
   for (const g of groups) {
-    result[g.type] = g._sum.amount?.toNumber() ?? 0;
+    result[g.type] = g._sum.amount == null ? ZERO : toMinor(g._sum.amount);
   }
   return result;
 }
@@ -90,9 +92,9 @@ export async function getMonthSummary(
   const { start, end } = periodRange(period);
   const sums = await sumByTypes(householdId, start, end);
   return {
-    incomeUzs: (sums.INCOME ?? 0) + (sums.REMITTANCE ?? 0),
-    spentUzs: sums.EXPENSE ?? 0,
-    savedUzs: sums.SAVINGS ?? 0,
+    incomeUzs: addMinor(sums.INCOME ?? ZERO, sums.REMITTANCE ?? ZERO),
+    spentUzs: sums.EXPENSE ?? ZERO,
+    savedUzs: sums.SAVINGS ?? ZERO,
   };
 }
 
@@ -134,13 +136,13 @@ export async function getCategorySpend(
   for (const b of budgets) {
     byCategory.set(b.category, {
       category: b.category,
-      spentUzs: 0,
-      allocatedUzs: b.amountAllocated.toNumber(),
+      spentUzs: ZERO,
+      allocatedUzs: toMinor(b.amountAllocated),
     });
   }
   for (const g of spendGroups) {
     const category = g.category ?? "other";
-    const spent = g._sum.amount?.toNumber() ?? 0;
+    const spent = g._sum.amount == null ? ZERO : toMinor(g._sum.amount);
     const existing = byCategory.get(category);
     if (existing) {
       existing.spentUzs = spent;
@@ -168,14 +170,14 @@ export async function getTransactions(
   return rows.map((r) => ({
     id: r.id,
     type: r.type,
-    amount: r.amount.toNumber(),
+    amount: toMinor(r.amount),
     currency: r.currency,
     category: r.category,
     note: r.note,
     date: r.date,
     isDemo: r.isDemo,
     providerName: r.provider?.name ?? null,
-    sourceAmount: r.sourceAmount?.toNumber() ?? null,
+    sourceAmount: r.sourceAmount == null ? null : toMinor(r.sourceAmount),
     sourceCurrency: r.sourceCurrency,
   }));
 }
@@ -188,8 +190,8 @@ export async function getSavingsGoals(householdId: string): Promise<GoalRow[]> {
   return goals.map((g) => ({
     id: g.id,
     name: g.name,
-    targetAmount: g.targetAmount.toNumber(),
-    currentAmount: g.currentAmount.toNumber(),
+    targetAmount: toMinor(g.targetAmount),
+    currentAmount: toMinor(g.currentAmount),
     targetDate: g.targetDate,
   }));
 }
@@ -197,7 +199,7 @@ export async function getSavingsGoals(householdId: string): Promise<GoalRow[]> {
 export interface GoalContributor {
   userId: string;
   name: string;
-  total: number;
+  total: Minor;
   count: number;
   isOwner: boolean;
 }
@@ -207,7 +209,7 @@ export interface GoalContributionRow {
   date: Date;
   contributor: string;
   note: string;
-  amount: number;
+  amount: Minor;
 }
 
 export interface GoalDetail extends GoalRow {
@@ -240,17 +242,17 @@ export async function getGoalDetail(
   const byUser = new Map<string, GoalContributor>();
   for (const c of goal.contributions) {
     if (!c.sender) continue;
-    const amt = c.amount.toNumber();
+    const amt = toMinor(c.amount);
     const cur =
       byUser.get(c.sender.id) ??
       {
         userId: c.sender.id,
         name: c.sender.name,
-        total: 0,
+        total: ZERO,
         count: 0,
         isOwner: c.sender.accessRole === "ADMIN",
       };
-    cur.total += amt;
+    cur.total = addMinor(cur.total, amt);
     cur.count += 1;
     byUser.set(c.sender.id, cur);
   }
@@ -258,8 +260,8 @@ export async function getGoalDetail(
   return {
     id: goal.id,
     name: goal.name,
-    targetAmount: goal.targetAmount.toNumber(),
-    currentAmount: goal.currentAmount.toNumber(),
+    targetAmount: toMinor(goal.targetAmount),
+    currentAmount: toMinor(goal.currentAmount),
     targetDate: goal.targetDate,
     createdAt: goal.createdAt,
     contributors: Array.from(byUser.values()).sort((a, b) => b.total - a.total),
@@ -268,7 +270,7 @@ export async function getGoalDetail(
       date: c.date,
       contributor: c.sender?.name ?? "—",
       note: c.note ?? "",
-      amount: c.amount.toNumber(),
+      amount: toMinor(c.amount),
     })),
   };
 }
