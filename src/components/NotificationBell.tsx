@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { clsx } from "clsx";
 import { formatDate, formatMoney } from "@/lib/format";
+import { asMinorDisplay } from "@/lib/money";
 
 interface Item {
   id: string;
@@ -77,7 +78,8 @@ export function NotificationBell() {
     switch (item.type) {
       case "REMITTANCE_LOGGED":
         return t("remittance", {
-          amount: formatMoney(Number(p.amount ?? 0), String(p.currency ?? "UZS"), locale),
+          // Payload money is stored in minor units (see notifications payloads).
+          amount: formatMoney(asMinorDisplay(p.amount ?? 0), String(p.currency ?? "UZS"), locale),
         });
       case "GOAL_NEAR":
         return Number(p.percent) >= 100

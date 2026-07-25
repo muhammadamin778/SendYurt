@@ -54,6 +54,10 @@ async function main() {
   const rand = mulberry32(7);
   const txs: import("@prisma/client").Prisma.TransactionCreateManyInput[] = [];
   const USD_UZS = 12_900;
+// Every money value below is written in MAJOR units for readability and
+// converted to minor units (tiyin / cents) on the way into the database.
+const tiyin = (uzs: number) => BigInt(Math.round(uzs * 100));
+const cents = (usd: number) => BigInt(Math.round(usd * 100));
   const today = new Date().getUTCDate();
 
   // Remittances sent by this user (~450 USD/month, one skipped month, a bonus).
@@ -68,9 +72,9 @@ async function main() {
       type: "REMITTANCE",
       senderId: user.id,
       providerId: (m % 2 === 0 ? korona : paysend)?.id ?? null,
-      amount: Math.round(usd * USD_UZS * (1 - 0.012)),
+      amount: tiyin(Math.round(usd * USD_UZS * (1 - 0.012))),
       currency: "UZS",
-      sourceAmount: usd,
+      sourceAmount: cents(usd),
       sourceCurrency: "USD",
       note: "Monthly support",
       date: monthsAgo(m, day),
@@ -84,7 +88,7 @@ async function main() {
     txs.push({
       householdId,
       type: "INCOME",
-      amount: 2_700_000 + Math.round((rand() - 0.5) * 220_000),
+      amount: tiyin(2_700_000 + Math.round((rand() - 0.5) * 220_000)),
       currency: "UZS",
       note: "Salary",
       date: monthsAgo(m, 1),
@@ -110,7 +114,7 @@ async function main() {
       txs.push({
         householdId,
         type: "EXPENSE",
-        amount: Math.max(50_000, Math.round(mean + (rand() - 0.5) * 2 * spread)),
+        amount: tiyin(Math.max(50_000, Math.round(mean + (rand() - 0.5) * 2 * spread))),
         currency: "UZS",
         category,
         date: monthsAgo(m, day),
@@ -125,12 +129,12 @@ async function main() {
   for (let m = 9; m >= 0; m--) {
     if (m === 6) continue;
     if (m === 0 && 15 > today) continue;
-    const amount = m <= 2 ? 800_000 : 550_000;
+    const amount = m <= 2 ? 800_000 : 550_000; // major units
     savingsTotal += amount;
     txs.push({
       householdId,
       type: "SAVINGS",
-      amount,
+      amount: tiyin(amount),
       currency: "UZS",
       note: "Family savings",
       date: monthsAgo(m, 15),
@@ -143,20 +147,20 @@ async function main() {
 
   await prisma.savingsGoal.createMany({
     data: [
-      { householdId, name: "Toʻy fund (wedding)", targetAmount: 18_000_000, currentAmount: savingsTotal * 0.55, targetDate: monthsAgo(-9, 1) },
-      { householdId, name: "New laptop", targetAmount: 12_000_000, currentAmount: savingsTotal * 0.35, targetDate: monthsAgo(-4, 1) },
+      { householdId, name: "Toʻy fund (wedding)", targetAmount: tiyin(18_000_000), currentAmount: tiyin(Math.round(savingsTotal * 0.55)), targetDate: monthsAgo(-9, 1) },
+      { householdId, name: "New laptop", targetAmount: tiyin(12_000_000), currentAmount: tiyin(Math.round(savingsTotal * 0.35)), targetDate: monthsAgo(-4, 1) },
     ],
   });
 
   const period = ym(new Date());
   await prisma.budget.createMany({
     data: [
-      { householdId, category: "food", amountAllocated: 4_200_000, period },
-      { householdId, category: "utilities", amountAllocated: 750_000, period },
-      { householdId, category: "education", amountAllocated: 1_100_000, period },
-      { householdId, category: "health", amountAllocated: 650_000, period },
-      { householdId, category: "transport", amountAllocated: 550_000, period },
-      { householdId, category: "household", amountAllocated: 850_000, period },
+      { householdId, category: "food", amountAllocated: tiyin(4_200_000), period },
+      { householdId, category: "utilities", amountAllocated: tiyin(750_000), period },
+      { householdId, category: "education", amountAllocated: tiyin(1_100_000), period },
+      { householdId, category: "health", amountAllocated: tiyin(650_000), period },
+      { householdId, category: "transport", amountAllocated: tiyin(550_000), period },
+      { householdId, category: "household", amountAllocated: tiyin(850_000), period },
     ],
   });
 
@@ -168,7 +172,9 @@ async function main() {
         userId: user.id,
         householdId,
         type: "REMITTANCE_LOGGED",
-        payload: JSON.stringify({ amount: lastRemit.amount, currency: "UZS" }),
+        // JSON.stringify throws on BigInt — store the minor units as a number,
+        // which is what NotificationBell reads back.
+        payload: JSON.stringify({ amount: Number(lastRemit.amount), currency: "UZS" }),
       },
     });
   }

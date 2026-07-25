@@ -11,12 +11,12 @@ import { Input } from "@/components/ui/Input";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { toast } from "@/components/ui/toast";
 import { formatDate, formatMoney } from "@/lib/format";
-
+import { addMinor, HOME_CURRENCY, parseMoney, type Minor } from "@/lib/money";
 export interface GoalProps {
   id: string;
   name: string;
-  targetAmount: number;
-  currentAmount: number;
+  targetAmount: Minor;
+  currentAmount: Minor;
   targetDateIso: string | null;
 }
 
@@ -39,8 +39,8 @@ export function GoalCard({ goal, canEdit = true }: { goal: GoalProps; canEdit?: 
 
   async function onContribute(e: FormEvent) {
     e.preventDefault();
-    const value = Number(amount.replace(/\s/g, "").replace(",", "."));
-    if (!Number.isFinite(value) || value <= 0) {
+    const value = parseMoney(amount, HOME_CURRENCY);
+    if (value === null || value <= 0) {
       setError(t("form.errorAmount"));
       return;
     }
@@ -48,7 +48,7 @@ export function GoalCard({ goal, canEdit = true }: { goal: GoalProps; canEdit?: 
 
     // Optimistic: reflect the deposit immediately.
     const before = current;
-    setCurrent(before + value);
+    setCurrent(addMinor(before, value));
     setAmount("");
     setSubmitting(true);
 

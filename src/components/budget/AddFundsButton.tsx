@@ -8,16 +8,18 @@ import { Alert } from "@/components/ui/Alert";
 import { Input } from "@/components/ui/Input";
 import { toast } from "@/components/ui/toast";
 import { formatMoney } from "@/lib/format";
+import { addMinor, HOME_CURRENCY, parseMoney, ZERO, type Minor } from "@/lib/money";
 
-function parseAmount(raw: string): number {
-  return Number(raw.replace(/\s/g, "").replace(",", "."));
+/** Exact string → minor units; `null` when the input isn't valid money. */
+function parseAmount(raw: string): Minor | null {
+  return parseMoney(raw, HOME_CURRENCY);
 }
 
 export interface GoalLite {
   id: string;
   name: string;
-  currentAmount: number;
-  targetAmount: number;
+  currentAmount: Minor;
+  targetAmount: Minor;
 }
 
 type SourceKey = "remittance" | "card" | "manual";
@@ -53,10 +55,10 @@ export function AddFundsButton({ goals, className, label }: { goals: GoalLite[];
   }, [open]);
 
   const goal = goals.find((g) => g.id === goalId) ?? goals[0];
-  const amt = Math.max(0, parseAmount(amount) || 0);
-  const current = goal?.currentAmount ?? 0;
+  const amt = parseAmount(amount) ?? ZERO;
+  const current = goal?.currentAmount ?? ZERO;
   const target = goal?.targetAmount ?? 0;
-  const after = current + amt;
+  const after = addMinor(current, amt > 0 ? amt : ZERO);
   const pctNow = target > 0 ? Math.min(100, (current / target) * 100) : 0;
   const pctAfter = target > 0 ? Math.min(100, (after / target) * 100) : 0;
   const delta = Math.round(pctAfter) - Math.round(pctNow);

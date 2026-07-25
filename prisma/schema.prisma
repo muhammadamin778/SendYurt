@@ -60,8 +60,9 @@ model User {
   // family position (sender/receiver). Everyone defaults to ADMIN;
   // admins may restrict others to VIEWER.
   accessRole   String    @default("ADMIN")
-  // Saved "usual" transfer for one-tap rate comparisons.
-  usualSendAmount   Decimal?
+  // Saved "usual" transfer for one-tap rate comparisons. Minor units of
+  // `usualSendCurrency` (see src/lib/money.ts).
+  usualSendAmount   BigInt?
   usualSendCurrency String?
   // Set when the user finishes (or skips) the first-run walkthrough.
   onboardedAt  DateTime?
@@ -86,9 +87,9 @@ model User {
 //
 // PCI-DSS: we deliberately store ONLY the last four digits (a masked, non-
 // sensitive value) plus the holder name and expiry — never the full PAN and
-// never the CVC. `balance` is a demo stored-value amount in UZS; the transfer
-// flow debits it and a DB CHECK keeps it from going negative (see the
-// `Card_balance_nonneg` constraint added in the db-push follow-up SQL).
+// never the CVC. `balance` is a demo stored-value amount; the transfer flow
+// debits it and the `Card_balance_nonneg` CHECK keeps it from going negative
+// (defined in prisma/migrations/*_money_minor_units/migration.sql).
 model Card {
   id         String   @id @default(cuid())
   userId     String
@@ -99,8 +100,10 @@ model Card {
   holderName String
   // "MM/YY"
   expiry     String
-  // Stored-value balance in UZS. Debited on transfer; never negative.
-  balance    Decimal  @default(0)
+  // Stored-value balance in MINOR units of `currency` (tiyin for UZS).
+  // Debited on transfer; never negative (Card_balance_nonneg CHECK).
+  balance    BigInt   @default(0)
+  currency   String   @default("UZS")
   isDefault  Boolean  @default(false)
   createdAt  DateTime @default(now())
 
@@ -176,8 +179,12 @@ model RemittanceProvider {
   id                 String  @id @default(cuid())
   name               String
   slug               String  @unique
-  // Flat fee charged in the source currency
-  baseFee            Decimal @default(0)
+  // Flat fee in MINOR units of the source currency (money → BigInt).
+  // KNOWN LIMITATION: one flat fee is applied to every currency in
+  // `sourceCurrencies`, so 4.00 USD and 4.00 RUB are treated as equal. That
+  // is a pre-existing modelling gap, to fix when corridors are modelled.
+  baseFee            BigInt  @default(0)
+  // RATES, not money — genuinely fractional, so these stay Decimal.
   // Percentage fee on the send amount, e.g. 1.5 means 1.5%
   percentFee         Decimal @default(0)
   // Margin the provider takes off the mid-market rate, e.g. 2.0 means 2%
@@ -201,10 +208,13 @@ model Transaction {
   // Nullable: set on SAVINGS rows that contribute to a specific goal, so the
   // goal-detail view can show real contributors and contribution history.
   goalId      String?
-  amount      Decimal
+  // MINOR units of `currency` (always UZS on every current write path).
+  amount      BigInt
   currency    String   @default("UZS")
-  // For remittances: the original send-side amount and currency
-  sourceAmount   Decimal?
+  // For remittances: the original send-side amount, in MINOR units of
+  // `sourceCurrency` — a DIFFERENT currency from `amount` above, so the two
+  // columns are scaled independently.
+  sourceAmount   BigInt?
   sourceCurrency String?
   // Budget category slug for EXPENSE rows (see src/lib/categories.ts)
   category    String?
@@ -231,7 +241,9 @@ model Budget {
   id              String  @id @default(cuid())
   householdId     String
   category        String
-  amountAllocated Decimal
+  // MINOR units of `currency`.
+  amountAllocated BigInt
+  currency        String  @default("UZS")
   // Month the allocation applies to, formatted "YYYY-MM"
   period          String
 
@@ -244,8 +256,10 @@ model SavingsGoal {
   id            String    @id @default(cuid())
   householdId   String
   name          String
-  targetAmount  Decimal
-  currentAmount Decimal   @default(0)
+  // MINOR units of `currency`.
+  targetAmount  BigInt
+  currentAmount BigInt    @default(0)
+  currency      String    @default("UZS")
   targetDate    DateTime?
   createdAt     DateTime  @default(now())
 

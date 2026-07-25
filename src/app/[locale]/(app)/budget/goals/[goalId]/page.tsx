@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { GoalDetailActions } from "@/components/budget/GoalDetailActions";
 import { getGoalDetail } from "@/lib/budget-data";
 import { formatDate, formatMoney } from "@/lib/format";
+import { toMinor, type Minor } from "@/lib/money";
 import { requireUser } from "@/lib/session";
 
 export async function generateMetadata({
@@ -38,11 +39,14 @@ export default async function GoalDetailPage({
   const ringOffset = RING_C * (1 - pct / 100);
   const earliest = goal.history.length ? goal.history[goal.history.length - 1].amount : 0;
 
+  const fractionOfTarget = (f: number): Minor => toMinor(Math.round(goal.targetAmount * f));
+
   const milestones = [
-    { label: t("goalDetail.mFirst"), threshold: 0.01, amount: earliest || goal.targetAmount * 0.05 },
-    { label: t("goalDetail.mQuarter"), threshold: goal.targetAmount * 0.25, amount: goal.targetAmount * 0.25 },
-    { label: t("goalDetail.mHalf"), threshold: goal.targetAmount * 0.5, amount: goal.targetAmount * 0.5 },
-    { label: t("goalDetail.mThreeQuarter"), threshold: goal.targetAmount * 0.75, amount: goal.targetAmount * 0.75 },
+    // Fractions of the target: scale then re-round back into minor units.
+    { label: t("goalDetail.mFirst"), threshold: 0.01, amount: earliest || fractionOfTarget(0.05) },
+    { label: t("goalDetail.mQuarter"), threshold: fractionOfTarget(0.25), amount: fractionOfTarget(0.25) },
+    { label: t("goalDetail.mHalf"), threshold: fractionOfTarget(0.5), amount: fractionOfTarget(0.5) },
+    { label: t("goalDetail.mThreeQuarter"), threshold: fractionOfTarget(0.75), amount: fractionOfTarget(0.75) },
     { label: t("goalDetail.mGoal"), threshold: goal.targetAmount, amount: goal.targetAmount },
   ];
   const firstPendingIdx = milestones.findIndex((m) => goal.currentAmount < m.threshold);

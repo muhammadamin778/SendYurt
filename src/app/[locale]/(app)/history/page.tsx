@@ -5,6 +5,7 @@ import { HistoryControls } from "@/components/history/HistoryControls";
 import { ExportCsvButton } from "@/components/history/ExportCsvButton";
 import { getSavingsGoals } from "@/lib/budget-data";
 import { formatDate, formatMoney } from "@/lib/format";
+import { addMinor, sumMinor, toMinor, ZERO, type Minor } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { getTrustData } from "@/lib/trust-data";
@@ -86,7 +87,7 @@ export default async function HistoryPage({
   const rows: Row[] = [];
 
   for (const tx of txns) {
-    const amt = tx.amount.toNumber();
+    const amt = toMinor(tx.amount);
     const member = tx.sender ? firstName(tx.sender.name) : t("system");
     if (tx.type === "REMITTANCE") {
       const description = tx.receiver ? t("sentTo", { name: tx.receiver.name }) : tx.note ?? t("typeRemittance");
@@ -146,15 +147,15 @@ export default async function HistoryPage({
   // Summary cards ----------------------------------------------------------
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  let thisMonthRem = 0, lastMonthRem = 0;
+  let thisMonthRem: Minor = ZERO, lastMonthRem: Minor = ZERO;
   for (const tx of txns) {
     if (tx.type !== "REMITTANCE") continue;
-    const a = tx.amount.toNumber();
-    if (tx.date >= monthStart) thisMonthRem += a;
-    else if (tx.date >= prevMonthStart && tx.date < monthStart) lastMonthRem += a;
+    const a = toMinor(tx.amount);
+    if (tx.date >= monthStart) thisMonthRem = addMinor(thisMonthRem, a);
+    else if (tx.date >= prevMonthStart && tx.date < monthStart) lastMonthRem = addMinor(lastMonthRem, a);
   }
   const remDelta = lastMonthRem > 0 ? Math.round(((thisMonthRem - lastMonthRem) / lastMonthRem) * 100) : null;
-  const totalSavings = goals.reduce((s, g) => s + g.currentAmount, 0);
+  const totalSavings = sumMinor(goals.map((g) => g.currentAmount));
   const trustVerdict = result.score >= 75 ? tTrust("verdict.strong") : result.score >= 50 ? tTrust("verdict.growing") : tTrust("verdict.early");
 
   // CSV (full filtered set) ------------------------------------------------

@@ -17,15 +17,19 @@ import { formatMoney, formatMonth } from "@/lib/format";
 export interface ChartPoint {
   period: string;
   monthStartIso: string;
-  incomeUzs: number;
-  spentUzs: number;
-  savedUzs: number;
+  // UZS minor units (tiyin).
+  incomeUzs: Minor;
+  spentUzs: Minor;
+  savedUzs: Minor;
 }
 
-function compactUzs(value: number): string {
+/** Takes MINOR units and abbreviates the major-unit figure ("1.2M so'm"). */
+import { asMinorDisplay, HOME_CURRENCY, toMajor, type Minor } from "@/lib/money";
+function compactUzs(minor: Minor): string {
+  const value = toMajor(minor, HOME_CURRENCY);
   if (Math.abs(value) >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
   if (Math.abs(value) >= 1_000) return `${Math.round(value / 1_000)}K`;
-  return String(value);
+  return String(Math.round(value));
 }
 
 export function SpendSaveChart({ points }: { points: ChartPoint[] }) {
@@ -60,7 +64,7 @@ export function SpendSaveChart({ points }: { points: ChartPoint[] }) {
           />
           <Tooltip
             cursor={{ fill: "rgb(47 80 150 / 0.06)" }}
-            formatter={(value) => formatMoney(Number(value), "UZS", locale)}
+            formatter={(value) => formatMoney(asMinorDisplay(value), "UZS", locale)}
             contentStyle={{
               borderRadius: 12,
               border: "1px solid var(--chart-grid)",

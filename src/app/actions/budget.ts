@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getAppSession } from "@/lib/supabase/app-session";
 import { isCategory } from "@/lib/categories";
+import { addMinor, toBigInt, toMinor } from "@/lib/money";
 import { crossedNearThreshold, notifyHousehold } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 import {
@@ -64,7 +65,7 @@ export async function addExpense(input: unknown): Promise<ActionResult> {
       data: {
         householdId,
         type: "EXPENSE",
-        amount: parsed.data.amount,
+        amount: toBigInt(parsed.data.amount),
         currency: "UZS",
         category: parsed.data.category,
         note: parsed.data.note || null,
@@ -92,7 +93,7 @@ export async function addIncome(input: unknown): Promise<ActionResult> {
       data: {
         householdId,
         type: "INCOME",
-        amount: parsed.data.amount,
+        amount: toBigInt(parsed.data.amount),
         currency: "UZS",
         note: parsed.data.note || null,
         date: parsed.data.date,
@@ -145,12 +146,12 @@ export async function setBudget(input: unknown): Promise<ActionResult> {
           period: parsed.data.period,
         },
       },
-      update: { amountAllocated: parsed.data.amountAllocated },
+      update: { amountAllocated: toBigInt(parsed.data.amountAllocated) },
       create: {
         householdId,
         category: parsed.data.category,
         period: parsed.data.period,
-        amountAllocated: parsed.data.amountAllocated,
+        amountAllocated: toBigInt(parsed.data.amountAllocated),
       },
     });
     revalidateBudget();
@@ -173,7 +174,7 @@ export async function addSavingsGoal(input: unknown): Promise<ActionResult> {
       data: {
         householdId,
         name: parsed.data.name,
-        targetAmount: parsed.data.targetAmount,
+        targetAmount: toBigInt(parsed.data.targetAmount),
         targetDate: parsed.data.targetDate ?? null,
       },
     });
@@ -203,7 +204,7 @@ export async function updateSavingsGoal(input: unknown): Promise<ActionResult> {
       where: { id: goal.id },
       data: {
         name: parsed.data.name,
-        targetAmount: parsed.data.targetAmount,
+        targetAmount: toBigInt(parsed.data.targetAmount),
         targetDate: parsed.data.targetDate ?? null,
       },
     });
@@ -233,7 +234,7 @@ export async function contributeToGoal(input: unknown): Promise<ActionResult> {
 
       await tx.savingsGoal.update({
         where: { id: goal.id },
-        data: { currentAmount: { increment: amount } },
+        data: { currentAmount: { increment: toBigInt(amount) } },
       });
       // The savings row is tied to the goal + contributor so the goal-detail
       // view can show real contributors and contribution history.
@@ -241,7 +242,7 @@ export async function contributeToGoal(input: unknown): Promise<ActionResult> {
         data: {
           householdId,
           type: "SAVINGS",
-          amount,
+          amount: toBigInt(amount),
           currency: "UZS",
           goalId: goal.id,
           senderId: userId,
@@ -251,12 +252,13 @@ export async function contributeToGoal(input: unknown): Promise<ActionResult> {
         },
       });
 
-      const before = goal.currentAmount.toNumber();
-      const target = goal.targetAmount.toNumber();
-      return crossedNearThreshold(before, before + amount, target)
+      const before = toMinor(goal.currentAmount);
+      const target = toMinor(goal.targetAmount);
+      const after = addMinor(before, amount);
+      return crossedNearThreshold(before, after, target)
         ? {
             name: goal.name,
-            percent: Math.min(100, Math.round(((before + amount) / target) * 100)),
+            percent: Math.min(100, Math.round((after / target) * 100)),
           }
         : null;
     });

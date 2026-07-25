@@ -65,7 +65,12 @@ describe("registerSchema", () => {
 
 describe("rateQuerySchema", () => {
   it("coerces amounts and enforces bounds", () => {
-    expect(rateQuerySchema.parse({ amount: "400", sourceCurrency: "USD" }).amount).toBe(400);
+    // "400" USD → 40 000 cents.
+    expect(rateQuerySchema.parse({ amount: "400", sourceCurrency: "USD" }).amount).toBe(40_000);
+    // Sub-unit precision is preserved exactly, not rounded away.
+    expect(rateQuerySchema.parse({ amount: "400.55", sourceCurrency: "USD" }).amount).toBe(40_055);
+    // More precision than the currency has is rejected outright.
+    expect(rateQuerySchema.safeParse({ amount: "1.234", sourceCurrency: "USD" }).success).toBe(false);
     expect(rateQuerySchema.safeParse({ amount: "-1", sourceCurrency: "USD" }).success).toBe(false);
     expect(rateQuerySchema.safeParse({ amount: "2000000", sourceCurrency: "USD" }).success).toBe(false);
     expect(rateQuerySchema.safeParse({ amount: "100", sourceCurrency: "GBP" }).success).toBe(false);

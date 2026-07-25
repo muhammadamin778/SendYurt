@@ -3,6 +3,7 @@ import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { RateForm } from "@/components/rates/RateForm";
+import { parseMoney, toMinor, type Minor } from "@/lib/money";
 import { formatMoney, formatNumber } from "@/lib/format";
 import { getUzsRates } from "@/lib/fx";
 import { prisma } from "@/lib/prisma";
@@ -20,13 +21,15 @@ export async function generateMetadata({
 
 function parseParams(
   searchParams: { amount?: string; currency?: string },
-  usual: { amount: number | null; currency: string | null },
+  usual: { amount: Minor | null; currency: string | null },
 ) {
-  const amountRaw = Number(searchParams.amount);
-  const amount =
-    Number.isFinite(amountRaw) && amountRaw > 0 && amountRaw <= 1_000_000
+  // The URL carries a MAJOR-unit figure the user typed; parse it exactly.
+  const amountRaw = searchParams.amount == null ? null : parseMoney(searchParams.amount, "USD");
+  const maxSend = parseMoney("1000000", "USD")!;
+  const amount: Minor =
+    amountRaw !== null && amountRaw > 0 && amountRaw <= maxSend
       ? amountRaw
-      : (usual.amount ?? 400);
+      : (usual.amount ?? parseMoney("400", "USD")!);
   const currency = SOURCE_CURRENCIES.includes(searchParams.currency as never)
     ? (searchParams.currency as string)
     : SOURCE_CURRENCIES.includes(usual.currency as never)
@@ -167,7 +170,7 @@ export default async function RatesPage({
     select: { usualSendAmount: true, usualSendCurrency: true },
   });
   const usual = {
-    amount: prefs?.usualSendAmount?.toNumber() ?? null,
+    amount: prefs?.usualSendAmount == null ? null : toMinor(prefs.usualSendAmount),
     currency: prefs?.usualSendCurrency ?? null,
   };
 

@@ -13,7 +13,13 @@
 
 export interface TrustInput {
   type: string; // REMITTANCE | SAVINGS | INCOME | EXPENSE
-  amount: number; // UZS
+  /**
+   * UZS in minor units (tiyin). Every factor is derived from a RATIO —
+   * coefficient of variation, savings rate — or a count, so the score is
+   * scale-invariant: multiplying all amounts by 100 leaves it unchanged.
+   * That is why moving to minor units does not move anyone's score.
+   */
+  amount: number;
   date: Date;
 }
 
@@ -106,6 +112,9 @@ export function computeTrustScore(
   if (amounts.length < 2) {
     stabilityScore = amounts.length === 1 ? 50 : 0; // neutral / no data
   } else {
+    // Deliberately float from here: squaring tiyin-scale deviations exceeds
+    // the exact-integer range, and the result is a ratio (cv) that never
+    // becomes money — so precision here cannot corrupt a balance.
     const mean = amounts.reduce((a, b) => a + b, 0) / amounts.length;
     const variance =
       amounts.reduce((acc, v) => acc + (v - mean) ** 2, 0) / amounts.length;

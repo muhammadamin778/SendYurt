@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { ConfirmTransfer } from "@/components/rates/ConfirmTransfer";
 import { PaymentSelector } from "@/components/rates/PaymentSelector";
 import { TransferProvider } from "@/components/rates/TransferContext";
+import { isCurrencyCode, parseMoney, toMinor } from "@/lib/money";
 import { formatMoney, formatNumber } from "@/lib/format";
 import { getUzsRates } from "@/lib/fx";
 import { prisma } from "@/lib/prisma";
@@ -49,16 +50,17 @@ export default async function ReviewTransferPage({
   const t = await getTranslations("rates");
   const currentLocale = await getLocale();
 
-  const amount = Number(searchParams.amount);
+  // The URL carries a MAJOR-unit figure; parse it exactly into minor units.
   const currency = searchParams.currency ?? "";
+  const amount = isCurrencyCode(currency) ? parseMoney(searchParams.amount ?? "", currency) : null;
   const providerId = searchParams.provider ?? "";
 
   // Missing or malformed selection → back to the finder.
   if (
     !providerId ||
-    !Number.isFinite(amount) ||
+    amount === null ||
     amount <= 0 ||
-    amount > 1_000_000 ||
+    amount > parseMoney("1000000", "USD")! ||
     !SOURCE_CURRENCIES.includes(currency as never)
   ) {
     redirect(`/${locale}/rates`);
@@ -95,9 +97,10 @@ export default async function ReviewTransferPage({
     brand: c.brand,
     last4: c.last4,
     holderName: c.holderName,
-    balance: c.balance.toNumber(),
+    balance: toMinor(c.balance),
   }));
-  const uzsCost = Math.round(quote!.receivedUzs);
+  // Already rounded once inside computeQuotes — no second rounding here.
+  const uzsCost = quote!.receivedUzs;
 
   const receiver = household?.users.find((u) => u.role === "RECEIVER");
   const recipientName = receiver?.name ?? household?.name ?? "—";
@@ -112,7 +115,7 @@ export default async function ReviewTransferPage({
     select: { type: true, amount: true, date: true },
   });
   const score = computeTrustScore(
-    txs.map((tx) => ({ type: tx.type, amount: tx.amount.toNumber(), date: tx.date })),
+    txs.map((tx) => ({ type: tx.type, amount: toMinor(tx.amount), date: tx.date })),
   ).score;
 
   const feeStr =

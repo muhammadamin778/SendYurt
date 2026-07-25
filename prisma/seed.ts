@@ -21,7 +21,7 @@ const PROVIDERS = [
   {
     slug: "koronapay",
     name: "KoronaPay",
-    baseFee: 0,
+    baseFee: 0n,
     percentFee: 0,
     exchangeRateMargin: 1.2,
     transferSpeedHours: 1,
@@ -30,7 +30,7 @@ const PROVIDERS = [
   {
     slug: "paysend",
     name: "Paysend",
-    baseFee: 1.5,
+    baseFee: 150n,
     percentFee: 0,
     exchangeRateMargin: 0.8,
     transferSpeedHours: 3,
@@ -39,7 +39,7 @@ const PROVIDERS = [
   {
     slug: "unistream",
     name: "Unistream",
-    baseFee: 0,
+    baseFee: 0n,
     percentFee: 1.0,
     exchangeRateMargin: 1.5,
     transferSpeedHours: 1,
@@ -48,7 +48,7 @@ const PROVIDERS = [
   {
     slug: "western-union",
     name: "Western Union",
-    baseFee: 4.0,
+    baseFee: 400n,
     percentFee: 0.5,
     exchangeRateMargin: 2.5,
     transferSpeedHours: 1,
@@ -57,7 +57,7 @@ const PROVIDERS = [
   {
     slug: "moneygram",
     name: "MoneyGram",
-    baseFee: 3.5,
+    baseFee: 350n,
     percentFee: 0.4,
     exchangeRateMargin: 2.2,
     transferSpeedHours: 6,
@@ -66,7 +66,7 @@ const PROVIDERS = [
   {
     slug: "ria",
     name: "Ria Money Transfer",
-    baseFee: 2.0,
+    baseFee: 200n,
     percentFee: 0.3,
     exchangeRateMargin: 1.8,
     transferSpeedHours: 24,
@@ -176,6 +176,10 @@ async function seedDemoHousehold() {
   // with a believable wobble, one skipped month (7 months ago) and a summer
   // bonus month. Received in UZS at ~12,900 per USD.
   const USD_UZS = 12_900;
+// Every money value below is written in MAJOR units for readability and
+// converted to minor units (tiyin / cents) on the way into the database.
+const tiyin = (uzs: number) => BigInt(Math.round(uzs * 100));
+const cents = (usd: number) => BigInt(Math.round(usd * 100));
   const todayUtcDate = new Date().getUTCDate();
   for (let m = 9; m >= 0; m--) {
     if (m === 7) continue; // missed month — makes the consistency story honest
@@ -190,9 +194,9 @@ async function seedDemoHousehold() {
       senderId: sender.id,
       receiverId: receiver.id,
       providerId: (m % 2 === 0 ? korona : paysend)?.id ?? null,
-      amount: Math.round(usd * USD_UZS * (1 - 0.012)),
+      amount: tiyin(Math.round(usd * USD_UZS * (1 - 0.012))),
       currency: "UZS",
-      sourceAmount: usd,
+      sourceAmount: cents(usd),
       sourceCurrency: "USD",
       note: "Monthly support",
       date,
@@ -207,7 +211,7 @@ async function seedDemoHousehold() {
     txs.push({
       householdId: household.id,
       type: "INCOME",
-      amount: 2_400_000 + Math.round((rand() - 0.5) * 200_000),
+      amount: tiyin(2_400_000 + Math.round((rand() - 0.5) * 200_000)),
       currency: "UZS",
       note: "Salary",
       date,
@@ -235,7 +239,7 @@ async function seedDemoHousehold() {
       txs.push({
         householdId: household.id,
         type: "EXPENSE",
-        amount: Math.max(50_000, Math.round(mean + (rand() - 0.5) * 2 * spread)),
+        amount: tiyin(Math.max(50_000, Math.round(mean + (rand() - 0.5) * 2 * spread))),
         currency: "UZS",
         category,
         date,
@@ -250,12 +254,12 @@ async function seedDemoHousehold() {
   for (let m = 9; m >= 0; m--) {
     if (m === 7) continue;
     if (m === 0 && 15 > todayUtcDate) continue;
-    const amount = m <= 3 ? 700_000 : 500_000;
+    const amount = m <= 3 ? 700_000 : 500_000; // major units
     savingsTotal += amount;
     txs.push({
       householdId: household.id,
       type: "SAVINGS",
-      amount,
+      amount: tiyin(amount),
       currency: "UZS",
       note: "Family savings",
       date: monthsAgo(m, 15),
@@ -277,7 +281,9 @@ async function seedDemoHousehold() {
         userId,
         householdId: household.id,
         type: "REMITTANCE_LOGGED",
-        payload: JSON.stringify({ amount: lastRemit.amount, currency: "UZS" }),
+        // JSON.stringify throws on BigInt — store the minor units as a number,
+        // which is what NotificationBell reads back.
+        payload: JSON.stringify({ amount: Number(lastRemit.amount), currency: "UZS" }),
       })),
     });
   }
@@ -288,15 +294,15 @@ async function seedDemoHousehold() {
       {
         householdId: household.id,
         name: "Toʻy fund (wedding)",
-        targetAmount: 15_000_000,
-        currentAmount: savingsTotal * 0.6,
+        targetAmount: tiyin(15_000_000),
+        currentAmount: tiyin(Math.round(savingsTotal * 0.6)),
         targetDate: monthsAgo(-8, 1), // ~8 months from now
       },
       {
         householdId: household.id,
         name: "New refrigerator",
-        targetAmount: 4_500_000,
-        currentAmount: savingsTotal * 0.4,
+        targetAmount: tiyin(4_500_000),
+        currentAmount: tiyin(Math.round(savingsTotal * 0.4)),
         targetDate: monthsAgo(-3, 1),
       },
     ],
@@ -307,12 +313,12 @@ async function seedDemoHousehold() {
   const period = ym(now);
   await prisma.budget.createMany({
     data: [
-      { householdId: household.id, category: "food", amountAllocated: 4_000_000, period },
-      { householdId: household.id, category: "utilities", amountAllocated: 700_000, period },
-      { householdId: household.id, category: "education", amountAllocated: 1_000_000, period },
-      { householdId: household.id, category: "health", amountAllocated: 600_000, period },
-      { householdId: household.id, category: "transport", amountAllocated: 500_000, period },
-      { householdId: household.id, category: "household", amountAllocated: 800_000, period },
+      { householdId: household.id, category: "food", amountAllocated: tiyin(4_000_000), period },
+      { householdId: household.id, category: "utilities", amountAllocated: tiyin(700_000), period },
+      { householdId: household.id, category: "education", amountAllocated: tiyin(1_000_000), period },
+      { householdId: household.id, category: "health", amountAllocated: tiyin(600_000), period },
+      { householdId: household.id, category: "transport", amountAllocated: tiyin(500_000), period },
+      { householdId: household.id, category: "household", amountAllocated: tiyin(800_000), period },
     ],
   });
 

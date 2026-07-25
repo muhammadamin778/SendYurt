@@ -3,6 +3,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { COUNTRIES, flagEmoji } from "@/lib/country-codes";
+import { HOME_CURRENCY, parseMoney, type Minor } from "@/lib/money";
 import { formatMoney } from "@/lib/format";
 import { GradientIcon } from "@/components/vision/ui";
 
@@ -32,14 +33,14 @@ export function QuickPay() {
   const [phone, setPhone] = useState("");
   // Shared
   const [amount, setAmount] = useState("");
-  const [done, setDone] = useState<{ label: string; target: string; amount: number } | null>(null);
+  const [done, setDone] = useState<{ label: string; target: string; amount: Minor } | null>(null);
 
   const country = useMemo(() => COUNTRIES.find((c) => c.iso === iso) ?? COUNTRIES[0], [iso]);
 
   function pay(e: FormEvent) {
     e.preventDefault();
-    const amt = Number(amount.replace(/\s/g, "").replace(",", "."));
-    if (!Number.isFinite(amt) || amt <= 0) return;
+    const amt = parseMoney(amount, HOME_CURRENCY);
+    if (amt === null || amt <= 0) return;
     if (tab === "utility") {
       if (account.trim().length < 3) return;
       setDone({ label: t(`utilities.${utility}`), target: account.trim(), amount: amt });

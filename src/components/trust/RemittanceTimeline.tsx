@@ -4,11 +4,14 @@ import { formatMonth } from "@/lib/format";
 export interface TimelineMonth {
   key: string; // "YYYY-MM"
   monthStartIso: string;
-  amountUzs: number | null; // null = no remittance that month
+  amountUzs: Minor | null; // MINOR units; null = no remittance that month
   isCurrent: boolean;
 }
 
-function compact(amount: number): string {
+/** Takes MINOR units and abbreviates the major-unit figure. */
+import { HOME_CURRENCY, toMajor, type Minor } from "@/lib/money";
+function compact(minor: Minor): string {
+  const amount = toMajor(minor, HOME_CURRENCY);
   if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}M`;
   if (amount >= 1_000) return `${Math.round(amount / 1_000)}K`;
   return String(Math.round(amount));

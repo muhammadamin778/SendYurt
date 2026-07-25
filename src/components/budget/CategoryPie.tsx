@@ -4,11 +4,12 @@ import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { formatMoney } from "@/lib/format";
+import { asMinorDisplay, type Minor } from "@/lib/money";
 
 export interface PieSlice {
   /** Localized category label (localized on the server). */
   label: string;
-  value: number;
+  value: Minor;
 }
 
 // Token-derived palette: lapis and clay families first, gold accents after.
@@ -48,7 +49,7 @@ export function CategoryPie({ slices }: { slices: PieSlice[] }) {
           </Pie>
           <Tooltip
             formatter={(value, name) => [
-              `${formatMoney(Number(value), "UZS", locale)} (${total > 0 ? Math.round((Number(value) / total) * 100) : 0}%)`,
+              `${formatMoney(asMinorDisplay(value), "UZS", locale)} (${total > 0 ? Math.round((Number(value) / total) * 100) : 0}%)`,
               String(name),
             ]}
             contentStyle={{

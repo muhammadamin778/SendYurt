@@ -26,7 +26,10 @@ function useAnimate(): boolean {
   return animate;
 }
 
-function compact(value: number): string {
+/** Takes MINOR units and abbreviates the major-unit figure. */
+import { asMinorDisplay, HOME_CURRENCY, toMajor, type Minor } from "@/lib/money";
+function compact(minor: Minor): string {
+  const value = toMajor(minor, HOME_CURRENCY);
   const abs = Math.abs(value);
   if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
   if (abs >= 1_000) return `${Math.round(value / 1_000)}K`;
@@ -37,8 +40,8 @@ function compact(value: number): string {
 
 export interface BarPoint {
   name: string;
-  primary: number;
-  secondary: number;
+  primary: Minor;
+  secondary: Minor;
 }
 
 export function BankGroupedBars({
@@ -61,10 +64,10 @@ export function BankGroupedBars({
         <BarChart data={data} barGap={8} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
           <CartesianGrid strokeDasharray="0" stroke="#eef2f6" vertical={false} />
           <XAxis dataKey="name" tick={{ fontSize: 13, fill: "#64748b" }} tickLine={false} axisLine={false} dy={8} />
-          <YAxis tickFormatter={compact} tick={{ fontSize: 12, fill: "#64748b" }} tickLine={false} axisLine={false} width={44} />
+          <YAxis tickFormatter={(v) => compact(asMinorDisplay(v))} tick={{ fontSize: 12, fill: "#64748b" }} tickLine={false} axisLine={false} width={44} />
           <Tooltip
             cursor={{ fill: "rgba(10, 124, 83, 0.06)" }}
-            formatter={(value) => formatMoney(Number(value), "UZS", locale)}
+            formatter={(value) => formatMoney(asMinorDisplay(value), "UZS", locale)}
             contentStyle={{ borderRadius: 12, border: "1px solid #e8edf3", fontSize: 13 }}
           />
           <Bar dataKey="primary" fill={primaryColor} radius={[12, 12, 12, 12]} barSize={14} isAnimationActive={animate} />
@@ -81,7 +84,7 @@ export function BankArea({
   data,
   ariaLabel,
 }: {
-  data: { name: string; value: number }[];
+  data: { name: string; value: Minor }[];
   ariaLabel?: string;
 }) {
   const locale = useLocale();
@@ -101,7 +104,7 @@ export function BankArea({
           <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#64748b" }} tickLine={false} axisLine={false} dy={8} />
           <YAxis tickFormatter={compact} tick={{ fontSize: 12, fill: "#64748b" }} tickLine={false} axisLine={false} width={44} />
           <Tooltip
-            formatter={(value) => formatMoney(Number(value), "UZS", locale)}
+            formatter={(value) => formatMoney(asMinorDisplay(value), "UZS", locale)}
             contentStyle={{ borderRadius: 12, border: "1px solid #e8edf3", fontSize: 13 }}
           />
           <Area
@@ -144,7 +147,7 @@ export function BankExpensePie({
   slices,
   ariaLabel,
 }: {
-  slices: { label: string; value: number }[];
+  slices: { label: string; value: Minor }[];
   ariaLabel?: string;
 }) {
   const locale = useLocale();
@@ -176,7 +179,7 @@ export function BankExpensePie({
           </Pie>
           <Tooltip
             formatter={(value, name) => [
-              `${formatMoney(Number(value), "UZS", locale)} (${total > 0 ? Math.round((Number(value) / total) * 100) : 0}%)`,
+              `${formatMoney(asMinorDisplay(value), "UZS", locale)} (${total > 0 ? Math.round((Number(value) / total) * 100) : 0}%)`,
               String(name),
             ]}
             contentStyle={{ borderRadius: 12, border: "1px solid #e8edf3", fontSize: 13 }}

@@ -1,4 +1,5 @@
 import { currentPeriod, getMonthSummary, getSavingsGoals } from "@/lib/budget-data";
+import { toMinor } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { computeTrustScore } from "@/lib/trust-score";
 
@@ -73,7 +74,7 @@ export async function loadHouseholdContext(
   ]);
 
   const trust = computeTrustScore(
-    transactions.map((t) => ({ type: t.type, amount: t.amount.toNumber(), date: t.date })),
+    transactions.map((t) => ({ type: t.type, amount: toMinor(t.amount), date: t.date })),
   );
 
   return {

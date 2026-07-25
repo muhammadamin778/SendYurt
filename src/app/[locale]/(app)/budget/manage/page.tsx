@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { BankCreditCard } from "@/components/bank/BankCreditCard";
 import { BankExpensePie, BankGroupedBars } from "@/components/bank/charts";
+import { subMinor } from "@/lib/money";
 import { GoalCard } from "@/components/budget/GoalCard";
 import { DeleteTransactionButton } from "@/components/budget/DeleteTransactionButton";
 import {
@@ -129,7 +130,7 @@ export default async function BudgetPage({
 
   const hasDemoRows = transactions.some((tx) => tx.isDemo);
   const canEdit = user.accessRole === "ADMIN";
-  const balance = summary.incomeUzs - summary.spentUzs;
+  const balance = subMinor(summary.incomeUzs, summary.spentUzs);
 
   const barData = trend.map((p) => ({
     name: formatMonth(p.monthStart, currentLocale),
@@ -316,7 +317,7 @@ export default async function BudgetPage({
                       <ProgressBar className="mt-3" value={c.spentUzs} max={c.allocatedUzs} label={t(`categories.${c.category}`)} danger={over} />
                       {over && (
                         <p className="mt-1.5 text-xs font-medium text-[#ef4444]">
-                          {t("allocations.over", { amount: formatMoney(c.spentUzs - c.allocatedUzs, "UZS", currentLocale) })}
+                          {t("allocations.over", { amount: formatMoney(subMinor(c.spentUzs, c.allocatedUzs), "UZS", currentLocale) })}
                         </p>
                       )}
                     </>
