@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { evaluateFunding, type FundingDecision } from "@/lib/funding";
 
 export type PlainCard = {
   id: string;
@@ -21,6 +22,13 @@ type TransferCtx = {
   selectedCard: PlainCard | null;
   /** True when a card is selected but its balance can't cover the transfer. */
   insufficient: boolean;
+  /**
+   * The funding decision for the current selection — the same rules the server
+   * enforces. `blockReason` is null when the transfer may proceed.
+   */
+  blockReason: Extract<FundingDecision, { ok: false }>["reason"] | null;
+  /** Convenience: true when the transfer is allowed to be submitted. */
+  canSubmit: boolean;
 };
 
 const Ctx = createContext<TransferCtx | null>(null);
@@ -44,6 +52,10 @@ export function TransferProvider({
 
   const value = useMemo<TransferCtx>(() => {
     const selectedCard = cards.find((c) => c.id === selectedCardId) ?? null;
+    // With no card selected (including the "no linked cards" case) balance is
+    // null, which the rules treat as `no_card` — so the Confirm button is
+    // blocked instead of silently sending unfunded money.
+    const decision = evaluateFunding({ balance: selectedCard?.balance ?? null, cost: uzsCost });
     return {
       cards,
       uzsCost,
@@ -51,6 +63,8 @@ export function TransferProvider({
       setSelectedCardId,
       selectedCard,
       insufficient: selectedCard != null && selectedCard.balance < uzsCost,
+      blockReason: decision.ok ? null : decision.reason,
+      canSubmit: decision.ok,
     };
   }, [cards, uzsCost, selectedCardId]);
 

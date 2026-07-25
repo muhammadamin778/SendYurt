@@ -339,7 +339,13 @@
       "sendSuccess": "Oʻtkazma saqlandi — u boshqaruv panelida koʻrinadi.",
       "sendError": "Oʻtkazmani yakunlab boʻlmadi. Qaytadan urinib koʻring.",
       "cardBalance": "Balans: {amount}",
-      "insufficientFunds": "Mablagʻ yetarli emas. Karta balansingiz {balance} UZS, lekin siz {amount} UZS yubormoqchisiz."
+      "insufficientFunds": "Mablagʻ yetarli emas. Karta balansingiz {balance} UZS, lekin siz {amount} UZS yubormoqchisiz.",
+      "zeroBalance": "Bu kartada mablag' yo'q. Pul yuborishdan oldin uni to'ldiring.",
+      "emptyCard": "Bo'sh",
+      "noCardTitle": "Karta ulanmagan",
+      "noCardBody": "O'tkazmalar karta orqali to'lanadi. Davom etish uchun hamyoningizga karta qo'shing.",
+      "addCard": "Karta qo'shish",
+      "noCardBlocked": "Pul yuborishdan oldin to'lov kartasini qo'shing."
     }
   },
   "budget": {

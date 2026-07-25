@@ -58,7 +58,7 @@ export function AdminSidebar({ locale }: { locale: string }) {
       </button>
 
       {/* Nav */}
-      <nav className="flex-1 space-y-1 overflow-y-auto">
+      <nav className="scroll-slim scroll-hover-reveal flex-1 space-y-1 overflow-y-auto">
         {NAV.map((item) => {
           const active = item.ready && pathname === item.href;
           const cls = clsx(

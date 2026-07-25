@@ -728,3 +728,133 @@ html.has-custom-cursor * { cursor: none !important; }
 @media (prefers-reduced-motion: reduce) {
   .animate-card-float { animation: none; }
 }
+
+/* App-wide baseline so every scroll area matches, not just the ones that
+   opt in. Same treatment as `.scroll-slim` below; that class stays useful
+   for pairing with `.scroll-hover-reveal`. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.32) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 116, 139, 0.32);
+  border-radius: 9999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(71, 85, 105, 0.55);
+}
+*::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+.dark * {
+  scrollbar-color: rgba(226, 232, 240, 0.22) transparent;
+}
+.dark *::-webkit-scrollbar-thumb {
+  background-color: rgba(226, 232, 240, 0.22);
+}
+.dark *::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(241, 245, 249, 0.42);
+}
+
+/* ── Slim, theme-aware scrollbars ───────────────────────────────────────
+   The native Windows scrollbar is a chunky light-grey channel with arrow
+   buttons at each end — it reads as a foreign OS element pasted onto the
+   app, and it's especially jarring against the dark navy sidebar.
+
+   `.scroll-slim` replaces it with a thin, fully-rounded thumb on a
+   transparent track: quiet at rest, clearer on hover. The thumb colour is
+   set in translucent terms so it sits correctly on both light and dark
+   surfaces without needing to know the background. */
+.scroll-slim {
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.32) transparent;
+}
+.scroll-slim::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.scroll-slim::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll-slim::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 116, 139, 0.32);
+  border-radius: 9999px;
+  /* Transparent border + content-box clip insets the thumb inside the
+     gutter, so it floats as a pill instead of filling the full width. */
+  border: 3px solid transparent;
+  background-clip: content-box;
+  transition: background-color 150ms ease;
+}
+.scroll-slim::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(71, 85, 105, 0.55);
+}
+.scroll-slim::-webkit-scrollbar-thumb:active {
+  background-color: rgba(71, 85, 105, 0.7);
+}
+/* Drop the stepper arrows and the dead corner square. */
+.scroll-slim::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+.scroll-slim::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* On dark surfaces the thumb has to be light to read at all. */
+.dark .scroll-slim {
+  scrollbar-color: rgba(226, 232, 240, 0.22) transparent;
+}
+.dark .scroll-slim::-webkit-scrollbar-thumb {
+  background-color: rgba(226, 232, 240, 0.22);
+}
+.dark .scroll-slim::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(241, 245, 249, 0.42);
+}
+.dark .scroll-slim::-webkit-scrollbar-thumb:active {
+  background-color: rgba(241, 245, 249, 0.55);
+}
+
+/* Reveal-on-hover variant: the thumb fades in only while the pointer is
+   over the scroll area, so a resting sidebar shows no scrollbar at all.
+   Falls back to always-visible for keyboard/touch users, who get no
+   hover event and would otherwise lose the affordance entirely. */
+@media (hover: hover) and (pointer: fine) {
+  .scroll-hover-reveal::-webkit-scrollbar-thumb {
+    background-color: transparent;
+  }
+  .scroll-hover-reveal {
+    scrollbar-color: transparent transparent;
+  }
+  .scroll-hover-reveal:hover,
+  .scroll-hover-reveal:focus-within {
+    scrollbar-color: rgba(100, 116, 139, 0.32) transparent;
+  }
+  .scroll-hover-reveal:hover::-webkit-scrollbar-thumb,
+  .scroll-hover-reveal:focus-within::-webkit-scrollbar-thumb {
+    background-color: rgba(100, 116, 139, 0.32);
+  }
+  .dark .scroll-hover-reveal:hover,
+  .dark .scroll-hover-reveal:focus-within {
+    scrollbar-color: rgba(226, 232, 240, 0.22) transparent;
+  }
+  .dark .scroll-hover-reveal:hover::-webkit-scrollbar-thumb,
+  .dark .scroll-hover-reveal:focus-within::-webkit-scrollbar-thumb {
+    background-color: rgba(226, 232, 240, 0.22);
+  }
+}
