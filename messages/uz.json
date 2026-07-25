@@ -460,18 +460,17 @@
       "cancel": "Bekor qilish",
       "errorAmount": "Iltimos, noldan katta toʻgʻri summa kiriting.",
       "errorDate": "Iltimos, toʻgʻri sana tanlang.",
-      "errorGeneric": "Saqlab boʻlmadi. Qaytadan urinib koʻring."
+      "errorGeneric": "Saqlab boʻlmadi. Qaytadan urinib koʻring.",
+      "saving": "Saqlanmoqda…"
     },
     "toast": {
       "saved": "Amaliyot saqlandi.",
-      "deleted": "Amaliyot oʻchirildi.",
       "budgetSet": "{category} uchun byudjet yangilandi.",
       "goalCreated": "\"{goal}\" maqsadi yaratildi. Yoʻl boʻlsin!",
-      "contributed": "\"{goal}\" maqsadiga qoʻshildi."
+      "contributed": "\"{goal}\" maqsadiga qoʻshildi.",
+      "reversed": "Tranzaksiya bekor qilindi."
     },
     "viewerNote": "Sizda faqat koʻrish huquqi bor. Biror narsani oʻzgartirish kerak boʻlsa, oila administratoriga ayting.",
-    "deleteTransaction": "Amaliyotni oʻchirish",
-    "deleteConfirm": "Bu amaliyot oʻchirilsinmi? Buni ortga qaytarib boʻlmaydi.",
     "categories": {
       "food": "Oziq-ovqat va bozor",
       "utilities": "Kommunal toʻlovlar",
@@ -540,6 +539,21 @@
       "confirmTransfer": "Tasdiqlash",
       "chooseGoal": "Jamg‘arma maqsadi",
       "noGoals": "Avval maqsad yarating."
+    },
+    "reverseTransaction": "Tranzaksiyani bekor qilish",
+    "reverseTitle": "Bu tranzaksiya bekor qilinsinmi?",
+    "reverseBody": "Yozuv tarixda “bekor qilingan” belgisi bilan qoladi, summasi esa jamilardan chiqariladi. Hech narsa o‘chirilmaydi.",
+    "reverseReason": "Sabab",
+    "reverseNote": "Izoh (ixtiyoriy)",
+    "reverseConfirm": "Bekor qilish",
+    "reversedBadge": "Bekor qilingan",
+    "reasonCode": {
+      "DUPLICATE": "Takroriy yozuv",
+      "ENTERED_IN_ERROR": "Xato kiritilgan",
+      "FRAUD": "Firibgarlik gumoni",
+      "PROVIDER_FAILED": "Provayder yetkazmadi",
+      "CUSTOMER_REQUEST": "Oila a’zosi so‘rovi bilan",
+      "OTHER": "Boshqa"
     }
   },
   "household": {
@@ -995,7 +1009,8 @@
     "monthlyRemittance": "Oylik o‘tkazmalar",
     "vsLastMonth": "o‘tgan oyga nisbatan {percent}%",
     "totalSavings": "Oila jamg‘armasi",
-    "householdTrust": "Oila ishonch reytingi"
+    "householdTrust": "Oila ishonch reytingi",
+    "statusReversed": "Bekor qilingan"
   },
   "cards": {
     "addNew": "Yangi karta qoʻshish",

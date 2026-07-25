@@ -10,7 +10,14 @@ export type AuditAction =
   | "ROLE_DEMOTION"
   | "USER_SUSPEND"
   | "USER_UNSUSPEND"
-  | "DATA_EXPORT";
+  | "DATA_EXPORT"
+  // Transaction state transitions. Every manual intervention on a financial
+  // record is audited with the operator's reason code.
+  | "TRANSACTION_CONFIRM"
+  | "TRANSACTION_FAIL"
+  | "TRANSACTION_DISPUTE"
+  | "TRANSACTION_RESOLVE"
+  | "TRANSACTION_REVERSE";
 
 export interface AuditEntry {
   action: AuditAction;
@@ -19,7 +26,7 @@ export interface AuditEntry {
   /** The record acted upon, when applicable. */
   targetUserId?: string;
   targetType?: "User" | "Transaction" | "Household";
-  /** Before/after values, reason, request metadata, etc. */
+  /** Before/after values, reason code, request metadata, etc. */
   metadata?: Prisma.InputJsonValue;
 }
 
@@ -33,6 +40,9 @@ export interface AuditEntry {
  *     await tx.user.update(...)
  *     await logAudit(tx, { action: "ROLE_PROMOTION", adminId, targetUserId })
  *   })
+ *
+ * NOTE: this writes the row ONLY. The Telegram notification is deliberately
+ * not sent here — see `notifyAudit`.
  */
 type AuditDb = PrismaClient | Prisma.TransactionClient;
 
@@ -46,7 +56,19 @@ export async function logAudit(db: AuditDb, entry: AuditEntry): Promise<void> {
       metadata: entry.metadata ?? Prisma.JsonNull,
     },
   });
+}
 
+/**
+ * Mirrors an audit entry to the Telegram log group.
+ *
+ * Call this AFTER the transaction commits, never inside it: the send is a
+ * network round trip with a multi-second timeout, and holding a database
+ * transaction open across it pins a connection and extends every lock the
+ * transaction holds. (It previously ran inside `logAudit`, i.e. inside the
+ * caller's `$transaction`.) It is fire-and-forget and never throws, so a
+ * notification failure can't affect the recorded action.
+ */
+export async function notifyAudit(entry: AuditEntry): Promise<void> {
   await sendTelegramLog({
     category: "admin",
     title: entry.action,

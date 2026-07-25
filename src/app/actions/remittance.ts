@@ -1,12 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 import { getAppSession } from "@/lib/supabase/app-session";
 import { evaluateFunding } from "@/lib/funding";
 import { getUzsRates } from "@/lib/fx";
 import { prisma } from "@/lib/prisma";
 import { toBigInt, toMinor, type Minor } from "@/lib/money";
 import { computeQuotes } from "@/lib/rates";
+import { recordCreation } from "@/lib/transaction-events";
 import { remittanceSchema } from "@/lib/validators";
 
 export type ActionResult =
@@ -43,7 +45,18 @@ export async function createRemittance(input: unknown): Promise<ActionResult> {
 
     const parsed = remittanceSchema.safeParse(input);
     if (!parsed.success) return fail("validation");
-    const { providerId, amount, currency, cardId } = parsed.data;
+    const { providerId, amount, currency, cardId, idempotencyKey } = parsed.data;
+
+    // Idempotent replay: if this key already produced a transfer, return
+    // success without creating a second record — and, critically, without a
+    // second card debit. A double click or a network retry is therefore safe.
+    if (idempotencyKey) {
+      const existing = await prisma.transaction.findUnique({
+        where: { idempotencyKey },
+        select: { id: true },
+      });
+      if (existing) return { ok: true };
+    }
 
     const [provider, fx] = await Promise.all([
       prisma.remittanceProvider.findUnique({ where: { id: providerId } }),
@@ -107,7 +120,7 @@ export async function createRemittance(input: unknown): Promise<ActionResult> {
         });
         if (debited.count !== 1) throw new InsufficientFundsError();
 
-        await tx.transaction.create({
+        const created = await tx.transaction.create({
           data: {
             householdId: dbUser.householdId,
             type: "REMITTANCE",
@@ -122,10 +135,21 @@ export async function createRemittance(input: unknown): Promise<ActionResult> {
             sourceCurrency: currency,
             date: new Date(),
             status: "COMPLETED",
+            idempotencyKey: idempotencyKey ?? null,
           },
+          select: { id: true, status: true },
         });
+
+        // Creation is itself a state transition, so it is logged like any
+        // other — the transition log is complete from the first row.
+        await recordCreation(tx, created.id, created.status, dbUser.id);
       });
     } catch (e) {
+      // Lost a race with a concurrent replay of the same key: the unique index
+      // rejected the duplicate, which means the original already committed.
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+        return { ok: true };
+      }
       if (e instanceof InsufficientFundsError) {
         // Lost the race to a concurrent transfer. Re-read the (unchanged)
         // balance for the message; the debit rolled back.

@@ -80,6 +80,7 @@ model User {
   passwordResetTokens PasswordResetToken[]
   notifications    Notification[]
   auditLogs        AuditLog[]    @relation("AdminAuditLogs")
+  transactionEvents TransactionEvent[] @relation("TransactionEventActor")
   cards            Card[]
 }
 
@@ -220,8 +221,17 @@ model Transaction {
   category    String?
   note        String?
   date        DateTime
-  // "PENDING" | "COMPLETED" | "FAILED"
+  // Current state. See src/lib/transaction-state.ts for the machine:
+  // "PENDING" | "COMPLETED" | "FAILED" | "DISPUTED" | "REVERSED".
+  // Only COMPLETED counts toward balances and the Trust Score, so a reversed
+  // row drops out of every total without the row being destroyed.
   status      String   @default("COMPLETED")
+  // Caller-supplied key that makes creation idempotent: a retry or double
+  // click replays the same key and returns the original record instead of
+  // creating a second one (and, for a remittance, a second card debit).
+  // Nullable because historic and seeded rows have none — Postgres allows
+  // many NULLs under a unique index.
+  idempotencyKey String? @unique
   // True for rows created by the seed script (demo history is labeled in the UI)
   isDemo      Boolean  @default(false)
   createdAt   DateTime @default(now())
@@ -231,10 +241,40 @@ model Transaction {
   receiver  User?               @relation("ReceivedTransactions", fields: [receiverId], references: [id])
   provider  RemittanceProvider? @relation(fields: [providerId], references: [id])
   goal      SavingsGoal?        @relation(fields: [goalId], references: [id])
+  events    TransactionEvent[]
 
   @@index([householdId, date])
   @@index([householdId, type])
   @@index([goalId])
+  // Admin queues filter by state, so it needs to be indexed.
+  @@index([householdId, status])
+}
+
+/// Append-only transition log: one row per state change, including creation.
+/// This is the who / what / when / why behind every transaction — the record
+/// that makes history tamper-evident. Rows are never updated or deleted.
+model TransactionEvent {
+  id            String   @id @default(cuid())
+  transactionId String
+  /// Null on the creation row — there is no prior state.
+  fromStatus    String?
+  toStatus      String
+  /// "CREATE" plus the TransactionEventName values in transaction-state.ts.
+  event         String
+  /// The operator who acted. Null for system/seed-created rows.
+  actorId       String?
+  /// Required justification — see src/lib/reason-codes.ts.
+  reasonCode    String
+  /// Optional operator free text on top of the code.
+  note          String?
+  metadata      Json?
+  createdAt     DateTime @default(now())
+
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  actor       User?       @relation("TransactionEventActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([transactionId, createdAt])
+  @@index([actorId, createdAt])
 }
 
 model Budget {

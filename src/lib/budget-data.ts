@@ -22,6 +22,8 @@ export interface CategorySpend {
 export interface TransactionRow {
   id: string;
   type: string;
+  /** See src/lib/transaction-state.ts. Only COMPLETED counts toward totals. */
+  status: string;
   amount: Minor;
   currency: string;
   category: string | null;
@@ -170,6 +172,7 @@ export async function getTransactions(
   return rows.map((r) => ({
     id: r.id,
     type: r.type,
+    status: r.status,
     amount: toMinor(r.amount),
     currency: r.currency,
     category: r.category,
@@ -232,6 +235,9 @@ export async function getGoalDetail(
     where: { id: goalId, householdId },
     include: {
       contributions: {
+        // A reversed contribution has already been decremented from the goal;
+        // counting it here would make contributors disagree with the total.
+        where: { status: "COMPLETED" },
         orderBy: { date: "desc" },
         include: { sender: { select: { id: true, name: true, accessRole: true } } },
       },

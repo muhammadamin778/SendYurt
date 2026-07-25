@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { AdminRole } from "@prisma/client";
 import { z } from "zod";
 import { assertAdmin } from "@/lib/admin";
-import { logAudit } from "@/lib/audit";
+import { logAudit, notifyAudit } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -61,6 +61,9 @@ export async function promoteToAdmin(input: unknown): Promise<ActionResult> {
       });
     });
 
+    // After commit — never inside the transaction (see notifyAudit).
+    await notifyAudit({ action: "ROLE_PROMOTION", adminId, targetUserId: userId, targetType: "User" });
+
     revalidatePath("/[locale]/(admin)/admin/users", "page");
     return { ok: true };
   } catch (e) {
@@ -94,6 +97,9 @@ export async function demoteFromAdmin(input: unknown): Promise<ActionResult> {
         metadata: { from: AdminRole.ADMIN, to: AdminRole.USER },
       });
     });
+
+    // After commit — never inside the transaction (see notifyAudit).
+    await notifyAudit({ action: "ROLE_DEMOTION", adminId, targetUserId: userId, targetType: "User" });
 
     revalidatePath("/[locale]/(admin)/admin/users", "page");
     return { ok: true };
@@ -133,6 +139,9 @@ export async function setUserSuspended(input: unknown): Promise<ActionResult> {
         metadata: { suspended },
       });
     });
+
+    // After commit — never inside the transaction (see notifyAudit).
+    await notifyAudit({ action: suspended ? "USER_SUSPEND" : "USER_UNSUSPEND", adminId, targetUserId: userId, targetType: "User" });
 
     revalidatePath("/[locale]/(admin)/admin/users", "page");
     return { ok: true };

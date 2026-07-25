@@ -137,7 +137,16 @@ export const rateQuerySchema = z
     sourceCurrency: v.sourceCurrency,
   }));
 
+/**
+ * Optional client-supplied idempotency key. The client generates one per
+ * submission attempt and reuses it across retries, so a double click or a
+ * network retry replays the same key and the server returns the original
+ * record instead of creating a second one.
+ */
+export const idempotencyKey = z.string().trim().min(8).max(64).optional();
+
 export const expenseSchema = z.object({
+  idempotencyKey,
   amount: uzsAmount(),
   category: z.string().min(1).max(40),
   note: z.string().trim().max(200).optional(),
@@ -145,6 +154,7 @@ export const expenseSchema = z.object({
 });
 
 export const incomeSchema = z.object({
+  idempotencyKey,
   amount: uzsAmount(),
   note: z.string().trim().max(200).optional(),
   date: z.coerce.date(),
@@ -165,6 +175,7 @@ export const savingsGoalSchema = z.object({
 export const remittanceSchema = z
   .object({
     providerId: z.string().min(1),
+    idempotencyKey,
     amount: z.union([z.string(), z.number()]),
     currency: sourceCurrencyEnum,
     // Optional at the schema level so the action can return the precise
@@ -173,6 +184,7 @@ export const remittanceSchema = z
   })
   .transform((v, ctx) => ({
     providerId: v.providerId,
+    idempotencyKey: v.idempotencyKey,
     amount: parseSendAmount(v.amount, v.currency, ctx),
     currency: v.currency,
     cardId: v.cardId,
@@ -193,6 +205,7 @@ export const addCardSchema = z.object({
 });
 
 export const contributionSchema = z.object({
+  idempotencyKey,
   goalId: z.string().min(1),
   amount: uzsAmount(),
   note: z.string().trim().max(120).optional(),

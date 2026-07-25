@@ -460,18 +460,17 @@
       "cancel": "Cancel",
       "errorAmount": "Please enter a valid amount greater than zero.",
       "errorDate": "Please pick a valid date.",
-      "errorGeneric": "Couldn't save. Please try again."
+      "errorGeneric": "Couldn't save. Please try again.",
+      "saving": "Saving…"
     },
     "toast": {
       "saved": "Transaction saved.",
-      "deleted": "Transaction removed.",
       "budgetSet": "Budget for {category} updated.",
       "goalCreated": "Goal \"{goal}\" created — good luck!",
-      "contributed": "Added to \"{goal}\"."
+      "contributed": "Added to \"{goal}\".",
+      "reversed": "Transaction reversed."
     },
     "viewerNote": "You have view-only access. Ask a family admin if something needs changing.",
-    "deleteTransaction": "Delete transaction",
-    "deleteConfirm": "Remove this transaction? This can't be undone.",
     "categories": {
       "food": "Food & bazaar",
       "utilities": "Utilities",
@@ -540,6 +539,21 @@
       "confirmTransfer": "Confirm Transfer",
       "chooseGoal": "Savings goal",
       "noGoals": "Create a savings goal first."
+    },
+    "reverseTransaction": "Reverse transaction",
+    "reverseTitle": "Reverse this transaction?",
+    "reverseBody": "The record stays in your history marked as reversed, and its amount is removed from your totals. Nothing is deleted.",
+    "reverseReason": "Reason",
+    "reverseNote": "Note (optional)",
+    "reverseConfirm": "Reverse",
+    "reversedBadge": "Reversed",
+    "reasonCode": {
+      "DUPLICATE": "Duplicate entry",
+      "ENTERED_IN_ERROR": "Entered by mistake",
+      "FRAUD": "Suspected fraud",
+      "PROVIDER_FAILED": "Provider did not deliver",
+      "CUSTOMER_REQUEST": "Requested by family member",
+      "OTHER": "Other"
     }
   },
   "household": {
@@ -995,7 +1009,8 @@
     "monthlyRemittance": "Monthly Remittance Total",
     "vsLastMonth": "{percent}% vs last month",
     "totalSavings": "Total Family Savings",
-    "householdTrust": "Household Trust Score"
+    "householdTrust": "Household Trust Score",
+    "statusReversed": "Reversed"
   },
   "cards": {
     "addNew": "Add new card",
