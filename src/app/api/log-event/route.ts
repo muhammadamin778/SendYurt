@@ -1,26 +1,37 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { LIMITS, rateLimit } from "@/lib/rate-limit";
+import { clientIp, LIMITS, rateLimit } from "@/lib/rate-limit";
 import { sendTelegramLog } from "@/lib/telegram";
 
 /**
  * Client → Telegram relay for events that originate in the browser and so
- * can't be hooked server-side: a password login (Supabase signs in on the
- * client) and page visits. The two remaining event kinds — sign-ups, investor
- * inquiries, admin actions and Google logins — are fired directly from their
- * server code paths and never touch this route.
+ * can't be hooked server-side.
  *
- * Auth is by the Supabase session cookie (sent automatically with the fetch),
- * so we never handle a token in JS: an unauthenticated caller is rejected and
- * can't inject fake log lines. Rate-limited per user to keep the noisy visit
- * stream from ever flooding the group.
+ * Two classes of event:
+ *  • Authenticated (`login`, `visit`) — identity comes from the Supabase
+ *    session cookie, never the request body, so the email can't be spoofed.
+ *    Per-user rate-limited.
+ *  • Public failures (`login_failed`, `signup_failed`) — a failed login/signup
+ *    has NO session, so these can't require a cookie. They carry the attempted
+ *    email + failure code/reason in the body and are IP-rate-limited hard so a
+ *    brute-force loop can't flood the logs group.
+ *
+ * The other event kinds — successful sign-ups, investor inquiries, admin
+ * actions and Google logins — are fired directly from their server code paths
+ * and never touch this route.
  */
 
 const schema = z.object({
-  type: z.enum(["login", "visit"]),
+  type: z.enum(["login", "visit", "login_failed", "signup_failed"]),
   path: z.string().trim().max(512).optional(),
+  email: z.string().trim().max(254).optional(),
+  method: z.string().trim().max(60).optional(),
+  code: z.string().trim().max(120).optional(),
+  reason: z.string().trim().max(300).optional(),
 });
+
+const PUBLIC_TYPES = new Set(["login_failed", "signup_failed"]);
 
 export async function POST(req: Request) {
   let body: unknown;
@@ -34,9 +45,35 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: "validation" }, { status: 400 });
   }
+  const { type, path, email, method, code, reason } = parsed.data;
 
-  // Must be a signed-in user — identity comes from the session cookie, never
-  // from the request body, so the email can't be spoofed.
+  // ── Public failure events: no session, IP-rate-limited ──────────────────
+  if (PUBLIC_TYPES.has(type)) {
+    const ipLimit = rateLimit(`logEvent:pub:${clientIp(req.headers)}`, LIMITS.logEventPublic);
+    if (!ipLimit.allowed) {
+      return NextResponse.json({ ok: true, dropped: true });
+    }
+
+    const attempted = email || "(unknown email)";
+    if (type === "login_failed") {
+      void sendTelegramLog({
+        category: "login",
+        ok: false,
+        title: attempted,
+        fields: { Method: method || "Email + password", Code: code, Reason: reason },
+      });
+    } else {
+      void sendTelegramLog({
+        category: "signup",
+        ok: false,
+        title: attempted,
+        fields: { Code: code, Reason: reason },
+      });
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  // ── Authenticated success events: identity from the session cookie ──────
   const supabase = createServerSupabase();
   const {
     data: { user },
@@ -51,7 +88,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, dropped: true });
   }
 
-  const { type, path } = parsed.data;
   if (type === "login") {
     void sendTelegramLog({
       category: "login",
