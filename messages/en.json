@@ -339,7 +339,13 @@
       "sendSuccess": "Transfer recorded — it now appears on your dashboard.",
       "sendError": "We couldn’t complete the transfer. Please try again.",
       "cardBalance": "Balance: {amount}",
-      "insufficientFunds": "Insufficient funds. Your card balance is {balance} UZS, but you are trying to send {amount} UZS."
+      "insufficientFunds": "Insufficient funds. Your card balance is {balance} UZS, but you are trying to send {amount} UZS.",
+      "zeroBalance": "This card has no funds. Top it up before sending money.",
+      "emptyCard": "Empty",
+      "noCardTitle": "No payment card linked",
+      "noCardBody": "Transfers must be funded by a card. Add one to your wallet to continue.",
+      "addCard": "Add a card",
+      "noCardBlocked": "Add a payment card before sending money."
     }
   },
   "budget": {

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getAppSession } from "@/lib/supabase/app-session";
+import { evaluateFunding } from "@/lib/funding";
 import { getUzsRates } from "@/lib/fx";
 import { prisma } from "@/lib/prisma";
 import { computeQuotes } from "@/lib/rates";
@@ -57,22 +58,31 @@ export async function createRemittance(input: unknown): Promise<ActionResult> {
     // receives exactly" figure shown on the Review step).
     const uzsCost = Math.round(quote.receivedUzs);
 
-    // If a funding card was chosen, it must exist and cover the transfer.
-    // We validate up-front for a precise error, then re-check atomically
-    // inside the transaction below to close the race window.
-    let card: { id: string; balance: number } | null = null;
-    if (cardId) {
-      const found = await prisma.card.findFirst({
-        where: { id: cardId, userId: dbUser.id },
-        select: { id: true, balance: true },
-      });
-      if (!found) return fail("card_not_found");
-      const balance = found.balance.toNumber();
-      if (balance < uzsCost) {
-        return { ok: false, error: "insufficient_funds", balance, amount: uzsCost };
+    // A funding source is MANDATORY. Previously `cardId` was optional and the
+    // whole balance check sat behind `if (cardId)`, so a request that simply
+    // omitted it recorded a completed transfer while moving no money and
+    // checking no balance. Server actions are callable endpoints, so this is
+    // enforced here rather than trusted to the UI.
+    if (!cardId) return fail("card_required");
+
+    const found = await prisma.card.findFirst({
+      where: { id: cardId, userId: dbUser.id },
+      select: { id: true, balance: true },
+    });
+    if (!found) return fail("card_not_found");
+    const balance = found.balance.toNumber();
+
+    // Same rules the client used to disable the button — re-evaluated here,
+    // where they're authoritative. Re-checked atomically in the transaction
+    // below to close the race between two concurrent transfers.
+    const decision = evaluateFunding({ balance, cost: uzsCost });
+    if (!decision.ok) {
+      if (decision.reason === "insufficient_funds" || decision.reason === "zero_balance") {
+        return { ok: false, error: decision.reason, balance, amount: uzsCost };
       }
-      card = { id: found.id, balance };
+      return fail(decision.reason);
     }
+    const card = { id: found.id, balance };
 
     // The recipient is the household's receiver, if one exists.
     const receiver = await prisma.user.findFirst({
@@ -86,13 +96,11 @@ export async function createRemittance(input: unknown): Promise<ActionResult> {
         // Conditional debit: only decrements when the balance still covers the
         // cost, so two concurrent transfers can't overdraw. The DB CHECK
         // (Card_balance_nonneg) is the last line of defense.
-        if (card) {
-          const debited = await tx.card.updateMany({
-            where: { id: card.id, userId: dbUser.id, balance: { gte: uzsCost } },
-            data: { balance: { decrement: uzsCost } },
-          });
-          if (debited.count !== 1) throw new InsufficientFundsError();
-        }
+        const debited = await tx.card.updateMany({
+          where: { id: card.id, userId: dbUser.id, balance: { gte: uzsCost } },
+          data: { balance: { decrement: uzsCost } },
+        });
+        if (debited.count !== 1) throw new InsufficientFundsError();
 
         await tx.transaction.create({
           data: {
@@ -112,10 +120,11 @@ export async function createRemittance(input: unknown): Promise<ActionResult> {
       });
     } catch (e) {
       if (e instanceof InsufficientFundsError) {
-        // Re-read the (unchanged) balance for the message; the debit rolled back.
-        const fresh = card
-          ? (await prisma.card.findUnique({ where: { id: card.id }, select: { balance: true } }))?.balance.toNumber() ?? card.balance
-          : 0;
+        // Lost the race to a concurrent transfer. Re-read the (unchanged)
+        // balance for the message; the debit rolled back.
+        const fresh =
+          (await prisma.card.findUnique({ where: { id: card.id }, select: { balance: true } }))?.balance.toNumber() ??
+          card.balance;
         return { ok: false, error: "insufficient_funds", balance: fresh, amount: uzsCost };
       }
       throw e;
