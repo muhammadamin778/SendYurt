@@ -1,4 +1,5 @@
 import { Prisma, type PrismaClient } from "@prisma/client";
+import { sendTelegramLog } from "@/lib/telegram";
 
 /**
  * Privileged actions we record. A union type keeps call sites honest — a typo
@@ -43,6 +44,15 @@ export async function logAudit(db: AuditDb, entry: AuditEntry): Promise<void> {
       targetUserId: entry.targetUserId ?? null,
       targetType: entry.targetType ?? null,
       metadata: entry.metadata ?? Prisma.JsonNull,
+    },
+  });
+
+  void sendTelegramLog({
+    category: "admin",
+    title: entry.action,
+    fields: {
+      "Admin id": entry.adminId,
+      Target: entry.targetUserId ? `${entry.targetType ?? "record"} ${entry.targetUserId}` : undefined,
     },
   });
 }

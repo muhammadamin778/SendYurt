@@ -90,4 +90,8 @@ export const LIMITS = {
   resetPassword: { max: 5, windowMs: 15 * 60 * 1000 },
   assistant: { max: 30, windowMs: 60 * 60 * 1000 },
   investor: { max: 5, windowMs: 60 * 60 * 1000 },
+  // Client → Telegram log relay (login + page-visit events). Generous, since
+  // an active session legitimately navigates many pages, but capped so a
+  // misbehaving client can't flood the logs group.
+  logEvent: { max: 120, windowMs: 60 * 1000 },
 } as const;

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { sendTelegramLog } from "@/lib/telegram";
 
 /**
  * OAuth + email-confirmation callback. Supabase redirects here with a `?code`
@@ -22,8 +23,19 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = createServerSupabase();
-    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+    const { data: exchange, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
     if (!exchangeError) {
+      // Fires for Google sign-in and email-confirmation link clicks — both are
+      // a session start. (A brand-new user also gets a separate "sign-up" log
+      // from the identity bridge the first time the app loads.)
+      const user = exchange?.user;
+      if (user?.email) {
+        void sendTelegramLog({
+          category: "login",
+          title: user.email,
+          fields: { Method: "Google / email link" },
+        });
+      }
       return NextResponse.redirect(`${origin}${next}`);
     }
     return NextResponse.redirect(`${origin}/en/login?error=${encodeURIComponent(exchangeError.message)}`);

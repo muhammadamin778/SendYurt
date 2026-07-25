@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { clientIp, LIMITS, rateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
+import { sendTelegramLog } from "@/lib/telegram";
 
 const schema = z.object({
   name: z.string().trim().min(2).max(120),
@@ -52,6 +53,15 @@ export async function POST(req: Request) {
       `[investor] ${data.kind} inquiry from ${data.name} <${data.email}>` +
         (data.organization ? ` (${data.organization})` : ""),
     );
+    void sendTelegramLog({
+      category: "investor",
+      title: `${data.name} <${data.email}>`,
+      fields: {
+        Kind: data.kind,
+        Organization: data.organization || undefined,
+        Message: data.message,
+      },
+    });
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error("investor inquiry failed", e);
