@@ -1,5 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 import { toMinor, ZERO, type Minor } from "@/lib/money";
+import { IllustrativeTag } from "@/components/admin/IllustrativeTag";
 import { TransactionRowActions } from "@/components/admin/TransactionRowActions";
 import { formatMoney } from "@/lib/format";
 import { isTransactionState, TRANSACTION_STATES } from "@/lib/transaction-state";
@@ -30,7 +31,7 @@ export default async function AdminTransactionsPage({
   searchParams,
 }: {
   params: { locale: string };
-  searchParams: { page?: string; status?: string; provider?: string; corridor?: string };
+  searchParams: { page?: string; status?: string; provider?: string; corridor?: string; q?: string };
 }) {
   setRequestLocale(locale);
   await requireAdmin();
@@ -39,6 +40,9 @@ export default async function AdminTransactionsPage({
   // Whitelist derived from the state machine so a new state can't be
   // silently un-filterable.
   const status = isTransactionState(searchParams.status ?? "") ? searchParams.status : undefined;
+  // Topbar search: operators paste either the full id or the last 8 shown in
+  // the table, so match on both.
+  const search = (searchParams.q ?? "").trim();
   const providerId = searchParams.provider || undefined;
   const corridor = searchParams.corridor || undefined;
 
@@ -47,6 +51,8 @@ export default async function AdminTransactionsPage({
     ...(status ? { status } : {}),
     ...(providerId ? { providerId } : {}),
     ...(corridor ? { sourceCurrency: corridor } : {}),
+    // `endsWith` covers the last-8 form the table displays; a full id also matches.
+    ...(search ? { id: { endsWith: search.toLowerCase() } } : {}),
   };
 
   const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -105,6 +111,7 @@ export default async function AdminTransactionsPage({
     if (status) p.set("status", status);
     if (providerId) p.set("provider", providerId);
     if (corridor) p.set("corridor", corridor);
+    if (search) p.set("q", search);
     if (n > 1) p.set("page", String(n));
     const s = p.toString();
     return s ? `?${s}` : "?";
@@ -134,13 +141,15 @@ export default async function AdminTransactionsPage({
               <span className="font-bold" style={{ color: s.tone }}>{s.sub}</span>
               <span className="text-[#6f7a72]">{s.note}</span>
             </div>
-            {s.illustrative && <p className="mt-1 text-[10px] italic text-[#6f7a72]">Illustrative</p>}
+            {s.illustrative && <IllustrativeTag className="mt-1" />}
           </div>
         ))}
       </div>
 
       {/* Filters */}
       <form method="get" className="flex flex-wrap items-end gap-4 rounded-xl border border-[#bec9c0] bg-white p-4">
+        {/* Keep an active topbar search when filters are re-applied. */}
+        {search && <input type="hidden" name="q" value={search} />}
         <div className="min-w-[200px] flex-1">
           <p className="mb-1 ml-1 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#6f7a72]">Corridor</p>
           <select name="corridor" defaultValue={corridor ?? ""} className={selCls}>
@@ -188,7 +197,7 @@ export default async function AdminTransactionsPage({
             </thead>
             <tbody className="divide-y divide-[#bec9c0]">
               {page.items.length === 0 && (
-                <tr><td colSpan={8} className="p-10 text-center text-[#6f7a72]">No transactions match these filters.</td></tr>
+                <tr><td colSpan={9} className="p-10 text-center text-[#6f7a72]">No transactions match these filters.</td></tr>
               )}
               {page.items.map((t, i) => {
                 const st = STATUS_STYLE[t.status] ?? STATUS_STYLE.PENDING;
@@ -246,7 +255,7 @@ export default async function AdminTransactionsPage({
             <h3 className="text-[16px] font-semibold text-[#005136]">Compliance Status: Healthy</h3>
             <p className="mt-2 text-[14px] text-[#3f4943]">All gateway connectors are performing within expected latency bounds. AML screening is active across corridors. Recent flagging is attributed to high-value remittances.</p>
             <p className="mt-3 flex items-center gap-1 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#006c49]">View Compliance Audit <span aria-hidden>→</span></p>
-            <p className="mt-2 text-[10px] italic text-[#6f7a72]">Illustrative — no live compliance feed wired.</p>
+            <IllustrativeTag className="mt-2" />
           </div>
         </div>
         <div className="relative h-[190px] overflow-hidden rounded-2xl bg-gradient-to-br from-[#006c49] via-[#00352a] to-[#0b1220] px-8 py-6 text-white">
@@ -261,7 +270,7 @@ export default async function AdminTransactionsPage({
           </p>
           <h4 className="mt-1 text-[20px] font-semibold">Live Corridor Map</h4>
           <p className="mt-2 text-[13px] opacity-90">Monitoring traffic load between North America, Europe, and Central Asian hubs.</p>
-          <p className="absolute bottom-3 right-4 text-[10px] italic text-white/40">Illustrative</p>
+          <IllustrativeTag className="absolute bottom-3 right-4 border-white/20 bg-white/10 text-white/70" />
         </div>
       </div>
     </div>

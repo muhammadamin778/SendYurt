@@ -1,7 +1,10 @@
 "use client";
 
 import { clsx } from "clsx";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { createBrowserSupabase } from "@/lib/supabase/client";
 
 const ICON = {
   dashboard: "M4 13h6V4H4v9zm0 7h6v-5H4v5zm10 0h6V11h-6v9zm0-16v5h6V4h-6z",
@@ -11,7 +14,6 @@ const ICON = {
   settings: "M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 13a7.8 7.8 0 000-2l1.8-1.4-1.8-3.1-2.2.9a7.8 7.8 0 00-1.7-1l-.3-2.3H9.6l-.3 2.3a7.8 7.8 0 00-1.7 1l-2.2-.9L3.6 9.6 5.4 11a7.8 7.8 0 000 2l-1.8 1.4 1.8 3.1 2.2-.9a7.8 7.8 0 001.7 1l.3 2.3h3.8l.3-2.3a7.8 7.8 0 001.7-1l2.2.9 1.8-3.1z",
   help: "M12 3a9 9 0 100 18 9 9 0 000-18zM9.5 9.3a2.5 2.5 0 114.1 1.9c-.8.7-1.6 1.2-1.6 2.3M12 16.8v.2",
   logout: "M15 12H3m0 0l4-4m-4 4l4 4M13 4h6a2 2 0 012 2v12a2 2 0 01-2 2h-6",
-  plus: "M12 5v14M5 12h14",
 };
 
 function Glyph({ d, className = "h-5 w-5" }: { d: string; className?: string }) {
@@ -24,6 +26,7 @@ function Glyph({ d, className = "h-5 w-5" }: { d: string; className?: string }) 
 
 export function AdminSidebar({ locale }: { locale: string }) {
   const pathname = usePathname();
+  const [signingOut, setSigningOut] = useState(false);
   const base = `/${locale}/admin`;
 
   const NAV = [
@@ -48,15 +51,6 @@ export function AdminSidebar({ locale }: { locale: string }) {
         </div>
       </div>
 
-      {/* CTA */}
-      <button
-        type="button"
-        className="mb-6 flex w-full items-center justify-center gap-2 rounded-lg bg-[#006c49] px-4 py-3 text-[12px] font-semibold uppercase tracking-[0.05em] text-white transition-all hover:bg-[#005136] active:scale-95"
-      >
-        <Glyph d={ICON.plus} className="h-[18px] w-[18px]" />
-        New Transaction
-      </button>
-
       {/* Nav */}
       <nav className="scroll-slim scroll-hover-reveal flex-1 space-y-1 overflow-y-auto">
         {NAV.map((item) => {
@@ -79,28 +73,39 @@ export function AdminSidebar({ locale }: { locale: string }) {
             );
           }
           return (
-            <a key={item.label} href={item.href} aria-current={active ? "page" : undefined} className={cls}>
+            <Link key={item.label} href={item.href} aria-current={active ? "page" : undefined} className={cls}>
               <Glyph d={item.icon} />
               {item.label}
-            </a>
+            </Link>
           );
         })}
       </nav>
 
       {/* Footer */}
       <div className="mt-auto space-y-1 border-t border-[#bec9c0] pt-4">
-        <a href={`/${locale}/help`} className="group flex items-center gap-3 rounded-lg px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#3f4943] transition-colors hover:bg-[#e7e8e9]">
+        <Link href={`/${locale}/help`} className="group flex items-center gap-3 rounded-lg px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#3f4943] transition-colors hover:bg-[#e7e8e9]">
           <span className="text-[#3f4943] group-hover:text-[#005136]"><Glyph d={ICON.help} /></span>
           Help Center
-        </a>
-        <a href={`/${locale}/dashboard`} className="flex items-center gap-3 rounded-lg px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#3f4943] transition-colors hover:bg-[#e7e8e9]">
+        </Link>
+        <Link href={`/${locale}/dashboard`} className="flex items-center gap-3 rounded-lg px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#3f4943] transition-colors hover:bg-[#e7e8e9]">
           <Glyph d="M4 21V10l8-6 8 6v11M9 21v-6h6v6" />
           User App
-        </a>
-        <a href="/api/auth/signout" className="flex items-center gap-3 rounded-lg px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#ba1a1a] transition-colors hover:bg-[#ba1a1a]/5">
+        </Link>
+        <button
+          type="button"
+          disabled={signingOut}
+          onClick={async () => {
+            setSigningOut(true);
+            // The app authenticates through Supabase — the old /api/auth/signout
+            // link hit NextAuth and left the real session intact.
+            await createBrowserSupabase().auth.signOut();
+            window.location.assign(`/${locale}`);
+          }}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#ba1a1a] transition-colors hover:bg-[#ba1a1a]/5 disabled:opacity-60"
+        >
           <Glyph d={ICON.logout} />
-          Sign Out
-        </a>
+          {signingOut ? "Signing out…" : "Sign Out"}
+        </button>
       </div>
     </aside>
   );

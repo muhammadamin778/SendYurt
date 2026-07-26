@@ -1,6 +1,8 @@
 import { AdminRole } from "@prisma/client";
 import { setRequestLocale } from "next-intl/server";
-import { ExportUsersCsv, type CsvUser } from "@/components/admin/ExportUsersCsv";
+import { exportUsersCsv } from "@/app/actions/admin-export";
+import { ExportCsvButton } from "@/components/admin/ExportCsvButton";
+import { IllustrativeTag } from "@/components/admin/IllustrativeTag";
 import { UserRowActions } from "@/components/admin/UserRowActions";
 import { requireAdmin } from "@/lib/admin";
 import { paginate, parsePageParams } from "@/lib/pagination";
@@ -63,7 +65,7 @@ export default async function AdminUsersPage({
   searchParams,
 }: {
   params: { locale: string };
-  searchParams: { page?: string; status?: string };
+  searchParams: { page?: string; status?: string; q?: string };
 }) {
   setRequestLocale(locale);
   const admin = await requireAdmin();
@@ -73,9 +75,20 @@ export default async function AdminUsersPage({
     : "all";
   const params = parsePageParams({ page: searchParams.page }, { defaultSize: 10 });
 
+  // Free-text search from the topbar, matched against name or email.
+  const searchTerm = (searchParams.q ?? "").trim();
+  const search = searchTerm
+    ? {
+        OR: [
+          { name: { contains: searchTerm, mode: "insensitive" as const } },
+          { email: { contains: searchTerm, mode: "insensitive" as const } },
+        ],
+      }
+    : {};
+
   // Status maps onto real columns: flagged = suspended; pending = never
   // onboarded; verified = onboarded & active.
-  const where =
+  const statusWhere =
     statusFilter === "flagged"
       ? { suspended: true }
       : statusFilter === "pending"
@@ -83,6 +96,7 @@ export default async function AdminUsersPage({
         : statusFilter === "verified"
           ? { suspended: false, onboardedAt: { not: null } }
           : {};
+  const where = { ...statusWhere, ...search };
 
   let page = { items: [] as Awaited<ReturnType<typeof loadUsers>>["items"], page: 1, pageSize: 10, total: 0, totalPages: 1, hasNext: false, hasPrev: false };
   let trustAvg = 0;
@@ -177,24 +191,18 @@ export default async function AdminUsersPage({
     const p = new URLSearchParams();
     const st = over.status ?? (statusFilter === "all" ? undefined : statusFilter);
     if (st) p.set("status", st);
+    if (searchTerm) p.set("q", searchTerm);
     if (over.page && over.page > 1) p.set("page", String(over.page));
     const s = p.toString();
     return s ? `?${s}` : "?";
   };
 
-  const csvRows: CsvUser[] = page.items.map((u) => ({
-    name: u.name,
-    email: u.email,
-    accountAge: accountAge(u.createdAt),
-    trust: trustByHousehold.get(u.householdId) ?? null,
-    status: STATUS_STYLE[statusOf(u)].label,
-    admin: u.adminRole === AdminRole.ADMIN,
-  }));
 
   const STATUS_TABS: { key: "all" | Status; label: string }[] = [
     { key: "all", label: "All" },
     { key: "verified", label: "Verified" },
     { key: "pending", label: "Pending" },
+    { key: "flagged", label: "Flagged" },
   ];
 
   return (
@@ -223,7 +231,8 @@ export default async function AdminUsersPage({
               })}
             </div>
           </div>
-          <ExportUsersCsv rows={csvRows} />
+          {/* Exports the full filtered set server-side, and audits it. */}
+          <ExportCsvButton action={exportUsersCsv.bind(null, statusFilter ?? "all")} />
         </div>
       </div>
 
@@ -425,7 +434,7 @@ export default async function AdminUsersPage({
             <span className="h-2 w-2 animate-ping rounded-full bg-[#006c49]" />
             <span className="text-[13px] font-medium text-[#006c49]">Real-time monitoring active</span>
           </div>
-          <p className="mt-2 text-[10px] italic text-[#6f7a72]">Illustrative</p>
+          <IllustrativeTag className="mt-2" />
         </div>
       </div>
     </div>
