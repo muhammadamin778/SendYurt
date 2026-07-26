@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { AdminRole } from "@prisma/client";
 import { z } from "zod";
-import { assertAdmin } from "@/lib/admin";
+import { assertPermission } from "@/lib/admin";
 import { logAudit, notifyAudit } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 
@@ -16,7 +16,8 @@ function fail(error: string): ActionResult {
 /** Maps thrown guard/known errors to a stable result shape. */
 function toResult(e: unknown): ActionResult {
   if (e instanceof Error) {
-    if (e.message === "unauthorized" || e.message === "forbidden" || e.message === "not_found" || e.message === "self" || e.message === "noop") {
+    if (e.message === "unauthorized" || e.message === "forbidden" || e.message === "not_found" ||
+      e.message === "last_super_admin" || e.message === "self" || e.message === "noop") {
       return fail(e.message);
     }
   }
@@ -38,7 +39,7 @@ const suspendSchema = z.object({ userId: z.string().min(1), suspended: z.boolean
  */
 export async function promoteToAdmin(input: unknown): Promise<ActionResult> {
   try {
-    const { adminId } = await assertAdmin();
+    const { adminId } = await assertPermission("staff.manage");
     const parsed = userIdSchema.safeParse(input);
     if (!parsed.success) return fail("validation");
     const { userId } = parsed.data;
@@ -74,7 +75,7 @@ export async function promoteToAdmin(input: unknown): Promise<ActionResult> {
 /** Demote an admin back to USER (same guarded + audited + transactional shape). */
 export async function demoteFromAdmin(input: unknown): Promise<ActionResult> {
   try {
-    const { adminId } = await assertAdmin();
+    const { adminId } = await assertPermission("staff.manage");
     const parsed = userIdSchema.safeParse(input);
     if (!parsed.success) return fail("validation");
     const { userId } = parsed.data;
@@ -86,7 +87,17 @@ export async function demoteFromAdmin(input: unknown): Promise<ActionResult> {
         select: { id: true, adminRole: true },
       });
       if (!target) throw new Error("not_found");
-      if (target.adminRole !== AdminRole.ADMIN) throw new Error("noop");
+      if (target.adminRole === AdminRole.USER) throw new Error("noop");
+
+      // Never strip the last SUPER_ADMIN: self-demotion was already blocked,
+      // but two super admins could otherwise demote each other down to zero
+      // and lock everyone out of staff management permanently.
+      if (target.adminRole === AdminRole.SUPER_ADMIN) {
+        const remaining = await tx.user.count({
+          where: { adminRole: AdminRole.SUPER_ADMIN, suspended: false },
+        });
+        if (remaining <= 1) throw new Error("last_super_admin");
+      }
 
       await tx.user.update({ where: { id: userId }, data: { adminRole: AdminRole.USER } });
       await logAudit(tx, {
@@ -94,7 +105,7 @@ export async function demoteFromAdmin(input: unknown): Promise<ActionResult> {
         adminId,
         targetUserId: userId,
         targetType: "User",
-        metadata: { from: AdminRole.ADMIN, to: AdminRole.USER },
+        metadata: { from: target.adminRole, to: AdminRole.USER },
       });
     });
 
@@ -116,7 +127,7 @@ export async function demoteFromAdmin(input: unknown): Promise<ActionResult> {
  */
 export async function setUserSuspended(input: unknown): Promise<ActionResult> {
   try {
-    const { adminId } = await assertAdmin();
+    const { adminId } = await assertPermission("customer.suspend");
     const parsed = suspendSchema.safeParse(input);
     if (!parsed.success) return fail("validation");
     const { userId, suspended } = parsed.data;

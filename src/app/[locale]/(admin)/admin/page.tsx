@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { exportOperationsReport } from "@/app/actions/admin-export";
 import { ExportCsvButton } from "@/components/admin/ExportCsvButton";
+import { requireStaff } from "@/lib/admin";
 import { IllustrativeTag } from "@/components/admin/IllustrativeTag";
 import { setRequestLocale } from "next-intl/server";
 import { toMinor, ZERO, type Minor } from "@/lib/money";
@@ -31,6 +32,10 @@ interface RecentTx { id: string; type: string; status: string; amount: Minor; cu
 
 export default async function AdminDashboardPage({ params: { locale } }: { params: { locale: string } }) {
   setRequestLocale(locale);
+  // This page previously relied solely on the layout guard — the only admin
+  // page that did. Server Actions on it (the export) are reachable
+  // independently, so it re-checks like every other page.
+  const staff = await requireStaff("transaction.view");
 
   // Real aggregates via the read client (Neon replica when DATABASE_READ_URL
   // is set). Wrapped so a transient DB blip (e.g. Neon waking from suspend)
@@ -96,11 +101,11 @@ export default async function AdminDashboardPage({ params: { locale } }: { param
             <Icon d="M7 3v4M17 3v4M3 9h18M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z" className="h-[18px] w-[18px]" />
             <span className="text-[12px] font-semibold uppercase tracking-[0.05em]">Last 24 Hours</span>
           </div>
-          <ExportCsvButton
+          {staff.can("transaction.export") && <ExportCsvButton
             action={exportOperationsReport}
             label="Export Report"
             className="flex items-center gap-2 rounded-lg border border-[#bec9c0] bg-[#f8f9fa] px-3 py-1.5 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#191c1d] transition-all hover:border-[#006c49] hover:bg-[#edeeef] disabled:opacity-60"
-          />
+          />}
         </div>
       </div>
 

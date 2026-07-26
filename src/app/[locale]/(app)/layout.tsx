@@ -6,6 +6,7 @@ import { BankSidebar } from "@/components/bank/BankSidebar";
 import { BankTopbar } from "@/components/bank/BankTopbar";
 import { BankMobileNav } from "@/components/bank/BankMobileNav";
 import { requireUser } from "@/lib/session";
+import { isStaff } from "@/lib/permissions";
 
 // Everything in this group is per-user, per-household data behind auth —
 // it must never be statically prerendered.
@@ -24,7 +25,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         initial={initial}
         image={user.image ?? null}
         roleLabel={roleLabel}
-        isAdmin={user.adminRole === "ADMIN"}
+        isAdmin={isStaff(user.adminRole)}
       />
 
       <div className="flex min-w-0 flex-1 flex-col">

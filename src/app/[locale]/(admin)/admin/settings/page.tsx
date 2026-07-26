@@ -1,6 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 import { SettingsBoard, type AuditItem, type ProviderHealth } from "@/components/admin/SettingsBoard";
-import { requireAdmin } from "@/lib/admin";
+import { requireStaff } from "@/lib/admin";
 import { toMinor, ZERO } from "@/lib/money";
 import { formatMoney, formatNumber } from "@/lib/format";
 import { getUzsRates } from "@/lib/fx";
@@ -36,7 +36,7 @@ const HEALTH_CYCLE: Array<{ state: ProviderHealth["state"]; latencyMs: number }>
 
 export default async function AdminSettingsPage({ params: { locale } }: { params: { locale: string } }) {
   setRequestLocale(locale);
-  await requireAdmin();
+  await requireStaff("settings.view");
 
   let usdRate = "12,900.00";
   let eurRate = "13,950.00";

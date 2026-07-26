@@ -2,9 +2,10 @@ import { AdminRole } from "@prisma/client";
 import { setRequestLocale } from "next-intl/server";
 import { exportUsersCsv } from "@/app/actions/admin-export";
 import { ExportCsvButton } from "@/components/admin/ExportCsvButton";
+import { emailFor, nameFor } from "@/lib/mask";
 import { IllustrativeTag } from "@/components/admin/IllustrativeTag";
 import { UserRowActions } from "@/components/admin/UserRowActions";
-import { requireAdmin } from "@/lib/admin";
+import { requireStaff } from "@/lib/admin";
 import { paginate, parsePageParams } from "@/lib/pagination";
 import { readPrisma } from "@/lib/prisma-read";
 import { createAdminSupabase } from "@/lib/supabase/admin";
@@ -68,7 +69,14 @@ export default async function AdminUsersPage({
   searchParams: { page?: string; status?: string; q?: string };
 }) {
   setRequestLocale(locale);
-  const admin = await requireAdmin();
+  const staff = await requireStaff("customer.view");
+  // What this viewer may see and do. Every one of these is re-checked on the
+  // server when the corresponding action runs — this only decides rendering.
+  const canSeePii = staff.can("customer.pii.view");
+  const canExport = staff.can("customer.export");
+  const canManageStaff = staff.can("staff.manage");
+  const canSuspend = staff.can("customer.suspend");
+  const canSeeActivity = staff.can("customer.activity.view");
 
   const statusFilter = (["verified", "pending", "flagged"] as const).includes(searchParams.status as never)
     ? (searchParams.status as Status)
@@ -149,7 +157,8 @@ export default async function AdminUsersPage({
   type VisitRow = { email: string | null; path: string | null; created_at: string };
   type SignInRow = { id: string; email: string; provider: string; created_at: string; last_sign_in_at: string | null };
 
-  const supaAdmin = createAdminSupabase();
+  // Not fetched at all without permission — the least data that does the job.
+  const supaAdmin = canSeeActivity ? createAdminSupabase() : null;
   const activityConfigured = supaAdmin !== null;
   let visits: VisitRow[] = [];
   let signIns: SignInRow[] = [];
@@ -232,7 +241,7 @@ export default async function AdminUsersPage({
             </div>
           </div>
           {/* Exports the full filtered set server-side, and audits it. */}
-          <ExportCsvButton action={exportUsersCsv.bind(null, statusFilter ?? "all")} />
+          {canExport && <ExportCsvButton action={exportUsersCsv.bind(null, statusFilter ?? "all")} />}
         </div>
       </div>
 
@@ -271,10 +280,10 @@ export default async function AdminUsersPage({
                         )}
                         <div className="flex flex-col">
                           <span className="flex items-center gap-2 text-[14px] font-bold text-[#191c1d]">
-                            {u.name}
+                            {nameFor(u.name, canSeePii)}
                             {u.adminRole === AdminRole.ADMIN && <span className="rounded bg-[#006c49]/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#005136]">Admin</span>}
                           </span>
-                          <span className="text-[13px] text-[#3f4943]">{u.email}</span>
+                          <span className="text-[13px] text-[#3f4943]">{emailFor(u.email, canSeePii)}</span>
                         </div>
                       </div>
                     </td>
@@ -295,7 +304,14 @@ export default async function AdminUsersPage({
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <UserRowActions userId={u.id} isAdmin={u.adminRole === AdminRole.ADMIN} suspended={u.suspended} isSelf={u.id === admin.id} />
+                      <UserRowActions
+                        userId={u.id}
+                        isAdmin={u.adminRole === AdminRole.ADMIN || u.adminRole === AdminRole.SUPER_ADMIN}
+                        suspended={u.suspended}
+                        isSelf={u.id === staff.id}
+                        canManageStaff={canManageStaff}
+                        canSuspend={canSuspend}
+                      />
                     </td>
                   </tr>
                 );
@@ -319,7 +335,10 @@ export default async function AdminUsersPage({
         </div>
       </div>
 
-      {/* Activity tracking: recent sign-ins + live page visits */}
+      {/* Activity tracking: recent sign-ins + live page visits.
+          SUPER_ADMIN only — this is behavioural surveillance (which user
+          browsed which URL, and when). No support or ops task needs it. */}
+      {canSeeActivity && (
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* User Sign-Ins & Status */}
         <div className="flex flex-col overflow-hidden rounded-xl border border-[#bec9c0] bg-white shadow-sm">
@@ -393,6 +412,7 @@ export default async function AdminUsersPage({
           </div>
         </div>
       </div>
+      )}
 
       {/* Metric cards */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
