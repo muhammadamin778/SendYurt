@@ -1,3 +1,7 @@
+import Link from "next/link";
+import { exportOperationsReport } from "@/app/actions/admin-export";
+import { ExportCsvButton } from "@/components/admin/ExportCsvButton";
+import { IllustrativeTag } from "@/components/admin/IllustrativeTag";
 import { setRequestLocale } from "next-intl/server";
 import { toMinor, ZERO, type Minor } from "@/lib/money";
 import { formatMoney } from "@/lib/format";
@@ -13,8 +17,17 @@ function Icon({ d, className = "h-5 w-5" }: { d: string; className?: string }) {
 
 const CARD = "rounded-xl border border-[#bec9c0] bg-white";
 
+/** Chip styling per transaction state, matching the transactions monitor. */
+const FEED_STATUS: Record<string, { label: string; chip: string }> = {
+  COMPLETED: { label: "COMPLETED", chip: "bg-[#006c49]/10 text-[#006c49]" },
+  PENDING: { label: "PENDING", chip: "bg-[#fed65b]/40 text-[#745c00]" },
+  FAILED: { label: "FAILED", chip: "bg-[#ba1a1a]/10 text-[#ba1a1a]" },
+  DISPUTED: { label: "DISPUTED", chip: "bg-[#772f2c]/10 text-[#772f2c]" },
+  REVERSED: { label: "REVERSED", chip: "bg-[#bec9c0]/40 text-[#3f4943]" },
+};
+
 interface Corridor { src: string; volume: Minor; count: number }
-interface RecentTx { id: string; type: string; amount: Minor; currency: string; date: Date; sourceCurrency: string | null }
+interface RecentTx { id: string; type: string; status: string; amount: Minor; currency: string; date: Date; sourceCurrency: string | null }
 
 export default async function AdminDashboardPage({ params: { locale } }: { params: { locale: string } }) {
   setRequestLocale(locale);
@@ -42,7 +55,7 @@ export default async function AdminDashboardPage({ params: { locale } }: { param
       readPrisma.transaction.findMany({
         orderBy: { date: "desc" },
         take: 4,
-        select: { id: true, type: true, amount: true, currency: true, date: true, sourceCurrency: true },
+        select: { id: true, type: true, status: true, amount: true, currency: true, date: true, sourceCurrency: true },
       }),
     ]);
     userCount = uc;
@@ -83,10 +96,11 @@ export default async function AdminDashboardPage({ params: { locale } }: { param
             <Icon d="M7 3v4M17 3v4M3 9h18M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z" className="h-[18px] w-[18px]" />
             <span className="text-[12px] font-semibold uppercase tracking-[0.05em]">Last 24 Hours</span>
           </div>
-          <button type="button" className="flex items-center gap-2 rounded-lg border border-[#bec9c0] bg-[#f8f9fa] px-3 py-1.5 text-[#191c1d] transition-all hover:border-[#006c49] hover:bg-[#edeeef]">
-            <Icon d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" className="h-[18px] w-[18px]" />
-            <span className="text-[12px] font-semibold uppercase tracking-[0.05em]">Export Report</span>
-          </button>
+          <ExportCsvButton
+            action={exportOperationsReport}
+            label="Export Report"
+            className="flex items-center gap-2 rounded-lg border border-[#bec9c0] bg-[#f8f9fa] px-3 py-1.5 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#191c1d] transition-all hover:border-[#006c49] hover:bg-[#edeeef] disabled:opacity-60"
+          />
         </div>
       </div>
 
@@ -127,7 +141,7 @@ export default async function AdminDashboardPage({ params: { locale } }: { param
                 <span className="text-[11px] font-bold text-[#15803d]">All Nodes Operational</span>
               </div>
             )}
-            {!m.real && <p className="mt-2 text-[10px] italic text-[#6f7a72]">Illustrative</p>}
+            {!m.real && <IllustrativeTag className="mt-2" />}
           </div>
         ))}
       </div>
@@ -141,10 +155,7 @@ export default async function AdminDashboardPage({ params: { locale } }: { param
               <span className="text-[#006c49]"><Icon d="M12 3a9 9 0 100 18 9 9 0 000-18zM3 12h18M12 3c2.5 2.5 4 6 4 9s-1.5 6.5-4 9c-2.5-2.5-4-6-4-9s1.5-6.5 4-9z" /></span>
               Global Remittance Hub
             </h4>
-            <div className="flex gap-1 rounded-lg bg-[#edeeef] p-1">
-              <button type="button" className="rounded bg-white px-3 py-1 text-[12px] font-bold text-[#005136] shadow-sm">Interactive Map</button>
-              <button type="button" className="rounded px-3 py-1 text-[12px] font-semibold text-[#3f4943] transition-colors hover:bg-white/40">Matrix View</button>
-            </div>
+            <IllustrativeTag />
           </div>
           <div className="relative flex-1 overflow-hidden bg-gradient-to-br from-[#0b3b2a] via-[#00352a] to-[#0b1220]">
             <div aria-hidden className="pointer-events-none absolute -right-16 top-1/4 h-72 w-72 rounded-full bg-[#4edea3]/10 blur-3xl" />
@@ -186,7 +197,7 @@ export default async function AdminDashboardPage({ params: { locale } }: { param
                 <span className="text-[#006c49]"><Icon d="M4 20V10M10 20V4M16 20v-6M22 20H2" /></span>
                 Activity Feed
               </h4>
-              <span className="text-[10px] font-bold uppercase text-[#6f7a72]">Live Updates</span>
+              <span className="text-[10px] font-bold uppercase text-[#6f7a72]">Latest</span>
             </div>
             <div className="flex-1 space-y-4 overflow-y-auto p-4">
               {recent.length === 0 && <p className="text-[13px] text-[#6f7a72]">No recent activity.</p>}
@@ -201,14 +212,21 @@ export default async function AdminDashboardPage({ params: { locale } }: { param
                       <span className="text-[10px] text-[#6f7a72]">{new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(tx.date)}</span>
                     </div>
                     <p className="text-[12px] text-[#3f4943]">{tx.sourceCurrency ? `${tx.sourceCurrency} → UZS` : "Ledger"} · {formatMoney(tx.amount, tx.currency, "en")}</p>
-                    <span className="mt-1 inline-block rounded bg-[#006c49]/10 px-2 py-0.5 text-[10px] font-bold text-[#006c49]">COMPLETED</span>
+                    {/* The real state — this chip used to read COMPLETED on
+                        every row, so a failed or reversed transfer looked fine. */}
+                    <span className={`mt-1 inline-block rounded px-2 py-0.5 text-[10px] font-bold ${FEED_STATUS[tx.status]?.chip ?? FEED_STATUS.PENDING.chip}`}>
+                      {FEED_STATUS[tx.status]?.label ?? tx.status}
+                    </span>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="border-t border-[#bec9c0] p-3 text-center text-[12px] font-bold uppercase tracking-[0.05em] text-[#006c49]">
+            <Link
+              href={`/${locale}/admin/settings`}
+              className="border-t border-[#bec9c0] p-3 text-center text-[12px] font-bold uppercase tracking-[0.05em] text-[#006c49] transition-colors hover:bg-[#006c49]/5"
+            >
               View Detailed Audit Log
-            </div>
+            </Link>
           </div>
 
           {/* Network status — illustrative */}
@@ -229,7 +247,7 @@ export default async function AdminDashboardPage({ params: { locale } }: { param
                 </div>
               ))}
             </div>
-            <p className="mt-4 text-[10px] italic text-white/40">Illustrative — no live infra feed wired.</p>
+            <IllustrativeTag className="mt-4 border-white/20 bg-white/10 text-white/70" />
           </div>
         </div>
       </div>
@@ -245,7 +263,7 @@ export default async function AdminDashboardPage({ params: { locale } }: { param
             <table className="w-full text-left text-[13px]">
               <thead>
                 <tr className="border-b border-[#bec9c0] bg-[#f3f4f5]">
-                  {["Corridor", "Route Path", "Transfers", "Volume", "Reliability", ""].map((h) => (
+                  {["Corridor", "Route Path", "Transfers", "Volume", "Volume share", ""].map((h) => (
                     <th key={h} className="px-4 py-3 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#6f7a72]">{h}</th>
                   ))}
                 </tr>

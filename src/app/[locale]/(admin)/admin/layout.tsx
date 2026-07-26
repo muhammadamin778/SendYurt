@@ -35,7 +35,8 @@ export default async function AdminLayout({
   return (
     <div className={`admin-shell ${inter.className} min-h-screen bg-[#f8f9fa] text-[#191c1d] antialiased`}>
       <AdminSidebar locale={locale} />
-      <AdminTopbar name={admin.name || admin.email} initial={initial} role="Super Admin" />
+      {/* AdminRole only has USER | ADMIN — there is no super-admin tier. */}
+      <AdminTopbar name={admin.name || admin.email} initial={initial} role="Administrator" locale={locale} />
       <main className="ml-[260px] min-h-screen p-6 pt-[72px]">{children}</main>
       <VisitLogger />
     </div>
