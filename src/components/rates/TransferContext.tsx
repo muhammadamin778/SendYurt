@@ -11,6 +11,11 @@ export type PlainCard = {
   holderName: string;
   /** Stored-value balance in UZS MINOR units (tiyin). */
   balance: Minor;
+  /**
+   * True for cards saved via Stripe: they carry no stored balance and are
+   * charged for real on send, so the balance guard doesn't apply to them.
+   */
+  chargeOnSend?: boolean;
 };
 
 type TransferCtx = {
@@ -53,17 +58,22 @@ export function TransferProvider({
 
   const value = useMemo<TransferCtx>(() => {
     const selectedCard = cards.find((c) => c.id === selectedCardId) ?? null;
-    // With no card selected (including the "no linked cards" case) balance is
-    // null, which the rules treat as `no_card` — so the Confirm button is
-    // blocked instead of silently sending unfunded money.
-    const decision = evaluateFunding({ balance: selectedCard?.balance ?? null, cost: uzsCost });
+    // Stripe cards are charged on send (no stored balance), so they always pass
+    // the funding gate. Otherwise: with no card selected (including the "no
+    // linked cards" case) balance is null, which the rules treat as `no_card`
+    // — so the Confirm button is blocked instead of silently sending unfunded
+    // money.
+    const chargeOnSend = selectedCard?.chargeOnSend ?? false;
+    const decision: FundingDecision = chargeOnSend
+      ? { ok: true }
+      : evaluateFunding({ balance: selectedCard?.balance ?? null, cost: uzsCost });
     return {
       cards,
       uzsCost,
       selectedCardId,
       setSelectedCardId,
       selectedCard,
-      insufficient: selectedCard != null && selectedCard.balance < uzsCost,
+      insufficient: selectedCard != null && !chargeOnSend && selectedCard.balance < uzsCost,
       blockReason: decision.ok ? null : decision.reason,
       canSubmit: decision.ok,
     };

@@ -204,6 +204,13 @@ export const addCardSchema = z.object({
   brand: z.enum(CARD_BRANDS).default("card"),
 });
 
+// Persisting a card tokenized by Stripe Elements. The raw card never reaches
+// us — only Stripe's PaymentMethod id + an optional cardholder name.
+export const saveStripeCardSchema = z.object({
+  paymentMethodId: z.string().trim().startsWith("pm_"),
+  holderName: z.string().trim().max(80).optional(),
+});
+
 export const contributionSchema = z.object({
   idempotencyKey,
   goalId: z.string().min(1),

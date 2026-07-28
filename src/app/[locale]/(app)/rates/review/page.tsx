@@ -82,7 +82,7 @@ export default async function ReviewTransferPage({
     prisma.card.findMany({
       where: { userId: user.id },
       orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }],
-      select: { id: true, brand: true, last4: true, holderName: true, balance: true },
+      select: { id: true, brand: true, last4: true, holderName: true, balance: true, stripePaymentMethodId: true },
     }),
   ]);
 
@@ -98,6 +98,8 @@ export default async function ReviewTransferPage({
     last4: c.last4,
     holderName: c.holderName,
     balance: toMinor(c.balance),
+    // Stripe cards are charged on send — they skip the stored-balance guard.
+    chargeOnSend: c.stripePaymentMethodId != null,
   }));
   // Already rounded once inside computeQuotes — no second rounding here.
   const uzsCost = quote!.receivedUzs;

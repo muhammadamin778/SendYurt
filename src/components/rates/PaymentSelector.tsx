@@ -35,8 +35,10 @@ export function PaymentSelector() {
     <div className="space-y-3">
       {cards.map((c) => {
         const active = c.id === selectedCardId;
-        const empty = c.balance <= 0;
-        const insufficient = c.balance < uzsCost;
+        const cos = c.chargeOnSend ?? false;
+        // Stripe cards are charged on send — no stored balance to be empty/short.
+        const empty = !cos && c.balance <= 0;
+        const insufficient = !cos && c.balance < uzsCost;
         return (
           <button
             type="button"
@@ -59,7 +61,7 @@ export function PaymentSelector() {
                 )}
               </span>
               <span className={`block text-[13px] ${insufficient ? "font-semibold text-[#b91c1c]" : "text-[#64748b]"}`}>
-                {t("review.cardBalance", { amount: formatMoney(c.balance, "UZS", locale) })}
+                {cos ? t("review.chargedOnSend") : t("review.cardBalance", { amount: formatMoney(c.balance, "UZS", locale) })}
               </span>
             </span>
             <svg viewBox="0 0 24 24" className={`h-6 w-6 shrink-0 ${active ? "text-[#0a7c53]" : "text-[#94a3b8]"}`} fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">

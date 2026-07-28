@@ -8,6 +8,7 @@ import { getUzsRates } from "@/lib/fx";
 import { prisma } from "@/lib/prisma";
 import { toBigInt, toMinor, type Minor } from "@/lib/money";
 import { computeQuotes } from "@/lib/rates";
+import { computePlatformFee, getStripe, PLATFORM_FEE_BPS } from "@/lib/stripe";
 import { recordCreation } from "@/lib/transaction-events";
 import { remittanceSchema } from "@/lib/validators";
 
@@ -82,9 +83,94 @@ export async function createRemittance(input: unknown): Promise<ActionResult> {
 
     const found = await prisma.card.findFirst({
       where: { id: cardId, userId: dbUser.id },
-      select: { id: true, balance: true },
+      select: { id: true, balance: true, stripeCustomerId: true, stripePaymentMethodId: true },
     });
     if (!found) return fail("card_not_found");
+
+    // The recipient is the household's receiver, if one exists. Needed by both
+    // the Stripe charge-on-send path and the stored-balance path below.
+    const receiver = await prisma.user.findFirst({
+      where: { householdId: dbUser.householdId, role: "RECEIVER" },
+      orderBy: { createdAt: "asc" },
+      select: { id: true },
+    });
+
+    // ── Stripe card → charge on send (real PaymentIntent) ────────────────────
+    // A card saved via Stripe Elements has no stored balance; instead we charge
+    // it for the send amount now. The platform commission is recorded for
+    // reporting (a plain charge collects the full amount to the platform; the
+    // payout to the family is a separate, off-Stripe leg).
+    if (found.stripePaymentMethodId) {
+      const chargeAmount = Number(toBigInt(amount)); // source-currency minor units
+      const platformFee = computePlatformFee(chargeAmount);
+      try {
+        const stripe = getStripe();
+        const intent = await stripe.paymentIntents.create(
+          {
+            amount: chargeAmount,
+            currency: currency.toLowerCase(),
+            customer: found.stripeCustomerId ?? undefined,
+            payment_method: found.stripePaymentMethodId,
+            off_session: true,
+            confirm: true,
+            description: `SendYurt remittance via ${provider.name}`,
+            metadata: {
+              platform_user_id: dbUser.id,
+              provider: provider.slug,
+              uzs_received_minor: String(toBigInt(uzsCost)),
+              platform_fee_minor: String(platformFee),
+              platform_fee_bps: String(PLATFORM_FEE_BPS),
+            },
+          },
+          idempotencyKey ? { idempotencyKey: `pi_${idempotencyKey}` } : undefined,
+        );
+
+        if (intent.status !== "succeeded") {
+          // e.g. the saved card needs 3-D Secure, which can't be done off-session.
+          return fail(intent.status === "requires_action" ? "authentication_required" : "charge_failed");
+        }
+      } catch (e) {
+        const code = (e as { code?: string; type?: string }).code;
+        console.error("stripe charge-on-send failed", e);
+        return fail(code === "card_declined" ? "card_declined" : "charge_failed");
+      }
+
+      // Charge succeeded — record the remittance (no balance debit).
+      try {
+        await prisma.$transaction(async (tx) => {
+          const created = await tx.transaction.create({
+            data: {
+              householdId: dbUser.householdId,
+              type: "REMITTANCE",
+              senderId: dbUser.id,
+              receiverId: receiver?.id ?? null,
+              providerId: provider.id,
+              amount: toBigInt(uzsCost),
+              currency: "UZS",
+              sourceAmount: toBigInt(amount),
+              sourceCurrency: currency,
+              date: new Date(),
+              status: "COMPLETED",
+              idempotencyKey: idempotencyKey ?? null,
+            },
+            select: { id: true, status: true },
+          });
+          await recordCreation(tx, created.id, created.status, dbUser.id);
+        });
+      } catch (e) {
+        // A replay lost the unique-key race — the original already recorded.
+        if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+          return { ok: true };
+        }
+        throw e;
+      }
+
+      revalidatePath("/[locale]/(app)/dashboard", "page");
+      revalidatePath("/[locale]/(app)/history", "page");
+      revalidatePath("/[locale]/(app)/trust", "page");
+      return { ok: true };
+    }
+
     const balance = toMinor(found.balance);
 
     // Same rules the client used to disable the button — re-evaluated here,
@@ -98,13 +184,6 @@ export async function createRemittance(input: unknown): Promise<ActionResult> {
       return fail(decision.reason);
     }
     const card = { id: found.id, balance };
-
-    // The recipient is the household's receiver, if one exists.
-    const receiver = await prisma.user.findFirst({
-      where: { householdId: dbUser.householdId, role: "RECEIVER" },
-      orderBy: { createdAt: "asc" },
-      select: { id: true },
-    });
 
     try {
       await prisma.$transaction(async (tx) => {

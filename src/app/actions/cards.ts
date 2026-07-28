@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { getAppSession } from "@/lib/supabase/app-session";
 import { HOME_CURRENCY, parseMoney, toBigInt, toMinor, type Minor } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
-import { addCardSchema } from "@/lib/validators";
+import { getStripe } from "@/lib/stripe";
+import { addCardSchema, saveStripeCardSchema } from "@/lib/validators";
 
 export type PlainCard = {
   id: string;
@@ -69,6 +70,77 @@ export async function addCard(input: unknown): Promise<AddCardResult> {
     return { ok: true, card: { ...card, balance: toMinor(card.balance) } };
   } catch (e) {
     console.error("addCard failed", e);
+    return { ok: false, error: "server" };
+  }
+}
+
+// Stripe's card.brand → our internal brand slug.
+const STRIPE_BRAND: Record<string, string> = {
+  visa: "visa",
+  mastercard: "mc",
+  amex: "amex",
+  discover: "discover",
+  jcb: "jcb",
+  unionpay: "unionpay",
+  diners: "diners",
+};
+
+/**
+ * Persists a card that was tokenized by Stripe Elements. The full card lives at
+ * Stripe; we retrieve the PaymentMethod to store only the masked details plus
+ * the Stripe references. A card saved this way is charged on send (real Stripe
+ * PaymentIntent) rather than debiting a stored balance.
+ */
+export async function saveStripeCard(input: unknown): Promise<AddCardResult> {
+  try {
+    const session = await getAppSession();
+    if (!session?.user?.id) return { ok: false, error: "unauthorized" };
+
+    const parsed = saveStripeCardSchema.safeParse(input);
+    if (!parsed.success) return { ok: false, error: "validation" };
+    const { paymentMethodId, holderName } = parsed.data;
+
+    const stripe = getStripe();
+    const pm = await stripe.paymentMethods.retrieve(paymentMethodId);
+    if (pm.type !== "card" || !pm.card) return { ok: false, error: "invalid_card" };
+
+    const customerId = typeof pm.customer === "string" ? pm.customer : (pm.customer?.id ?? null);
+    const brand = STRIPE_BRAND[pm.card.brand] ?? "card";
+    const last4 = pm.card.last4 ?? "0000";
+    const expiry = `${String(pm.card.exp_month).padStart(2, "0")}/${String(pm.card.exp_year).slice(-2)}`;
+    const name = holderName?.trim() || pm.billing_details?.name || session.user.name || "Cardholder";
+
+    const isFirst = (await prisma.card.count({ where: { userId: session.user.id } })) === 0;
+
+    const card = await prisma.card.create({
+      data: {
+        userId: session.user.id,
+        brand,
+        last4,
+        holderName: name,
+        expiry,
+        // Stripe cards are charged on send — no stored balance.
+        balance: 0n,
+        currency: "USD",
+        isDefault: isFirst,
+        stripeCustomerId: customerId,
+        stripePaymentMethodId: paymentMethodId,
+      },
+      select: {
+        id: true,
+        brand: true,
+        last4: true,
+        holderName: true,
+        expiry: true,
+        balance: true,
+        isDefault: true,
+      },
+    });
+
+    revalidatePath("/[locale]/(app)/dashboard", "page");
+    return { ok: true, card: { ...card, balance: toMinor(card.balance) } };
+  } catch (e) {
+    console.error("saveStripeCard failed", e);
     return { ok: false, error: "server" };
   }
 }

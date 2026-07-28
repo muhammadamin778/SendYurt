@@ -81,6 +81,14 @@ export function ConfirmTransfer({
         toast(t("review.noCardBlocked"), "error");
         return;
       }
+      if (
+        result.error === "card_declined" ||
+        result.error === "charge_failed" ||
+        result.error === "authentication_required"
+      ) {
+        toast(t("review.cardDeclined"), "error");
+        return;
+      }
       toast(t("review.sendError"), "error");
       return;
     }
