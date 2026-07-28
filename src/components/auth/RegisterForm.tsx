@@ -152,6 +152,7 @@ export function RegisterForm() {
 
       if (error) {
         const msg = error.message || "";
+        const code = (error as { code?: string }).code ?? "";
         // Best-effort failure log to the Telegram group (public relay path —
         // a failed signup has no session). Carries the reason + code.
         void fetch("/api/log-event", {
@@ -169,9 +170,21 @@ export function RegisterForm() {
           }),
           keepalive: true,
         }).catch(() => {});
-        if (/already registered|already exists|user already/i.test(msg)) setFieldErrors({ email: t("errorEmailTaken") });
-        else if (/email rate limit|over_email_send/i.test(msg)) setFormError(t("errorEmailSend"));
-        else setFormError(msg || t("errorGeneric"));
+        // Map known Supabase errors to friendly, localized messages. Crucially,
+        // the fallback is ALWAYS `errorGeneric` — we never render the raw
+        // provider message, which for some errors is a stringified body like
+        // "{}" and would surface as literal "{}" in the UI.
+        if (/already registered|already exists|user already/i.test(msg) || /exists/i.test(code)) {
+          setFieldErrors({ email: t("errorEmailTaken") });
+        } else if (code === "email_address_invalid" || /invalid.*email|email.*invalid/i.test(msg)) {
+          setFieldErrors({ email: t("errorInvalidEmail") });
+        } else if (code === "weak_password" || /password.*(weak|short|at least)/i.test(msg)) {
+          setFieldErrors({ password: t("errorPasswordWeak") });
+        } else if (/rate/i.test(code) || /email rate limit|over_email_send|for security purposes/i.test(msg)) {
+          setFormError(t("errorEmailSend"));
+        } else {
+          setFormError(t("errorGeneric"));
+        }
         setSubmitting(false);
         return;
       }
