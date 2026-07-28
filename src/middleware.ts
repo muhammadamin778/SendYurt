@@ -6,7 +6,11 @@ import { routing } from "@/i18n/routing";
 const intlMiddleware = createIntlMiddleware(routing);
 
 // Path segments (after the locale prefix) that require a session.
-const PROTECTED = ["dashboard", "budget", "rates", "trust", "household", "welcome", "summary", "help", "profile", "admin", "wallet"];
+// Segments that require a session. NOTE this is authentication only —
+// middleware runs on the Edge runtime with no Prisma access, so it cannot read
+// a role. Authorization for the staff panels is enforced by `requireStaff` in
+// their layouts and by `assertPermission` in every server action.
+const PROTECTED = ["dashboard", "budget", "rates", "trust", "household", "welcome", "summary", "help", "profile", "admin", "support-desk", "wallet"];
 // Auth pages a logged-in user should be bounced away from.
 const AUTH_PAGES = ["login", "register", "forgot-password", "reset-password"];
 

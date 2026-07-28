@@ -3,8 +3,8 @@ import { toMinor, ZERO, type Minor } from "@/lib/money";
 import { IllustrativeTag } from "@/components/admin/IllustrativeTag";
 import { TransactionRowActions } from "@/components/admin/TransactionRowActions";
 import { formatMoney } from "@/lib/format";
-import { isTransactionState, TRANSACTION_STATES } from "@/lib/transaction-state";
-import { requireAdmin } from "@/lib/admin";
+import { isTransactionState, TRANSACTION_STATES, type TransactionEventName } from "@/lib/transaction-state";
+import { requireStaff } from "@/lib/admin";
 import { paginate, parsePageParams } from "@/lib/pagination";
 import { readPrisma } from "@/lib/prisma-read";
 
@@ -34,7 +34,15 @@ export default async function AdminTransactionsPage({
   searchParams: { page?: string; status?: string; provider?: string; corridor?: string; q?: string };
 }) {
   setRequestLocale(locale);
-  await requireAdmin();
+  const staff = await requireStaff("transaction.view");
+  // Map permissions onto the state-machine events this viewer may trigger.
+  // REVERSE and RESOLVE_UPHELD both move money back, so they need
+  // `transaction.reverse` — which SUPPORT does not hold.
+  const allowedEvents: TransactionEventName[] = [
+    ...(staff.can("transaction.confirm") ? (["CONFIRM", "FAIL"] as const) : []),
+    ...(staff.can("transaction.dispute") ? (["DISPUTE", "RESOLVE_VALID"] as const) : []),
+    ...(staff.can("transaction.reverse") ? (["REVERSE", "RESOLVE_UPHELD"] as const) : []),
+  ];
 
   const params = parsePageParams({ page: searchParams.page }, { defaultSize: 10 });
   // Whitelist derived from the state machine so a new state can't be
@@ -222,7 +230,7 @@ export default async function AdminTransactionsPage({
                     <td className="p-4 text-[13px] text-[#3f4943]">{timeAgo(t.date)}</td>
                     <td className="p-4">
                       {/* Only the transitions this state permits are offered. */}
-                      <TransactionRowActions id={t.id} status={t.status} />
+                      <TransactionRowActions id={t.id} status={t.status} allowed={allowedEvents} />
                     </td>
                   </tr>
                 );

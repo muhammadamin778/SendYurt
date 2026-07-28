@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { assertPermission } from "@/lib/admin";
 import { clientIp, LIMITS, rateLimit } from "@/lib/rate-limit";
 
 /**
@@ -24,6 +25,16 @@ import { clientIp, LIMITS, rateLimit } from "@/lib/rate-limit";
  * confirmed healthy.
  */
 export async function GET(req: Request) {
+  // Staff-only. This endpoint was previously PUBLIC: it disclosed which
+  // integration secrets are configured (plus a masked chat id) and `?probe=1`
+  // would send a real Telegram message on behalf of the deployment — an
+  // unauthenticated write to an external system.
+  try {
+    await assertPermission("settings.view");
+  } catch {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  }
+
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_LOG_CHAT_ID;
 

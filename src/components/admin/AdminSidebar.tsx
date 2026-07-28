@@ -4,6 +4,7 @@ import { clsx } from "clsx";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import type { Permission } from "@/lib/permissions";
 import { createBrowserSupabase } from "@/lib/supabase/client";
 
 const ICON = {
@@ -24,18 +25,30 @@ function Glyph({ d, className = "h-5 w-5" }: { d: string; className?: string }) 
   );
 }
 
-export function AdminSidebar({ locale }: { locale: string }) {
+export function AdminSidebar({
+  locale,
+  permissions,
+}: {
+  locale: string;
+  /** The viewer's permissions — nav items they can't use aren't rendered. */
+  permissions: readonly Permission[];
+}) {
   const pathname = usePathname();
   const [signingOut, setSigningOut] = useState(false);
   const base = `/${locale}/admin`;
 
-  const NAV = [
-    { label: "Dashboard", icon: ICON.dashboard, href: base, ready: true },
-    { label: "Users", icon: ICON.users, href: `${base}/users`, ready: true },
-    { label: "Transactions", icon: ICON.tx, href: `${base}/transactions`, ready: true },
-    { label: "Support", icon: ICON.support, href: `${base}/support`, ready: true },
-    { label: "Settings", icon: ICON.settings, href: `${base}/settings`, ready: true },
-  ];
+  // Each destination declares the permission it needs; the same permission
+  // guards the page server-side, so this filter can never open a door.
+  const held = new Set(permissions);
+  const NAV = (
+    [
+      { label: "Dashboard", icon: ICON.dashboard, href: base, ready: true, permission: "transaction.view" },
+      { label: "Users", icon: ICON.users, href: `${base}/users`, ready: true, permission: "customer.view" },
+      { label: "Transactions", icon: ICON.tx, href: `${base}/transactions`, ready: true, permission: "transaction.view" },
+      { label: "Support", icon: ICON.support, href: `${base}/support`, ready: true, permission: "ticket.view" },
+      { label: "Settings", icon: ICON.settings, href: `${base}/settings`, ready: true, permission: "settings.view" },
+    ] satisfies Array<{ label: string; icon: string; href: string; ready: boolean; permission: Permission }>
+  ).filter((item) => held.has(item.permission));
 
   return (
     <aside className="fixed left-0 top-0 z-50 flex h-full w-[260px] flex-col border-r border-[#bec9c0] bg-[#f3f4f5] p-4">

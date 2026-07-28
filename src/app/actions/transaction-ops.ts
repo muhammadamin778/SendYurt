@@ -2,11 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { assertAdmin } from "@/lib/admin";
+import { assertPermission } from "@/lib/admin";
 import { logAudit, notifyAudit, type AuditAction } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import { isValidReasonCode } from "@/lib/reason-codes";
 import { recordTransactionEvent } from "@/lib/transaction-events";
+import { can, type Permission } from "@/lib/permissions";
 import {
   isTransactionEvent,
   transition,
@@ -39,6 +40,24 @@ const schema = z.object({
   note: z.string().trim().max(280).optional(),
 });
 
+/**
+ * Which permission each transition requires.
+ *
+ * The split that matters: REVERSE and RESOLVE_UPHELD both land the transaction
+ * in REVERSED, which credits a card back or decrements a savings goal — real
+ * money movement. Those need `transaction.reverse`, which SUPPORT does not
+ * hold. Confirming, failing and disputing only change state, so support staff
+ * can do them while working a ticket.
+ */
+const PERMISSION_FOR: Record<TransactionEventName, Permission> = {
+  CONFIRM: "transaction.confirm",
+  FAIL: "transaction.confirm",
+  DISPUTE: "transaction.dispute",
+  RESOLVE_VALID: "transaction.dispute",
+  RESOLVE_UPHELD: "transaction.reverse",
+  REVERSE: "transaction.reverse",
+};
+
 /** Which audit action records which transition. */
 const AUDIT_FOR: Record<TransactionEventName, AuditAction> = {
   CONFIRM: "TRANSACTION_CONFIRM",
@@ -51,7 +70,9 @@ const AUDIT_FOR: Record<TransactionEventName, AuditAction> = {
 
 export async function transitionTransaction(input: unknown): Promise<ActionResult> {
   try {
-    const { adminId } = await assertAdmin();
+    // Coarse check first, so an unauthorised caller is rejected before any of
+    // their input is processed. Every staff tier holds `transaction.view`.
+    const { adminId, role } = await assertPermission("transaction.view");
 
     const parsed = schema.safeParse(input);
     if (!parsed.success) return fail("validation");
@@ -59,6 +80,11 @@ export async function transitionTransaction(input: unknown): Promise<ActionResul
 
     if (!isTransactionEvent(event)) return fail("unknown_event");
     if (!isValidReasonCode(event, reasonCode)) return fail("invalid_reason");
+
+    // Fine-grained check: the permission depends on WHICH transition this is,
+    // so it can only run once the event is known. REVERSE / RESOLVE_UPHELD
+    // move money and need `transaction.reverse`.
+    if (!can(role, PERMISSION_FOR[event])) return fail("forbidden");
 
     const auditAction = AUDIT_FOR[event];
 

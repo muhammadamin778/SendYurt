@@ -113,11 +113,23 @@ model Card {
   @@index([userId])
 }
 
-// Platform admin access. A real Postgres enum (the app moved off SQLite),
+// Platform staff tier. A real Postgres enum (the app moved off SQLite),
 // giving the admin layer compile-time type safety end to end.
+//
+// These are BUNDLES of permissions, not a linear rank — the permissions each
+// one carries are defined in src/lib/permissions.ts, which is the single
+// source of truth for every authorization decision.
+//
+//   USER        — not staff; no panel access at all
+//   SUPPORT     — help customers: masked PII, read transactions, work tickets.
+//                 Cannot move money, export in bulk, suspend, or see settings.
+//   ADMIN       — operations: reversals, exports, suspensions, unmasked PII.
+//   SUPER_ADMIN — additionally system settings and staff role management.
 enum AdminRole {
   USER
+  SUPPORT
   ADMIN
+  SUPER_ADMIN
 }
 
 // Append-only audit trail for privileged admin actions: who did what, to

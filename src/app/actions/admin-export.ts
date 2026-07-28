@@ -1,6 +1,6 @@
 "use server";
 
-import { assertAdmin } from "@/lib/admin";
+import { assertPermission } from "@/lib/admin";
 import { logAudit, notifyAudit } from "@/lib/audit";
 import { formatMoney } from "@/lib/format";
 import { toMinor } from "@/lib/money";
@@ -45,7 +45,7 @@ function stamp(): string {
  */
 export async function exportUsersCsv(input: unknown): Promise<ExportResult> {
   try {
-    const { adminId } = await assertAdmin();
+    const { adminId } = await assertPermission("customer.export");
 
     const status = typeof input === "string" ? input : undefined;
     const where =
@@ -106,7 +106,7 @@ export async function exportUsersCsv(input: unknown): Promise<ExportResult> {
  */
 export async function exportOperationsReport(): Promise<ExportResult> {
   try {
-    const { adminId } = await assertAdmin();
+    const { adminId } = await assertPermission("transaction.export");
 
     const [corridors, recent] = await Promise.all([
       readPrisma.transaction.groupBy({

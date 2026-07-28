@@ -34,14 +34,27 @@ const TONE: Partial<Record<TransactionEventName, string>> = {
   RESOLVE_UPHELD: "text-[#ba1a1a] hover:bg-[#ba1a1a]/10",
 };
 
-export function TransactionRowActions({ id, status }: { id: string; status: string }) {
+export function TransactionRowActions({
+  id,
+  status,
+  allowed,
+}: {
+  id: string;
+  status: string;
+  /**
+   * Events this viewer may perform. Intersected with what the STATE permits,
+   * so a support agent never sees Reverse. The server re-checks both.
+   */
+  allowed: readonly TransactionEventName[];
+}) {
   const router = useRouter();
   const [pending, setPending] = useState<TransactionEventName | null>(null);
   const [reasonCode, setReasonCode] = useState("");
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const events = availableEvents(status);
+  const permitted = new Set(allowed);
+  const events = availableEvents(status).filter((e) => permitted.has(e));
   if (events.length === 0) {
     return <span className="text-[11px] uppercase tracking-wide text-[#6f7a72]">—</span>;
   }
@@ -67,7 +80,12 @@ export function TransactionRowActions({ id, status }: { id: string; status: stri
       toast(`${LABEL[pending]} applied.`);
       router.refresh();
     } else {
-      toast(`Could not apply: ${result.error}`, "error");
+      toast(
+        result.error === "forbidden"
+          ? "You don't have permission for that action."
+          : `Could not apply: ${result.error}`,
+        "error",
+      );
     }
   }
 
