@@ -17,7 +17,8 @@ function fail(error: string): ActionResult {
 function toResult(e: unknown): ActionResult {
   if (e instanceof Error) {
     if (e.message === "unauthorized" || e.message === "forbidden" || e.message === "not_found" ||
-      e.message === "last_super_admin" || e.message === "self" || e.message === "noop") {
+      e.message === "last_super_admin" || e.message === "self" || e.message === "noop" ||
+      e.message === "above_own_tier") {
       return fail(e.message);
     }
   }
@@ -25,24 +26,51 @@ function toResult(e: unknown): ActionResult {
   return fail("server");
 }
 
-const userIdSchema = z.object({ userId: z.string().min(1) });
 const suspendSchema = z.object({ userId: z.string().min(1), suspended: z.boolean() });
 
+/** Privilege ordering — used only to stop a grant above the actor's own tier. */
+const RANK: Record<AdminRole, number> = {
+  USER: 0,
+  SUPPORT: 1,
+  ADMIN: 2,
+  SUPER_ADMIN: 3,
+};
+
+const setRoleSchema = z.object({
+  userId: z.string().min(1),
+  role: z.enum(["USER", "SUPPORT", "ADMIN", "SUPER_ADMIN"]),
+});
+
 /**
- * Promote a user to ADMIN.
+ * Assign a staff tier explicitly.
  *
- * Security: `assertAdmin()` re-checks the caller's role against the database
- * BEFORE any write — the session's cached role is never trusted for a
- * privileged mutation. The role change and its audit entry run in one
- * `$transaction`, so they commit or roll back together (requirement: no
- * promotion without a trail, no trail without a promotion).
+ * Replaces the old promote/demote pair, which was a boolean toggle over a
+ * four-value enum: a SUPPORT user rendered "promote" and jumped straight to
+ * ADMIN, and a SUPER_ADMIN rendered "demote" and dropped straight to USER.
+ * Neither could express "make this person support staff".
+ *
+ * Guards, in order:
+ *   • `staff.manage` — SUPER_ADMIN only.
+ *   • You cannot change your OWN tier (no self-promotion, no self-lockout).
+ *   • You cannot grant a tier above your own.
+ *   • The last active SUPER_ADMIN cannot be moved off that tier — previously
+ *     only self-demotion was blocked, so two super admins could demote each
+ *     other to zero and lock everyone out of staff management permanently.
+ *
+ * The change and its audit entry share one transaction.
  */
-export async function promoteToAdmin(input: unknown): Promise<ActionResult> {
+export async function setStaffRole(input: unknown): Promise<ActionResult> {
   try {
-    const { adminId } = await assertPermission("staff.manage");
-    const parsed = userIdSchema.safeParse(input);
+    const { adminId, role: actorRole } = await assertPermission("staff.manage");
+
+    const parsed = setRoleSchema.safeParse(input);
     if (!parsed.success) return fail("validation");
-    const { userId } = parsed.data;
+    const { userId, role } = parsed.data;
+
+    if (userId === adminId) return fail("self");
+    // Privilege escalation guard: granting a tier you don't hold yourself
+    // would let an ADMIN mint a SUPER_ADMIN and inherit it back.
+    if (RANK[role] > RANK[actorRole]) return fail("above_own_tier");
 
     await prisma.$transaction(async (tx) => {
       const target = await tx.user.findUnique({
@@ -50,48 +78,10 @@ export async function promoteToAdmin(input: unknown): Promise<ActionResult> {
         select: { id: true, adminRole: true },
       });
       if (!target) throw new Error("not_found");
-      if (target.adminRole === AdminRole.ADMIN) throw new Error("noop"); // already admin
+      if (target.adminRole === role) throw new Error("noop");
+      // You may not demote a peer who outranks you either.
+      if (RANK[target.adminRole] > RANK[actorRole]) throw new Error("above_own_tier");
 
-      await tx.user.update({ where: { id: userId }, data: { adminRole: AdminRole.ADMIN } });
-      await logAudit(tx, {
-        action: "ROLE_PROMOTION",
-        adminId,
-        targetUserId: userId,
-        targetType: "User",
-        metadata: { from: target.adminRole, to: AdminRole.ADMIN },
-      });
-    });
-
-    // After commit — never inside the transaction (see notifyAudit).
-    await notifyAudit({ action: "ROLE_PROMOTION", adminId, targetUserId: userId, targetType: "User" });
-
-    revalidatePath("/[locale]/(admin)/admin/users", "page");
-    return { ok: true };
-  } catch (e) {
-    return toResult(e);
-  }
-}
-
-/** Demote an admin back to USER (same guarded + audited + transactional shape). */
-export async function demoteFromAdmin(input: unknown): Promise<ActionResult> {
-  try {
-    const { adminId } = await assertPermission("staff.manage");
-    const parsed = userIdSchema.safeParse(input);
-    if (!parsed.success) return fail("validation");
-    const { userId } = parsed.data;
-    if (userId === adminId) return fail("self"); // an admin can't demote themselves
-
-    await prisma.$transaction(async (tx) => {
-      const target = await tx.user.findUnique({
-        where: { id: userId },
-        select: { id: true, adminRole: true },
-      });
-      if (!target) throw new Error("not_found");
-      if (target.adminRole === AdminRole.USER) throw new Error("noop");
-
-      // Never strip the last SUPER_ADMIN: self-demotion was already blocked,
-      // but two super admins could otherwise demote each other down to zero
-      // and lock everyone out of staff management permanently.
       if (target.adminRole === AdminRole.SUPER_ADMIN) {
         const remaining = await tx.user.count({
           where: { adminRole: AdminRole.SUPER_ADMIN, suspended: false },
@@ -99,18 +89,17 @@ export async function demoteFromAdmin(input: unknown): Promise<ActionResult> {
         if (remaining <= 1) throw new Error("last_super_admin");
       }
 
-      await tx.user.update({ where: { id: userId }, data: { adminRole: AdminRole.USER } });
+      await tx.user.update({ where: { id: userId }, data: { adminRole: role } });
       await logAudit(tx, {
-        action: "ROLE_DEMOTION",
+        action: "ROLE_CHANGE",
         adminId,
         targetUserId: userId,
         targetType: "User",
-        metadata: { from: target.adminRole, to: AdminRole.USER },
+        metadata: { from: target.adminRole, to: role },
       });
     });
 
-    // After commit — never inside the transaction (see notifyAudit).
-    await notifyAudit({ action: "ROLE_DEMOTION", adminId, targetUserId: userId, targetType: "User" });
+    await notifyAudit({ action: "ROLE_CHANGE", adminId, targetUserId: userId, targetType: "User" });
 
     revalidatePath("/[locale]/(admin)/admin/users", "page");
     return { ok: true };
@@ -119,12 +108,6 @@ export async function demoteFromAdmin(input: unknown): Promise<ActionResult> {
   }
 }
 
-/**
- * Suspend / un-suspend an account — the reusable "protected CRUD" pattern the
- * task describes (an `updateUserBalance` would be identical: guard → validate
- * → `$transaction` { mutate + logAudit }). Kept real: this app has no wallet
- * balance to mutate, so we toggle a genuine `suspended` flag instead.
- */
 export async function setUserSuspended(input: unknown): Promise<ActionResult> {
   try {
     const { adminId } = await assertPermission("customer.suspend");

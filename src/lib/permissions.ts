@@ -24,8 +24,6 @@ export const PERMISSIONS = [
   "customer.view",
   /** See unmasked email addresses. Absent → masked (see src/lib/mask.ts). */
   "customer.pii.view",
-  /** The page-visit tracking log: who browsed which URL, and when. */
-  "customer.activity.view",
   "customer.suspend",
   "customer.export",
   // Transactions
@@ -90,7 +88,6 @@ const ADMIN_PERMISSIONS: Permission[] = [
 
 const SUPER_ADMIN_PERMISSIONS: Permission[] = [
   ...ADMIN_PERMISSIONS,
-  "customer.activity.view",
   "settings.system.edit",
   "staff.manage",
 ];

@@ -1,29 +1,38 @@
 "use client";
 
+import type { AdminRole } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { promoteToAdmin, demoteFromAdmin, setUserSuspended } from "@/app/actions/admin";
+import { setStaffRole, setUserSuspended } from "@/app/actions/admin";
 import { toast } from "@/components/ui/toast";
+import { ROLE_LABELS } from "@/lib/permissions";
 
 /**
- * Guarded controls for a user row — promote/demote staff and suspend/unsuspend,
- * each wired to an audited server action.
+ * Guarded controls for a user row — assign a staff tier, and suspend/reinstate.
  *
- * `canManageStaff` / `canSuspend` come from the viewer's permissions and decide
- * what renders. That is presentation only: the actions call
- * `assertPermission()` server-side, so a support agent hitting the endpoint
- * directly is still refused.
+ * The tier is a real picker rather than the old promote/demote toggle, which
+ * was a boolean over a four-value enum: a SUPPORT user rendered "promote" and
+ * jumped straight to ADMIN, and a SUPER_ADMIN rendered "demote" and dropped
+ * straight to USER. Neither could express "make this person support staff".
+ *
+ * `canManageStaff` / `canSuspend` decide what renders. That is presentation
+ * only — `setStaffRole` and `setUserSuspended` call `assertPermission()`
+ * server-side, so hitting the endpoint directly is still refused.
  */
+
+/** Every assignable tier, most- to least-privileged. */
+const ASSIGNABLE: AdminRole[] = ["SUPER_ADMIN", "ADMIN", "SUPPORT", "USER"];
+
 export function UserRowActions({
   userId,
-  isAdmin,
+  currentRole,
   suspended,
   isSelf,
   canManageStaff,
   canSuspend,
 }: {
   userId: string;
-  isAdmin: boolean;
+  currentRole: AdminRole;
   suspended: boolean;
   isSelf: boolean;
   canManageStaff: boolean;
@@ -39,67 +48,81 @@ export function UserRowActions({
     if (res.ok) {
       toast(okMsg);
       router.refresh();
-    } else {
-      toast(
-        res.error === "self"
-          ? "You can't do that to your own account."
-          : res.error === "forbidden"
-            ? "You don't have permission for that."
+      return;
+    }
+    toast(
+      res.error === "self"
+        ? "You can't change your own access."
+        : res.error === "forbidden"
+          ? "You don't have permission for that."
+          : res.error === "above_own_tier"
+            ? "You can't grant or change a tier above your own."
             : res.error === "last_super_admin"
               ? "There must always be at least one super admin."
-              : "Action failed. Please try again.",
-        "error",
-      );
-    }
+              : res.error === "noop"
+                ? "That user already has this tier."
+                : "Action failed. Please try again.",
+      "error",
+    );
   }
 
-  const btn = "grid h-9 w-9 place-items-center rounded-lg transition-colors disabled:opacity-40";
-
-  // Nothing to offer this viewer — render nothing rather than an empty hover zone.
+  // Nothing to offer this viewer — a placeholder rather than an empty hover
+  // zone that looks broken.
   if (!canManageStaff && !canSuspend) {
     return <span className="block text-right text-[11px] text-[#6f7a72]">—</span>;
   }
 
   return (
-    <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-      {/* Promote / demote staff */}
-      {canManageStaff && (isAdmin ? (
+    <div className="flex items-center justify-end gap-2">
+      {canManageStaff && (
+        <label className="flex items-center gap-1.5">
+          <span className="sr-only">Staff tier</span>
+          <select
+            value={currentRole}
+            disabled={busy || isSelf}
+            title={isSelf ? "You can't change your own access" : "Assign staff tier"}
+            onChange={(e) => {
+              const role = e.target.value as AdminRole;
+              if (role === currentRole) return;
+              void run(() => setStaffRole({ userId, role }), `Tier set to ${ROLE_LABELS[role]}.`);
+            }}
+            className="rounded-lg border border-[#bec9c0] bg-white px-2 py-1 text-[12px] font-semibold text-[#191c1d] outline-none focus:border-[#006c49] focus:ring-1 focus:ring-[#006c49] disabled:opacity-40"
+          >
+            {ASSIGNABLE.map((r) => (
+              <option key={r} value={r}>
+                {ROLE_LABELS[r]}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+
+      {canSuspend && (
         <button
           type="button"
           disabled={busy || isSelf}
-          onClick={() => run(() => demoteFromAdmin({ userId }), "Admin access removed.")}
-          title={isSelf ? "You can't demote yourself" : "Remove admin access"}
-          className={`${btn} text-[#772f2c] hover:bg-[#954642]/10`}
+          onClick={() =>
+            run(
+              () => setUserSuspended({ userId, suspended: !suspended }),
+              suspended ? "Account reinstated." : "Account suspended.",
+            )
+          }
+          title={isSelf ? "You can't suspend yourself" : suspended ? "Reinstate account" : "Suspend account"}
+          className={`grid h-9 w-9 place-items-center rounded-lg transition-colors disabled:opacity-40 ${
+            suspended ? "text-[#735c00] hover:bg-[#fed65b]/20" : "text-[#ba1a1a] hover:bg-[#ba1a1a]/10"
+          }`}
         >
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6zM9 12h6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          {suspended ? (
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
+              <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M6 6l12 12" strokeLinecap="round" />
+            </svg>
+          )}
         </button>
-      ) : (
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => run(() => promoteToAdmin({ userId }), "User promoted to admin.")}
-          title="Promote to admin"
-          className={`${btn} text-[#005136] hover:bg-[#006c49]/10`}
-        >
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6zM9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" /></svg>
-        </button>
-      ))}
-
-      {/* Suspend / unsuspend */}
-      {canSuspend && (
-      <button
-        type="button"
-        disabled={busy || isSelf}
-        onClick={() => run(() => setUserSuspended({ userId, suspended: !suspended }), suspended ? "Account reinstated." : "Account suspended.")}
-        title={isSelf ? "You can't suspend yourself" : suspended ? "Reinstate account" : "Suspend account"}
-        className={`${btn} ${suspended ? "text-[#735c00] hover:bg-[#fed65b]/20" : "text-[#ba1a1a] hover:bg-[#ba1a1a]/10"}`}
-      >
-        {suspended ? (
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" /></svg>
-        ) : (
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M6 6l12 12" strokeLinecap="round" /></svg>
-        )}
-      </button>
       )}
     </div>
   );

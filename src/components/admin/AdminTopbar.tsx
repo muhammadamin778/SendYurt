@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { looksLikeTransactionId, normalizeTransactionQuery } from "@/lib/admin-search";
 
 function Icon({ d, className = "h-5 w-5" }: { d: string; className?: string }) {
   return (
@@ -10,16 +11,6 @@ function Icon({ d, className = "h-5 w-5" }: { d: string; className?: string }) {
       <path d={d} strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
-}
-
-/**
- * A cuid (Prisma's default id) starts with `c` and is ~25 chars. The
- * transactions table displays the last 8 uppercased with a `-UZ` suffix, so an
- * operator may paste either form.
- */
-function looksLikeTransactionId(q: string): boolean {
-  const bare = q.replace(/^#/, "").replace(/-uz$/i, "");
-  return /^c[a-z0-9]{20,}$/i.test(bare) || /^[a-z0-9]{8}$/i.test(bare);
 }
 
 export function AdminTopbar({
@@ -46,7 +37,7 @@ export function AdminTopbar({
     const q = query.trim();
     if (!q) return;
     const target = looksLikeTransactionId(q)
-      ? `/${locale}/admin/transactions?q=${encodeURIComponent(q.replace(/^#/, "").replace(/-uz$/i, ""))}`
+      ? `/${locale}/admin/transactions?q=${encodeURIComponent(normalizeTransactionQuery(q))}`
       : `/${locale}/admin/users?q=${encodeURIComponent(q)}&page=1`;
     router.push(target);
   }

@@ -6,8 +6,11 @@ import { sendTelegramLog } from "@/lib/telegram";
  * won't compile.
  */
 export type AuditAction =
+  // Kept for rows written before staff tiers existed.
   | "ROLE_PROMOTION"
   | "ROLE_DEMOTION"
+  /** Explicit staff-tier assignment; metadata carries { from, to }. */
+  | "ROLE_CHANGE"
   | "USER_SUSPEND"
   | "USER_UNSUSPEND"
   | "DATA_EXPORT"

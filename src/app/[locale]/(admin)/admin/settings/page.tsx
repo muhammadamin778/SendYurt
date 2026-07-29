@@ -18,6 +18,7 @@ function timeAgo(d: Date): string {
 // Maps a raw AuditLog action to the display tag + tone used by the audit list.
 const ACTION_META: Record<string, { tag: string; tone: AuditItem["tone"]; verb: string }> = {
   ROLE_PROMOTION: { tag: "ROLE", tone: "primary", verb: "Admin role granted" },
+  ROLE_CHANGE: { tag: "ROLE", tone: "primary" as const, verb: "changed staff tier for" },
   ROLE_DEMOTION: { tag: "ROLE", tone: "secondary", verb: "Admin role revoked" },
   USER_SUSPEND: { tag: "POLICY", tone: "error", verb: "User suspended" },
   USER_UNSUSPEND: { tag: "POLICY", tone: "primary", verb: "User reinstated" },
