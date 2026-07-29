@@ -30,8 +30,10 @@ export function SupportDeskNav({
   const [query, setQuery] = useState("");
   const [signingOut, setSigningOut] = useState(false);
 
+  // Same declarative shape as AdminSidebar: a destination names the one
+  // permission it needs, rather than an ad-hoc OR of two.
   const held = new Set(permissions);
-  const canOpenOps = held.has("settings.view") || held.has("transaction.reverse");
+  const canOpenOps = held.has("transaction.reverse");
 
   function onSearch(e: FormEvent) {
     e.preventDefault();

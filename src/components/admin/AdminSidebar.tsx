@@ -13,7 +13,6 @@ const ICON = {
   tx: "M4 6h16M4 6l3-3M4 6l3 3M20 18H4m16 0l-3-3m3 3l-3 3",
   support: "M12 3a9 9 0 00-9 9v5a2 2 0 002 2h1v-6H5v-1a7 7 0 0114 0v1h-1v6h1a2 2 0 002-2v-5a9 9 0 00-9-9z",
   settings: "M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 13a7.8 7.8 0 000-2l1.8-1.4-1.8-3.1-2.2.9a7.8 7.8 0 00-1.7-1l-.3-2.3H9.6l-.3 2.3a7.8 7.8 0 00-1.7 1l-2.2-.9L3.6 9.6 5.4 11a7.8 7.8 0 000 2l-1.8 1.4 1.8 3.1 2.2-.9a7.8 7.8 0 001.7 1l.3 2.3h3.8l.3-2.3a7.8 7.8 0 001.7-1l2.2.9 1.8-3.1z",
-  help: "M12 3a9 9 0 100 18 9 9 0 000-18zM9.5 9.3a2.5 2.5 0 114.1 1.9c-.8.7-1.6 1.2-1.6 2.3M12 16.8v.2",
   logout: "M15 12H3m0 0l4-4m-4 4l4 4M13 4h6a2 2 0 012 2v12a2 2 0 01-2 2h-6",
 };
 
@@ -39,16 +38,39 @@ export function AdminSidebar({
 
   // Each destination declares the permission it needs; the same permission
   // guards the page server-side, so this filter can never open a door.
+  // Grouped by the job being done rather than by database table — an operator
+  // looks for "the thing I'm doing", not "the model it lives in".
   const held = new Set(permissions);
-  const NAV = (
-    [
-      { label: "Dashboard", icon: ICON.dashboard, href: base, ready: true, permission: "transaction.view" },
-      { label: "Users", icon: ICON.users, href: `${base}/users`, ready: true, permission: "customer.view" },
-      { label: "Transactions", icon: ICON.tx, href: `${base}/transactions`, ready: true, permission: "transaction.view" },
-      { label: "Support", icon: ICON.support, href: `${base}/support`, ready: true, permission: "ticket.view" },
-      { label: "Settings", icon: ICON.settings, href: `${base}/settings`, ready: true, permission: "settings.view" },
-    ] satisfies Array<{ label: string; icon: string; href: string; ready: boolean; permission: Permission }>
-  ).filter((item) => held.has(item.permission));
+  const GROUPS: Array<{
+    title: string;
+    items: Array<{ label: string; icon: string; href: string; permission: Permission }>;
+  }> = [
+    {
+      title: "Operations",
+      items: [
+        { label: "Dashboard", icon: ICON.dashboard, href: base, permission: "transaction.view" },
+        { label: "Transactions", icon: ICON.tx, href: `${base}/transactions`, permission: "transaction.view" },
+      ],
+    },
+    {
+      title: "Support",
+      items: [
+        { label: "Customers", icon: ICON.users, href: `${base}/users`, permission: "customer.view" },
+        { label: "Support desk", icon: ICON.support, href: `/${locale}/support-desk`, permission: "ticket.view" },
+        { label: "Tickets", icon: ICON.support, href: `${base}/support`, permission: "ticket.view" },
+      ],
+    },
+    {
+      title: "Platform",
+      items: [{ label: "Settings", icon: ICON.settings, href: `${base}/settings`, permission: "settings.view" }],
+    },
+  ];
+
+  // Drop items the role can't use, then drop groups left empty.
+  const visibleGroups = GROUPS.map((g) => ({
+    ...g,
+    items: g.items.filter((i) => held.has(i.permission)),
+  })).filter((g) => g.items.length > 0);
 
   return (
     <aside className="fixed left-0 top-0 z-50 flex h-full w-[260px] flex-col border-r border-[#bec9c0] bg-[#f3f4f5] p-4">
@@ -65,41 +87,39 @@ export function AdminSidebar({
       </div>
 
       {/* Nav */}
-      <nav className="scroll-slim scroll-hover-reveal flex-1 space-y-1 overflow-y-auto">
-        {NAV.map((item) => {
-          const active = item.ready && pathname === item.href;
-          const cls = clsx(
-            "flex items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-semibold uppercase tracking-[0.05em] transition-all",
-            active
-              ? "bg-[#006c49] text-white shadow-[0_0_15px_-3px_rgba(0,108,73,0.3)]"
-              : item.ready
-                ? "text-[#3f4943] hover:bg-[#e7e8e9] hover:text-[#005136]"
-                : "cursor-not-allowed text-[#6f7a72]/60",
-          );
-          if (!item.ready) {
-            return (
-              <div key={item.label} className={cls} aria-disabled="true" title="Coming soon">
-                <Glyph d={item.icon} />
-                <span className="flex-1">{item.label}</span>
-                <span className="rounded-full bg-[#e1e3e4] px-1.5 py-0.5 text-[9px] font-bold tracking-normal text-[#6f7a72]">SOON</span>
-              </div>
-            );
-          }
-          return (
-            <Link key={item.label} href={item.href} aria-current={active ? "page" : undefined} className={cls}>
-              <Glyph d={item.icon} />
-              {item.label}
-            </Link>
-          );
-        })}
+      <nav className="scroll-slim scroll-hover-reveal flex-1 space-y-5 overflow-y-auto">
+        {visibleGroups.map((group) => (
+          <div key={group.title} className="space-y-1">
+            <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#6f7a72]">
+              {group.title}
+            </p>
+            {group.items.map((item) => {
+              // Exact match for the dashboard root; prefix match elsewhere so a
+              // sub-route still highlights its section.
+              const active = item.href === base ? pathname === base : pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  className={clsx(
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-semibold uppercase tracking-[0.05em] transition-all",
+                    active
+                      ? "bg-[#006c49] text-white shadow-[0_0_15px_-3px_rgba(0,108,73,0.3)]"
+                      : "text-[#3f4943] hover:bg-[#e7e8e9] hover:text-[#005136]",
+                  )}
+                >
+                  <Glyph d={item.icon} />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       {/* Footer */}
       <div className="mt-auto space-y-1 border-t border-[#bec9c0] pt-4">
-        <Link href={`/${locale}/help`} className="group flex items-center gap-3 rounded-lg px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#3f4943] transition-colors hover:bg-[#e7e8e9]">
-          <span className="text-[#3f4943] group-hover:text-[#005136]"><Glyph d={ICON.help} /></span>
-          Help Center
-        </Link>
         <Link href={`/${locale}/dashboard`} className="flex items-center gap-3 rounded-lg px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#3f4943] transition-colors hover:bg-[#e7e8e9]">
           <Glyph d="M4 21V10l8-6 8 6v11M9 21v-6h6v6" />
           User App

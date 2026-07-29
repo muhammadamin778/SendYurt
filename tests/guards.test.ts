@@ -58,7 +58,7 @@ vi.mock("@/lib/prisma-read", () => ({
   },
 }));
 
-const { promoteToAdmin, demoteFromAdmin, setUserSuspended } = await import("@/app/actions/admin");
+const { setStaffRole, setUserSuspended } = await import("@/app/actions/admin");
 const { exportUsersCsv, exportOperationsReport } = await import("@/app/actions/admin-export");
 const { transitionTransaction } = await import("@/app/actions/transaction-ops");
 const { assertPermission } = await import("@/lib/admin");
@@ -69,9 +69,13 @@ beforeEach(() => {
 });
 
 describe("SUPPORT is refused by every privileged action", () => {
-  it("cannot manage staff roles", async () => {
-    await expect(promoteToAdmin({ userId: "u1" })).resolves.toEqual({ ok: false, error: "forbidden" });
-    await expect(demoteFromAdmin({ userId: "u1" })).resolves.toEqual({ ok: false, error: "forbidden" });
+  it("cannot assign staff tiers", async () => {
+    for (const role of ["SUPPORT", "ADMIN", "SUPER_ADMIN"]) {
+      await expect(setStaffRole({ userId: "u1", role })).resolves.toEqual({
+        ok: false,
+        error: "forbidden",
+      });
+    }
   });
 
   it("cannot suspend an account", async () => {
@@ -124,13 +128,24 @@ describe("ADMIN and SUPER_ADMIN boundaries", () => {
     });
     expect(reverse).not.toEqual({ ok: false, error: "forbidden" });
 
-    await expect(promoteToAdmin({ userId: "u1" })).resolves.toEqual({ ok: false, error: "forbidden" });
+    await expect(setStaffRole({ userId: "u1", role: "ADMIN" })).resolves.toEqual({
+      ok: false,
+      error: "forbidden",
+    });
   });
 
-  it("SUPER_ADMIN may manage staff", async () => {
+  it("SUPER_ADMIN may assign staff tiers", async () => {
     currentRole = "SUPER_ADMIN";
-    const res = await promoteToAdmin({ userId: "u1" });
+    const res = await setStaffRole({ userId: "u1", role: "SUPPORT" });
     expect(res).not.toEqual({ ok: false, error: "forbidden" });
+  });
+
+  it("nobody can change their own tier — no self-promotion, no self-lockout", async () => {
+    currentRole = "SUPER_ADMIN";
+    await expect(setStaffRole({ userId: "staff_1", role: "USER" })).resolves.toEqual({
+      ok: false,
+      error: "self",
+    });
   });
 });
 

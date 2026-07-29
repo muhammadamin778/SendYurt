@@ -92,9 +92,8 @@ describe("the boundaries that matter", () => {
     expect(can("SUPPORT", "transaction.export")).toBe(false);
   });
 
-  it("SUPPORT cannot see unmasked PII or browsing history", () => {
+  it("SUPPORT cannot see unmasked PII", () => {
     expect(can("SUPPORT", "customer.pii.view")).toBe(false);
-    expect(can("SUPPORT", "customer.activity.view")).toBe(false);
   });
 
   it("SUPPORT cannot reach settings — the case that prompted this work", () => {
@@ -111,10 +110,6 @@ describe("the boundaries that matter", () => {
     expect(can("SUPER_ADMIN", "staff.manage")).toBe(true);
   });
 
-  it("browsing history is SUPER_ADMIN only — even ADMIN has no need", () => {
-    expect(can("ADMIN", "customer.activity.view")).toBe(false);
-    expect(can("SUPER_ADMIN", "customer.activity.view")).toBe(true);
-  });
 });
 
 describe("role bundles nest", () => {

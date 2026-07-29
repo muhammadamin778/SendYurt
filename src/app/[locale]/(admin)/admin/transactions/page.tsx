@@ -2,6 +2,7 @@ import { setRequestLocale } from "next-intl/server";
 import { toMinor, ZERO, type Minor } from "@/lib/money";
 import { IllustrativeTag } from "@/components/admin/IllustrativeTag";
 import { TransactionRowActions } from "@/components/admin/TransactionRowActions";
+import { normalizeTransactionQuery } from "@/lib/admin-search";
 import { formatMoney } from "@/lib/format";
 import { isTransactionState, TRANSACTION_STATES, type TransactionEventName } from "@/lib/transaction-state";
 import { requireStaff } from "@/lib/admin";
@@ -50,7 +51,8 @@ export default async function AdminTransactionsPage({
   const status = isTransactionState(searchParams.status ?? "") ? searchParams.status : undefined;
   // Topbar search: operators paste either the full id or the last 8 shown in
   // the table, so match on both.
-  const search = (searchParams.q ?? "").trim();
+  // Normalized so a pasted "#A1B2C3D4-UZ" matches the stored id.
+  const search = normalizeTransactionQuery(searchParams.q ?? "");
   const providerId = searchParams.provider || undefined;
   const corridor = searchParams.corridor || undefined;
 
