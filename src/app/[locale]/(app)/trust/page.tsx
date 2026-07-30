@@ -46,12 +46,13 @@ export default async function TrustPage({
   const t = await getTranslations("trust");
   const currentLocale = await getLocale();
 
-  const [{ result }, snapsAsc] = await Promise.all([
+  const [{ result, score }, snapsAsc] = await Promise.all([
     getTrustData(user.householdId),
     prisma.trustScoreSnapshot.findMany({ where: { householdId: user.householdId }, orderBy: { calculatedAt: "asc" } }),
   ]);
 
-  const score = result.score;
+  // `score` is the effective value (base + any operator adjustment); the
+  // factor breakdown below still reads the pure computation in `result`.
   const ringOffset = RING_C - (Math.min(100, score) / 100) * RING_C;
   const status = statusFor(score);
 

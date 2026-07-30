@@ -179,7 +179,7 @@ export default async function SummaryPage({
             </p>
           </div>
           <div className="font-display text-4xl font-bold text-samarkand-800">
-            {trust.result.score}
+            {trust.score}
             <span className="text-base font-normal text-sand-700">/100</span>
           </div>
         </section>

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { AdminRole } from "@prisma/client";
 import { setRequestLocale } from "next-intl/server";
 import { exportUsersCsv } from "@/app/actions/admin-export";
@@ -208,14 +209,19 @@ export default async function AdminUsersPage({
                           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border-2 border-[#bec9c0] bg-[#006c49]/10 text-sm font-bold text-[#005136]">{initial}</span>
                         )}
                         <div className="flex flex-col">
-                          <span className="flex items-center gap-2 text-[14px] font-bold text-[#191c1d]">
+                          {/* The name is the way into User 360 — the row was
+                              previously a dead end with no detail view. */}
+                          <Link
+                            href={`/${locale}/admin/users/${u.id}`}
+                            className="flex items-center gap-2 text-[14px] font-bold text-[#191c1d] hover:text-[#006c49] hover:underline"
+                          >
                             {nameFor(u.name, canSeePii)}
                             {u.adminRole !== AdminRole.USER && (
                               <span className="rounded bg-[#006c49]/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#005136]">
                                 {ROLE_LABELS[u.adminRole]}
                               </span>
                             )}
-                          </span>
+                          </Link>
                           <span className="text-[13px] text-[#3f4943]">{emailFor(u.email, canSeePii)}</span>
                         </div>
                       </div>

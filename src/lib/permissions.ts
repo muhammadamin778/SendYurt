@@ -46,6 +46,12 @@ export const PERMISSIONS = [
   "ticket.assign",
   "ticket.resolve",
   "ticket.note.internal",
+  /**
+   * Record a signed adjustment on a household's Trust Score. SUPER_ADMIN only:
+   * the score gates what a household is offered, so the ability to move it is
+   * kept with the ability to change the system itself.
+   */
+  "trustscore.override",
   // Platform
   "settings.view",
   "settings.system.edit",
@@ -95,6 +101,7 @@ const ADMIN_PERMISSIONS: Permission[] = [
 
 const SUPER_ADMIN_PERMISSIONS: Permission[] = [
   ...ADMIN_PERMISSIONS,
+  "trustscore.override",
   "settings.system.edit",
   "staff.manage",
 ];

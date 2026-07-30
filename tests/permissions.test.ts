@@ -100,6 +100,16 @@ describe("the boundaries that matter", () => {
     expect(can("ADMIN", "customer.impersonate")).toBe(true);
   });
 
+  it("only SUPER_ADMIN can adjust a Trust Score", () => {
+    // SUPER_ADMIN's expected row is `[...PERMISSIONS]`, so the matrix above
+    // grants any new permission automatically. Pin this one literally: the
+    // score gates what a household is offered, and the tier that may move it
+    // is a product decision, not a side effect of adding to the enum.
+    expect(can("SUPPORT", "trustscore.override")).toBe(false);
+    expect(can("ADMIN", "trustscore.override")).toBe(false);
+    expect(can("SUPER_ADMIN", "trustscore.override")).toBe(true);
+  });
+
   it("SUPPORT cannot see unmasked PII", () => {
     expect(can("SUPPORT", "customer.pii.view")).toBe(false);
   });
