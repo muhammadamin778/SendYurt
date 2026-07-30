@@ -227,7 +227,7 @@ export default async function AdminDashboardPage({ params: { locale } }: { param
               ))}
             </div>
             <Link
-              href={`/${locale}/admin/settings`}
+              href={`/${locale}/admin/audit`}
               className="border-t border-[#bec9c0] p-3 text-center text-[12px] font-bold uppercase tracking-[0.05em] text-[#006c49] transition-colors hover:bg-[#006c49]/5"
             >
               View Detailed Audit Log

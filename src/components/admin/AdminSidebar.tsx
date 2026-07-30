@@ -14,6 +14,7 @@ const ICON = {
   support: "M12 3a9 9 0 00-9 9v5a2 2 0 002 2h1v-6H5v-1a7 7 0 0114 0v1h-1v6h1a2 2 0 002-2v-5a9 9 0 00-9-9z",
   settings: "M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 13a7.8 7.8 0 000-2l1.8-1.4-1.8-3.1-2.2.9a7.8 7.8 0 00-1.7-1l-.3-2.3H9.6l-.3 2.3a7.8 7.8 0 00-1.7 1l-2.2-.9L3.6 9.6 5.4 11a7.8 7.8 0 000 2l-1.8 1.4 1.8 3.1 2.2-.9a7.8 7.8 0 001.7 1l.3 2.3h3.8l.3-2.3a7.8 7.8 0 001.7-1l2.2.9 1.8-3.1z",
   logout: "M15 12H3m0 0l4-4m-4 4l4 4M13 4h6a2 2 0 012 2v12a2 2 0 01-2 2h-6",
+  audit: "M12 8v5l3 2M3 12a9 9 0 109-9 9 9 0 00-8 5M3 4v4h4",
 };
 
 function Glyph({ d, className = "h-5 w-5" }: { d: string; className?: string }) {
@@ -62,7 +63,10 @@ export function AdminSidebar({
     },
     {
       title: "Platform",
-      items: [{ label: "Settings", icon: ICON.settings, href: `${base}/settings`, permission: "settings.view" }],
+      items: [
+        { label: "Audit trail", icon: ICON.audit, href: `${base}/audit`, permission: "settings.view" },
+        { label: "Settings", icon: ICON.settings, href: `${base}/settings`, permission: "settings.view" },
+      ],
     },
   ];
 

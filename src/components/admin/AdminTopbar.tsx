@@ -70,7 +70,7 @@ export function AdminTopbar({
             model, there is no admin notification feed, and its unread dot was
             hardcoded to always show. */}
         <Link
-          href={`/${locale}/admin/settings`}
+          href={`/${locale}/admin/audit`}
           aria-label="Audit history"
           title="Audit history"
           className="grid h-10 w-10 place-items-center rounded-full text-[#3f4943] transition-colors hover:bg-[#e7e8e9]"

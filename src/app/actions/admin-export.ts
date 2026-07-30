@@ -1,7 +1,7 @@
 "use server";
 
 import { assertPermission } from "@/lib/admin";
-import { logAudit, notifyAudit } from "@/lib/audit";
+import { currentIp, logAudit, notifyAudit } from "@/lib/audit";
 import { formatMoney } from "@/lib/format";
 import { toMinor } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
@@ -45,7 +45,8 @@ function stamp(): string {
  */
 export async function exportUsersCsv(input: unknown): Promise<ExportResult> {
   try {
-    const { adminId } = await assertPermission("customer.export");
+    const { adminId, role } = await assertPermission("customer.export");
+    const ip = await currentIp();
 
     const status = typeof input === "string" ? input : undefined;
     const where =
@@ -89,7 +90,9 @@ export async function exportUsersCsv(input: unknown): Promise<ExportResult> {
     await logAudit(prisma, {
       action: "DATA_EXPORT",
       adminId,
+      role,
       targetType: "User",
+      ip,
       metadata: { export: "users", statusFilter: status ?? "all", rows: users.length },
     });
     await notifyAudit({ action: "DATA_EXPORT", adminId, targetType: "User" });
@@ -106,7 +109,8 @@ export async function exportUsersCsv(input: unknown): Promise<ExportResult> {
  */
 export async function exportOperationsReport(): Promise<ExportResult> {
   try {
-    const { adminId } = await assertPermission("transaction.export");
+    const { adminId, role } = await assertPermission("transaction.export");
+    const ip = await currentIp();
 
     const [corridors, recent] = await Promise.all([
       readPrisma.transaction.groupBy({
@@ -160,7 +164,9 @@ export async function exportOperationsReport(): Promise<ExportResult> {
     await logAudit(prisma, {
       action: "DATA_EXPORT",
       adminId,
+      role,
       targetType: "Transaction",
+      ip,
       metadata: { export: "operations", corridors: corridors.length, transactions: recent.length },
     });
     await notifyAudit({ action: "DATA_EXPORT", adminId, targetType: "Transaction" });

@@ -142,14 +142,24 @@ enum AdminRole {
 // record and the change commit or roll back together.
 model AuditLog {
   id           String   @id @default(cuid())
-  // e.g. "ROLE_PROMOTION" | "ROLE_DEMOTION" | "USER_SUSPEND" | "USER_UNSUSPEND"
+  // See the AuditAction union in src/lib/audit.ts.
   action       String
-  // The admin who performed the action.
+  // The staff member who performed the action.
   adminId      String
+  // Their tier AT THE TIME of the action. Captured rather than joined,
+  // because a later promotion or demotion must not rewrite history — "who
+  // was allowed to do this, when" is the question an auditor asks.
+  role         String?
   // The record acted upon (nullable for non-entity actions like exports).
   targetUserId String?
   targetType   String?  // "User" | "Transaction" | ...
-  // Free-form JSON context (before/after values, reason, request ip, ...).
+  // Typed snapshots of the change. Separate columns rather than buried in
+  // `metadata` so the viewer can render a diff without guessing at shape.
+  before       Json?
+  after        Json?
+  // Request origin, best-effort from the proxy headers.
+  ip           String?
+  // Remaining context: reason codes, filters, row counts.
   metadata     Json?
   createdAt    DateTime @default(now())
 
@@ -158,6 +168,8 @@ model AuditLog {
   @@index([createdAt])
   @@index([adminId, createdAt])
   @@index([targetUserId])
+  // The viewer filters by action type over a date range.
+  @@index([action, createdAt])
 }
 
 model Notification {
