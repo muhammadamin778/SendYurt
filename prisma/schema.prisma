@@ -42,6 +42,7 @@ model Household {
   budgets      Budget[]
   savingsGoals SavingsGoal[]
   trustScores  TrustScoreSnapshot[]
+  trustOverrides TrustScoreOverride[]
 }
 
 model User {
@@ -81,6 +82,8 @@ model User {
   notifications    Notification[]
   auditLogs        AuditLog[]    @relation("AdminAuditLogs")
   transactionEvents TransactionEvent[] @relation("TransactionEventActor")
+  trustOverridesMade    TrustScoreOverride[] @relation("TrustOverrideActor")
+  trustOverridesRevoked TrustScoreOverride[] @relation("TrustOverrideRevoker")
   impersonationsMade ImpersonationSession[] @relation("ImpersonationOperator")
   impersonatedAs     ImpersonationSession[] @relation("ImpersonationTarget")
   cards            Card[]
@@ -368,6 +371,39 @@ model SavingsGoal {
 
   household     Household     @relation(fields: [householdId], references: [id])
   contributions Transaction[]
+}
+
+/// An operator adjustment layered ON TOP of the computed Trust Score.
+///
+/// The score is disputable, so it must be correctable — but a corrected score
+/// that is indistinguishable from a computed one is not auditable. So nothing
+/// here mutates `TrustScoreSnapshot` or the computation: the base score is
+/// recomputed from the ledger as always, and `delta` is applied on read. Both
+/// numbers stay visible, which is what lets a customer be told "your score is
+/// 68: 61 computed, +7 for the dispute we resolved in your favour".
+///
+/// Rows are never deleted. An override is retired by setting `revokedAt`, so
+/// the history of every adjustment survives.
+model TrustScoreOverride {
+  id          String    @id @default(cuid())
+  householdId String
+  /// Signed points added to the computed score. The sum is clamped to 0-100
+  /// on read, never here — see src/lib/trust-override.ts.
+  delta       Int
+  /// Filterable justification, from OVERRIDE_REASON_CODES.
+  reasonCode  String
+  /// The specifics. Mandatory: this is what a disputing customer is owed.
+  reason      String
+  actorId     String
+  createdAt   DateTime  @default(now())
+  revokedAt   DateTime?
+  revokedById String?
+
+  household Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  actor     User      @relation("TrustOverrideActor", fields: [actorId], references: [id])
+  revokedBy User?     @relation("TrustOverrideRevoker", fields: [revokedById], references: [id])
+
+  @@index([householdId, createdAt])
 }
 
 model TrustScoreSnapshot {

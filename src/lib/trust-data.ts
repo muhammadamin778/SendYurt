@@ -4,6 +4,7 @@ import { computeMilestones, type Milestone } from "@/lib/milestones";
 import { addMinor, toMinor, ZERO, type Minor } from "@/lib/money";
 import { isSignificantScoreChange, notifyHousehold } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
+import { effectiveScore, type OverrideReasonCode } from "@/lib/trust-override";
 import { computeTrustScore, type TrustScoreResult } from "@/lib/trust-score";
 
 export interface SnapshotRow {
@@ -14,8 +15,30 @@ export interface SnapshotRow {
   calculatedAt: Date;
 }
 
+/** The active adjustment on a household's score, if there is one. */
+export interface ActiveOverride {
+  id: string;
+  delta: number;
+  reasonCode: OverrideReasonCode | string;
+  reason: string;
+  createdAt: Date;
+  actorName: string;
+}
+
 export interface TrustData {
+  /**
+   * The pure computation, recomputed from the ledger every time. An override
+   * never touches this — that separation is what makes an adjusted score
+   * distinguishable from an earned one months later.
+   */
   result: TrustScoreResult;
+  /**
+   * What everyone actually sees: `result.score` plus any active override,
+   * clamped to 0-100. Read this, not `result.score`, anywhere a single number
+   * is shown; `result.score` is the base, for the inspector.
+   */
+  score: number;
+  override: ActiveOverride | null;
   calculatedAt: Date;
   hasDemoData: boolean;
   timeline: TimelineMonth[];
@@ -133,8 +156,29 @@ export async function getTrustData(householdId: string): Promise<TrustData> {
     },
   });
 
+  // At most one override is active at a time — applying a new one revokes the
+  // previous, so "newest not-revoked" is the whole rule.
+  const activeOverride = await prisma.trustScoreOverride.findFirst({
+    where: { householdId, revokedAt: null },
+    orderBy: { createdAt: "desc" },
+    include: { actor: { select: { name: true } } },
+  });
+
+  const combined = effectiveScore(result.score, activeOverride?.delta ?? 0);
+
   return {
     result,
+    score: combined.effective,
+    override: activeOverride
+      ? {
+          id: activeOverride.id,
+          delta: activeOverride.delta,
+          reasonCode: activeOverride.reasonCode,
+          reason: activeOverride.reason,
+          createdAt: activeOverride.createdAt,
+          actorName: activeOverride.actor.name,
+        }
+      : null,
     calculatedAt,
     hasDemoData: transactions.some((t) => t.isDemo),
     timeline,

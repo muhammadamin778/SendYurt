@@ -58,6 +58,10 @@ vi.mock("@/lib/prisma", () => ({
     user: { findUnique: boom, findMany: boom, count: boom, update: boom },
     transaction: { findUnique: boom, findMany: boom },
     auditLog: { create: boom },
+    household: { findUnique: boom },
+    trustScoreSnapshot: { findFirst: boom },
+    trustScoreOverride: { findFirst: boom, findUnique: boom, create: boom, update: boom },
+    impersonationSession: { findUnique: boom, findFirst: boom, create: boom, updateMany: boom },
   },
 }));
 vi.mock("@/lib/prisma-read", () => ({
@@ -70,6 +74,8 @@ vi.mock("@/lib/prisma-read", () => ({
 const { setStaffRole, setUserSuspended } = await import("@/app/actions/admin");
 const { exportUsersCsv, exportOperationsReport } = await import("@/app/actions/admin-export");
 const { transitionTransaction } = await import("@/app/actions/transaction-ops");
+const { applyTrustOverride, revokeTrustOverride } = await import("@/app/actions/trust-override");
+const { startImpersonation } = await import("@/app/actions/impersonation");
 const { assertPermission } = await import("@/lib/admin");
 
 beforeEach(() => {
@@ -97,6 +103,29 @@ describe("SUPPORT is refused by every privileged action", () => {
   it("cannot bulk-export customers or the ledger", async () => {
     await expect(exportUsersCsv("all")).resolves.toEqual({ ok: false, error: "forbidden" });
     await expect(exportOperationsReport()).resolves.toEqual({ ok: false, error: "forbidden" });
+  });
+
+  it("cannot adjust a Trust Score", async () => {
+    // The score gates what a household is offered, so moving it is kept at the
+    // same tier as changing the system itself.
+    await expect(
+      applyTrustOverride({
+        householdId: "hh1",
+        delta: 5,
+        reasonCode: "GOODWILL",
+        reason: "a sufficiently long reason",
+      }),
+    ).resolves.toEqual({ ok: false, error: "forbidden" });
+    await expect(revokeTrustOverride({ overrideId: "o1" })).resolves.toEqual({
+      ok: false,
+      error: "forbidden",
+    });
+  });
+
+  it("cannot open a view-as session", async () => {
+    await expect(
+      startImpersonation({ userId: "u1", reason: "a sufficiently long reason" }),
+    ).resolves.toEqual({ ok: false, error: "forbidden" });
   });
 
   it("cannot reverse a transaction — the money boundary", async () => {
@@ -141,6 +170,33 @@ describe("ADMIN and SUPER_ADMIN boundaries", () => {
       ok: false,
       error: "forbidden",
     });
+  });
+
+  it("ADMIN may open a view-as session but NOT adjust a Trust Score", async () => {
+    currentRole = "ADMIN";
+    const viewAs = await startImpersonation({ userId: "u1", reason: "a sufficiently long reason" });
+    expect(viewAs).not.toEqual({ ok: false, error: "forbidden" });
+
+    await expect(
+      applyTrustOverride({
+        householdId: "hh1",
+        delta: 5,
+        reasonCode: "GOODWILL",
+        reason: "a sufficiently long reason",
+      }),
+    ).resolves.toEqual({ ok: false, error: "forbidden" });
+  });
+
+  it("SUPER_ADMIN may adjust a Trust Score", async () => {
+    currentRole = "SUPER_ADMIN";
+    const res = await applyTrustOverride({
+      householdId: "hh1",
+      delta: 5,
+      reasonCode: "GOODWILL",
+      reason: "a sufficiently long reason",
+    });
+    // Reaches the DB, which the fake refuses — proving the guard passed.
+    expect(res).not.toEqual({ ok: false, error: "forbidden" });
   });
 
   it("SUPER_ADMIN may assign staff tiers", async () => {

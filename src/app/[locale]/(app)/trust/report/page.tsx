@@ -43,7 +43,7 @@ export default async function TrustReportPage({
   ]);
   if (!household) return null;
 
-  const { result, timeline, history, hasDemoData } = data;
+  const { result, score, timeline, history, hasDemoData } = data;
   const generated = new Date();
   const reference = `SY-${household.id.slice(-8).toUpperCase()}`;
 
@@ -115,7 +115,7 @@ export default async function TrustReportPage({
 
         {/* Score */}
         <section className="mt-8 flex flex-col items-center gap-6 rounded-xl border border-sand-200 p-6 sm:flex-row sm:gap-10">
-          <ScoreDial score={result.score} label={t("title")} sublabel={t("outOf100")} animate={false} />
+          <ScoreDial score={score} label={t("title")} sublabel={t("outOf100")} animate={false} />
           <div className="w-full flex-1">
             <table className="w-full text-sm">
               <thead>

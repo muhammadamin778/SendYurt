@@ -23,7 +23,7 @@ export default async function SupportPage({
   const user = await requireUser();
   const tTrust = await getTranslations("trust");
 
-  const [{ result }, household] = await Promise.all([
+  const [{ score: trustScore }, household] = await Promise.all([
     getTrustData(user.householdId),
     prisma.household.findUnique({
       where: { id: user.householdId },
@@ -32,7 +32,7 @@ export default async function SupportPage({
   ]);
 
   const trustLabel =
-    result.score >= 75 ? tTrust("verdict.strong") : result.score >= 50 ? tTrust("verdict.growing") : tTrust("verdict.early");
+    trustScore >= 75 ? tTrust("verdict.strong") : trustScore >= 50 ? tTrust("verdict.growing") : tTrust("verdict.early");
 
   // Use a real household member as the sample transfer recipient when available.
   const other = household?.users.find((u) => u.id !== user.id) ?? household?.users[0];
@@ -44,7 +44,7 @@ export default async function SupportPage({
   return (
     <SupportCenter
       user={{ name: user.name ?? "You", initial }}
-      trustScore={result.score}
+      trustScore={trustScore}
       trustLabel={trustLabel}
       recipient={recipient}
     />

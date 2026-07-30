@@ -73,7 +73,7 @@ export default async function HistoryPage({
   const q = (searchParams.q ?? "").trim().toLowerCase();
   const page = Math.max(1, Number(searchParams.page) || 1);
 
-  const [txns, snaps, goals, { result }] = await Promise.all([
+  const [txns, snaps, goals, { score: trustScore }] = await Promise.all([
     prisma.transaction.findMany({
       where: { householdId: user.householdId, type: { in: ["REMITTANCE", "SAVINGS"] } },
       orderBy: { date: "desc" },
@@ -166,7 +166,7 @@ export default async function HistoryPage({
   }
   const remDelta = lastMonthRem > 0 ? Math.round(((thisMonthRem - lastMonthRem) / lastMonthRem) * 100) : null;
   const totalSavings = sumMinor(goals.map((g) => g.currentAmount));
-  const trustVerdict = result.score >= 75 ? tTrust("verdict.strong") : result.score >= 50 ? tTrust("verdict.growing") : tTrust("verdict.early");
+  const trustVerdict = trustScore >= 75 ? tTrust("verdict.strong") : trustScore >= 50 ? tTrust("verdict.growing") : tTrust("verdict.early");
 
   // CSV (full filtered set) ------------------------------------------------
   const csvHeaders = [t("thDate"), t("thType"), t("thDescription"), t("thMember"), t("thAmount"), t("thStatus")];
@@ -281,7 +281,7 @@ export default async function HistoryPage({
             <svg viewBox="0 0 24 24" className="h-5 w-5 text-[#4edea3]" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4L4.2 7.7l5.4-.8z" /></svg>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-[28px] font-bold text-[#4edea3]">{result.score}</span>
+            <span className="text-[28px] font-bold text-[#4edea3]">{trustScore}</span>
             <span className="text-xs font-medium text-[#bec6e0]">{trustVerdict}</span>
           </div>
         </div>
