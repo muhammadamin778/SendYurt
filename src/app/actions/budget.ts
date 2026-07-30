@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { getAppSession } from "@/lib/supabase/app-session";
-import { logAudit } from "@/lib/audit";
 import { isCategory } from "@/lib/categories";
 import { addMinor, toBigInt, toMinor } from "@/lib/money";
 import { crossedNearThreshold, notifyHousehold } from "@/lib/notifications";
@@ -223,12 +222,12 @@ export async function reverseTransaction(input: unknown): Promise<ActionResult> 
         }
       }
 
-      await logAudit(tx, {
-        action: "TRANSACTION_REVERSE",
-        adminId: userId,
-        targetType: "Transaction",
-        metadata: { transactionId: txn.id, reasonCode, note: note ?? null },
-      });
+      // Deliberately NOT written to AuditLog. That table is the STAFF trail —
+      // "which operator did what to a customer" — and `adminId` would here be
+      // an ordinary household member, so every family reversal showed up in
+      // the admin audit feed as if staff had acted. The TransactionEvent above
+      // is this action's proper trail: same actor, reason code and note,
+      // append-only, and attached to the transaction it describes.
     });
 
     revalidateBudget();

@@ -99,6 +99,7 @@ export default async function AdminSettingsPage({ params: { locale } }: { params
       ratesLive={ratesLive}
       providers={providers}
       audit={audit}
+      auditHref={`/${locale}/admin/audit`}
       volume24h={volume24h}
       reserveBalance={reserveBalance}
     />

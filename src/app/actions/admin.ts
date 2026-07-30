@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { AdminRole } from "@prisma/client";
 import { z } from "zod";
 import { assertPermission } from "@/lib/admin";
-import { logAudit, notifyAudit } from "@/lib/audit";
+import { currentIp, logAudit, notifyAudit } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -62,6 +62,7 @@ const setRoleSchema = z.object({
 export async function setStaffRole(input: unknown): Promise<ActionResult> {
   try {
     const { adminId, role: actorRole } = await assertPermission("staff.manage");
+    const ip = await currentIp();
 
     const parsed = setRoleSchema.safeParse(input);
     if (!parsed.success) return fail("validation");
@@ -93,9 +94,12 @@ export async function setStaffRole(input: unknown): Promise<ActionResult> {
       await logAudit(tx, {
         action: "ROLE_CHANGE",
         adminId,
+        role: actorRole,
         targetUserId: userId,
         targetType: "User",
-        metadata: { from: target.adminRole, to: role },
+        before: { adminRole: target.adminRole },
+        after: { adminRole: role },
+        ip,
       });
     });
 
@@ -110,7 +114,8 @@ export async function setStaffRole(input: unknown): Promise<ActionResult> {
 
 export async function setUserSuspended(input: unknown): Promise<ActionResult> {
   try {
-    const { adminId } = await assertPermission("customer.suspend");
+    const { adminId, role: actorRole } = await assertPermission("customer.suspend");
+    const ip = await currentIp();
     const parsed = suspendSchema.safeParse(input);
     if (!parsed.success) return fail("validation");
     const { userId, suspended } = parsed.data;
@@ -128,9 +133,12 @@ export async function setUserSuspended(input: unknown): Promise<ActionResult> {
       await logAudit(tx, {
         action: suspended ? "USER_SUSPEND" : "USER_UNSUSPEND",
         adminId,
+        role: actorRole,
         targetUserId: userId,
         targetType: "User",
-        metadata: { suspended },
+        before: { suspended: target.suspended },
+        after: { suspended },
+        ip,
       });
     });
 

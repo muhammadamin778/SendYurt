@@ -46,6 +46,8 @@ interface SettingsBoardProps {
   audit: AuditItem[];
   volume24h: string;
   reserveBalance: string;
+  /** Link to the full audit viewer — this panel only shows the latest few. */
+  auditHref: string;
 }
 
 function Icon({ d, className = "h-5 w-5" }: { d: string; className?: string }) {
@@ -78,6 +80,7 @@ export function SettingsBoard({
   audit,
   volume24h,
   reserveBalance,
+  auditHref,
 }: SettingsBoardProps) {
   const [expanded, setExpanded] = useState<string | null>(null);
 
@@ -167,9 +170,19 @@ export function SettingsBoard({
 
         {/* System Audit Log — REAL */}
         <div className={clsx("col-span-12 lg:col-span-7 flex flex-col", CARD)}>
-          <div className="mb-6 flex items-center gap-3">
-            <span className="text-[#3f4943]"><Icon d="M8 3H5a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2v-3M8 3v4h4M15 4l5 5-8 8H7v-5z" /></span>
-            <h3 className="text-[16px] font-semibold">System Audit Log</h3>
+          <div className="mb-6 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span className="text-[#3f4943]"><Icon d="M8 3H5a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2v-3M8 3v4h4M15 4l5 5-8 8H7v-5z" /></span>
+              <h3 className="text-[16px] font-semibold">Recent Activity</h3>
+            </div>
+            {/* This panel is a glance; the full, filterable trail lives at
+                /admin/audit. */}
+            <a
+              href={auditHref}
+              className="text-[12px] font-bold uppercase tracking-[0.05em] text-[#005136] hover:underline"
+            >
+              Full audit trail →
+            </a>
           </div>
           <div className="scroll-slim max-h-[360px] space-y-2 overflow-y-auto pr-2">
             {audit.length === 0 && <p className="py-8 text-center text-[13px] text-[#6f7a72]">No audit activity recorded yet.</p>}

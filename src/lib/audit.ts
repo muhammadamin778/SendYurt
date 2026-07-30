@@ -1,36 +1,81 @@
-import { Prisma, type PrismaClient } from "@prisma/client";
+import { Prisma, type AdminRole, type PrismaClient } from "@prisma/client";
 import { sendTelegramLog } from "@/lib/telegram";
 
 /**
- * Privileged actions we record. A union type keeps call sites honest — a typo
- * won't compile.
+ * Every auditable action. A union keeps call sites honest — a typo won't
+ * compile. Exported as a value so the audit viewer's filter is
+ * driven by the same list the writers use — a new action can't become
+ * un-filterable by omission.
  */
-export type AuditAction =
-  // Kept for rows written before staff tiers existed.
-  | "ROLE_PROMOTION"
-  | "ROLE_DEMOTION"
-  /** Explicit staff-tier assignment; metadata carries { from, to }. */
-  | "ROLE_CHANGE"
-  | "USER_SUSPEND"
-  | "USER_UNSUSPEND"
-  | "DATA_EXPORT"
-  // Transaction state transitions. Every manual intervention on a financial
-  // record is audited with the operator's reason code.
-  | "TRANSACTION_CONFIRM"
-  | "TRANSACTION_FAIL"
-  | "TRANSACTION_DISPUTE"
-  | "TRANSACTION_RESOLVE"
-  | "TRANSACTION_REVERSE";
+export const AUDIT_ACTIONS = [
+  "ROLE_PROMOTION",
+  "ROLE_DEMOTION",
+  "ROLE_CHANGE",
+  "USER_SUSPEND",
+  "USER_UNSUSPEND",
+  "DATA_EXPORT",
+  "TRANSACTION_CONFIRM",
+  "TRANSACTION_FAIL",
+  "TRANSACTION_DISPUTE",
+  "TRANSACTION_RESOLVE",
+  "TRANSACTION_REVERSE",
+] as const;
+
+export type AuditAction = (typeof AUDIT_ACTIONS)[number];
+
 
 export interface AuditEntry {
   action: AuditAction;
-  /** The admin performing the action (from `assertAdmin`). */
+  /** The staff member performing the action (from `assertPermission`). */
   adminId: string;
+  /**
+   * Their tier at the time of the action. Recorded rather than joined, so a
+   * later promotion or demotion cannot rewrite history — an auditor asks
+   * "who was allowed to do this, then", not "what are they now".
+   */
+  role?: AdminRole | string;
   /** The record acted upon, when applicable. */
   targetUserId?: string;
   targetType?: "User" | "Transaction" | "Household";
-  /** Before/after values, reason code, request metadata, etc. */
+  /** Snapshot before the change — render as a diff against `after`. */
+  before?: Prisma.InputJsonValue;
+  /** Snapshot after the change. */
+  after?: Prisma.InputJsonValue;
+  /** Request origin, from `clientIpFrom(headers())`. */
+  ip?: string | null;
+  /** Remaining context: reason codes, filters, row counts. */
   metadata?: Prisma.InputJsonValue;
+}
+
+/**
+ * Best-effort request IP.
+ *
+ * Behind Vercel's proxy the original address is in `x-forwarded-for`, whose
+ * first entry is the client; `x-real-ip` is the fallback. This is evidence,
+ * not identity — a proxy header can be spoofed by anything upstream of us, so
+ * it is recorded for correlation and never used for a decision.
+ */
+export function clientIpFrom(headers: Headers): string | null {
+  const forwarded = headers.get("x-forwarded-for");
+  if (forwarded) return forwarded.split(",")[0]?.trim() || null;
+  return headers.get("x-real-ip");
+}
+
+/**
+ * The current request's IP, or null.
+ *
+ * Deliberately swallows: `next/headers` throws when called outside a request
+ * scope, and an audit *detail* must never be able to fail the action it
+ * describes. Losing the origin on one row is a rounding error; losing a role
+ * change because the header lookup threw is not.
+ */
+export async function currentIp(): Promise<string | null> {
+  try {
+    const { headers } = await import("next/headers");
+    return clientIpFrom(headers());
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -54,8 +99,12 @@ export async function logAudit(db: AuditDb, entry: AuditEntry): Promise<void> {
     data: {
       action: entry.action,
       adminId: entry.adminId,
+      role: entry.role ?? null,
       targetUserId: entry.targetUserId ?? null,
       targetType: entry.targetType ?? null,
+      before: entry.before ?? Prisma.JsonNull,
+      after: entry.after ?? Prisma.JsonNull,
+      ip: entry.ip ?? null,
       metadata: entry.metadata ?? Prisma.JsonNull,
     },
   });

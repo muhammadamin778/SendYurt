@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { assertPermission } from "@/lib/admin";
-import { logAudit, notifyAudit, type AuditAction } from "@/lib/audit";
+import { currentIp, logAudit, notifyAudit, type AuditAction } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import { isValidReasonCode } from "@/lib/reason-codes";
 import { recordTransactionEvent } from "@/lib/transaction-events";
@@ -73,6 +73,7 @@ export async function transitionTransaction(input: unknown): Promise<ActionResul
     // Coarse check first, so an unauthorised caller is rejected before any of
     // their input is processed. Every staff tier holds `transaction.view`.
     const { adminId, role } = await assertPermission("transaction.view");
+    const ip = await currentIp();
 
     const parsed = schema.safeParse(input);
     if (!parsed.success) return fail("validation");
@@ -137,14 +138,11 @@ export async function transitionTransaction(input: unknown): Promise<ActionResul
         action: auditAction,
         adminId,
         targetType: "Transaction",
-        metadata: {
-          transactionId: txn.id,
-          event,
-          from: txn.status,
-          to: step.to,
-          reasonCode,
-          note: note ?? null,
-        },
+        role,
+        before: { status: txn.status },
+        after: { status: step.to },
+        ip,
+        metadata: { transactionId: txn.id, event, reasonCode, note: note ?? null },
       });
     });
 

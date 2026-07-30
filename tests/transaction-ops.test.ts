@@ -238,7 +238,10 @@ describe("reversal", () => {
       actorId: "user_1",
       note: "wrong goal",
     });
-    expect(db.audits[0]).toMatchObject({ action: "TRANSACTION_REVERSE", targetType: "Transaction" });
+    // Deliberately NOT in the staff audit log: AuditLog records what an
+    // OPERATOR did to a customer, and this actor is an ordinary household
+    // member. Their trail is the TransactionEvent asserted above.
+    expect(db.audits).toHaveLength(0);
   });
 
   it("refuses a reason code that belongs to a different event", async () => {
