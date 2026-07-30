@@ -19,6 +19,8 @@ export const AUDIT_ACTIONS = [
   "TRANSACTION_DISPUTE",
   "TRANSACTION_RESOLVE",
   "TRANSACTION_REVERSE",
+  "IMPERSONATION_START",
+  "IMPERSONATION_END",
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

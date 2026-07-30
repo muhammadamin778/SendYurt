@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { CustomCursor } from "@/components/CustomCursor";
+import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 import { ConvaiWidget } from "@/components/ConvaiWidget";
 import { VisitLogger } from "@/components/VisitLogger";
 import { BankSidebar } from "@/components/bank/BankSidebar";
@@ -20,6 +21,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="bankdash flex min-h-screen w-full">
+      {/* Outside the scroll container and above the sidebar, so it is the
+          first thing seen on every page of a view-as session. */}
+      {user.impersonating && (
+        <ImpersonationBanner
+          operatorName={user.impersonating.operatorName}
+          targetName={user.impersonating.targetName}
+          reason={user.impersonating.reason}
+          minutesLeft={user.impersonating.minutesLeft}
+        />
+      )}
       <BankSidebar
         name={user.name ?? "SendYurt"}
         initial={initial}

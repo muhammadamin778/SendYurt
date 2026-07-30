@@ -32,11 +32,20 @@ vi.mock("next/navigation", () => ({
 }));
 // audit.ts → telegram.ts imports "server-only", unresolvable outside Next.
 vi.mock("@/lib/telegram", () => ({ sendTelegramLog: async () => {} }));
+const fakeSession = async () => ({
+  user: { id: "staff_1" },
+  db: { id: "staff_1", email: "s@x.uz", name: "Staff", adminRole: currentRole, suspended },
+});
 vi.mock("@/lib/supabase/app-session", () => ({
-  getAppSession: async () => ({
-    user: { id: "staff_1" },
-    db: { id: "staff_1", email: "s@x.uz", name: "Staff", adminRole: currentRole, suspended },
-  }),
+  getAppSession: fakeSession,
+  // The staff guards read the operator's own session, so view-as can never
+  // change whose permissions are being checked.
+  getOperatorSession: fakeSession,
+}));
+// No view-as session in these tests — that path has its own suite.
+vi.mock("@/lib/impersonation", () => ({
+  getActiveImpersonation: async () => null,
+  READ_ONLY_ERROR: "read_only_session",
 }));
 
 // Any DB call reaching Prisma means the guard did NOT stop the action — fail loudly.

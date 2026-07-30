@@ -20,6 +20,10 @@ const TONE: Record<string, string> = {
   TRANSACTION_REVERSE: "bg-[#ba1a1a]/10 text-[#ba1a1a]",
   TRANSACTION_FAIL: "bg-[#ba1a1a]/10 text-[#ba1a1a]",
   TRANSACTION_DISPUTE: "bg-[#772f2c]/10 text-[#772f2c]",
+  // Distinct from the money actions: these are reads, but the most invasive
+  // ones the panel allows, so they should not blend into the neutral default.
+  IMPERSONATION_START: "bg-[#5b4bb7]/10 text-[#4a3b9e]",
+  IMPERSONATION_END: "bg-[#5b4bb7]/10 text-[#4a3b9e]",
 };
 
 function label(action: string): string {
