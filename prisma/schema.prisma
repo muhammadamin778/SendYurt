@@ -81,6 +81,8 @@ model User {
   notifications    Notification[]
   auditLogs        AuditLog[]    @relation("AdminAuditLogs")
   transactionEvents TransactionEvent[] @relation("TransactionEventActor")
+  impersonationsMade ImpersonationSession[] @relation("ImpersonationOperator")
+  impersonatedAs     ImpersonationSession[] @relation("ImpersonationTarget")
   cards            Card[]
 }
 
@@ -170,6 +172,38 @@ model AuditLog {
   @@index([targetUserId])
   // The viewer filters by action type over a date range.
   @@index([action, createdAt])
+}
+
+/// A time-boxed, audited "view as user" session.
+///
+/// The browser cookie carries ONLY this row's id. Every request re-validates
+/// it here, and — critically — checks that the CURRENTLY AUTHENTICATED
+/// operator matches `operatorId`. That is what makes the cookie useless on its
+/// own: it is a pointer to a server-side grant, not a credential. No auth
+/// token is ever minted for the target user.
+///
+/// Rows are never deleted. `endedAt` closes a session, so the history of who
+/// looked at whose account, when and why, is permanent.
+model ImpersonationSession {
+  id           String    @id @default(cuid())
+  /// The staff member doing the viewing.
+  operatorId   String
+  /// The customer whose screens are being rendered.
+  targetUserId String
+  /// Mandatory justification, captured at start.
+  reason       String
+  /// Hard stop. A session is invalid past this instant even if never ended.
+  expiresAt    DateTime
+  /// Set when the operator exits, or when a new session supersedes this one.
+  endedAt      DateTime?
+  ip           String?
+  startedAt    DateTime  @default(now())
+
+  operator User @relation("ImpersonationOperator", fields: [operatorId], references: [id], onDelete: Cascade)
+  target   User @relation("ImpersonationTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+
+  @@index([operatorId, startedAt])
+  @@index([targetUserId, startedAt])
 }
 
 model Notification {

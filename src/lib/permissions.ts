@@ -26,6 +26,12 @@ export const PERMISSIONS = [
   "customer.pii.view",
   "customer.suspend",
   "customer.export",
+  /**
+   * Open a read-only "view as user" session. Not granted to SUPPORT: seeing a
+   * customer's screens is the most invasive read the panel offers, and support
+   * is the widest seat. Revisit once ticket-scoped grants exist.
+   */
+  "customer.impersonate",
   // Transactions
   "transaction.view",
   "transaction.confirm",
@@ -81,6 +87,7 @@ const ADMIN_PERMISSIONS: Permission[] = [
   "customer.pii.view",
   "customer.suspend",
   "customer.export",
+  "customer.impersonate",
   "transaction.reverse",
   "transaction.export",
   "settings.view",

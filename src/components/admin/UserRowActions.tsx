@@ -6,6 +6,7 @@ import { useState } from "react";
 import { setStaffRole, setUserSuspended } from "@/app/actions/admin";
 import { toast } from "@/components/ui/toast";
 import { ROLE_LABELS } from "@/lib/permissions";
+import { ViewAsUserButton } from "@/components/admin/ViewAsUserButton";
 
 /**
  * Guarded controls for a user row — assign a staff tier, and suspend/reinstate.
@@ -25,18 +26,26 @@ const ASSIGNABLE: AdminRole[] = ["SUPER_ADMIN", "ADMIN", "SUPPORT", "USER"];
 
 export function UserRowActions({
   userId,
+  userName,
   currentRole,
   suspended,
   isSelf,
   canManageStaff,
   canSuspend,
+  canImpersonate,
+  locale,
+  impersonationTtlMinutes,
 }: {
   userId: string;
+  userName: string;
   currentRole: AdminRole;
   suspended: boolean;
   isSelf: boolean;
   canManageStaff: boolean;
   canSuspend: boolean;
+  canImpersonate: boolean;
+  locale: string;
+  impersonationTtlMinutes: number;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -68,12 +77,26 @@ export function UserRowActions({
 
   // Nothing to offer this viewer — a placeholder rather than an empty hover
   // zone that looks broken.
-  if (!canManageStaff && !canSuspend) {
+  // View-as is only offered for ordinary customers: staff accounts are refused
+  // server-side (an ADMIN reading a SUPER_ADMIN's screens is escalation), and a
+  // suspended account has no session to stand in for.
+  const showViewAs = canImpersonate && !isSelf && currentRole === "USER" && !suspended;
+
+  if (!canManageStaff && !canSuspend && !showViewAs) {
     return <span className="block text-right text-[11px] text-[#6f7a72]">—</span>;
   }
 
   return (
     <div className="flex items-center justify-end gap-2">
+      {showViewAs && (
+        <ViewAsUserButton
+          userId={userId}
+          userName={userName}
+          locale={locale}
+          ttlMinutes={impersonationTtlMinutes}
+        />
+      )}
+
       {canManageStaff && (
         <label className="flex items-center gap-1.5">
           <span className="sr-only">Staff tier</span>

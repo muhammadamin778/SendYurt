@@ -35,6 +35,7 @@ const GRANTED: Record<"SUPPORT" | "ADMIN" | "SUPER_ADMIN", Permission[]> = {
     "customer.pii.view",
     "customer.suspend",
     "customer.export",
+    "customer.impersonate",
     "transaction.view",
     "transaction.confirm",
     "transaction.dispute",
@@ -90,6 +91,13 @@ describe("the boundaries that matter", () => {
   it("SUPPORT cannot bulk-export customer data", () => {
     expect(can("SUPPORT", "customer.export")).toBe(false);
     expect(can("SUPPORT", "transaction.export")).toBe(false);
+  });
+
+  it("SUPPORT cannot view a customer's account as them", () => {
+    // The widest seat does not get the most invasive read. Reconsider only
+    // when a grant can be scoped to a specific ticket.
+    expect(can("SUPPORT", "customer.impersonate")).toBe(false);
+    expect(can("ADMIN", "customer.impersonate")).toBe(true);
   });
 
   it("SUPPORT cannot see unmasked PII", () => {

@@ -6,6 +6,7 @@ import { emailFor, nameFor } from "@/lib/mask";
 import { ROLE_LABELS } from "@/lib/permissions";
 import { IllustrativeTag } from "@/components/admin/IllustrativeTag";
 import { UserRowActions } from "@/components/admin/UserRowActions";
+import { IMPERSONATION_TTL_MINUTES } from "@/lib/impersonation";
 import { requireStaff } from "@/lib/admin";
 import { paginate, parsePageParams } from "@/lib/pagination";
 import { readPrisma } from "@/lib/prisma-read";
@@ -43,6 +44,7 @@ export default async function AdminUsersPage({
   const canExport = staff.can("customer.export");
   const canManageStaff = staff.can("staff.manage");
   const canSuspend = staff.can("customer.suspend");
+  const canImpersonate = staff.can("customer.impersonate");
 
   const statusFilter = (["verified", "pending", "flagged"] as const).includes(searchParams.status as never)
     ? (searchParams.status as Status)
@@ -237,11 +239,15 @@ export default async function AdminUsersPage({
                     <td className="px-6 py-4">
                       <UserRowActions
                         userId={u.id}
+                        userName={u.name}
                         currentRole={u.adminRole}
                         suspended={u.suspended}
                         isSelf={u.id === staff.id}
                         canManageStaff={canManageStaff}
                         canSuspend={canSuspend}
+                        canImpersonate={canImpersonate}
+                        locale={locale}
+                        impersonationTtlMinutes={IMPERSONATION_TTL_MINUTES}
                       />
                     </td>
                   </tr>

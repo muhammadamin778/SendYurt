@@ -2,7 +2,8 @@ import type { AdminRole } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { can, isStaff, permissionsFor, type Permission } from "@/lib/permissions";
-import { getAppSession } from "@/lib/supabase/app-session";
+import { getActiveImpersonation, READ_ONLY_ERROR } from "@/lib/impersonation";
+import { getOperatorSession } from "@/lib/supabase/app-session";
 
 /**
  * Staff guards.
@@ -41,12 +42,18 @@ export interface StaffUser {
  * Wrapped in `cache()` so a layout and its page share one lookup per request.
  */
 export const requireStaff = cache(async (permission?: Permission): Promise<StaffUser> => {
-  const session = await getAppSession();
+  const session = await getOperatorSession();
   if (!session) redirect("/en/login");
 
   const { db } = session;
   if (db.suspended || !isStaff(db.adminRole)) redirect("/");
   if (permission && !can(db.adminRole, permission)) redirect("/");
+
+  // The two modes are mutually exclusive. Operating the panel while wearing a
+  // customer's identity is exactly the confusion that makes an audit trail
+  // unreadable afterwards, so view-as bounces out to the customer app; the
+  // banner's Exit button is the way back.
+  if (await getActiveImpersonation(db.id)) redirect("/en/dashboard");
 
   return {
     id: db.id,
@@ -69,12 +76,18 @@ export const requireStaff = cache(async (permission?: Permission): Promise<Staff
 export async function assertPermission(
   permission: Permission,
 ): Promise<{ adminId: string; role: AdminRole }> {
-  const session = await getAppSession();
+  const session = await getOperatorSession();
   if (!session) throw new Error("unauthorized");
 
   const { db } = session;
   if (db.suspended || !can(db.adminRole, permission)) {
     throw new Error("forbidden");
+  }
+  // No staff mutation while viewing as a customer. `endImpersonation` is the
+  // one exception and guards itself, precisely so exiting can never be the
+  // thing that is blocked.
+  if (await getActiveImpersonation(db.id)) {
+    throw new Error(READ_ONLY_ERROR);
   }
   return { adminId: db.id, role: db.adminRole };
 }

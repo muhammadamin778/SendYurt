@@ -1,4 +1,5 @@
 import type { TimelineMonth } from "@/components/trust/RemittanceTimeline";
+import { isReadOnlyRequest } from "@/lib/impersonation";
 import { computeMilestones, type Milestone } from "@/lib/milestones";
 import { addMinor, toMinor, ZERO, type Minor } from "@/lib/money";
 import { isSignificantScoreChange, notifyHousehold } from "@/lib/notifications";
@@ -58,10 +59,17 @@ export async function getTrustData(householdId: string): Promise<TrustData> {
 
   const staleMs = 24 * 60 * 60 * 1000;
   let calculatedAt = latest?.calculatedAt ?? new Date();
+  // Reading this page normally persists a snapshot and can notify the
+  // household. An operator viewing the account must do neither: they would be
+  // writing to the customer's score history and pinging their phone just by
+  // looking. The score still renders — it is computed above — it simply is
+  // not recorded as if the customer had visited.
+  const readOnly = await isReadOnlyRequest();
   if (
-    !latest ||
-    latest.score !== result.score ||
-    Date.now() - latest.calculatedAt.getTime() > staleMs
+    !readOnly &&
+    (!latest ||
+      latest.score !== result.score ||
+      Date.now() - latest.calculatedAt.getTime() > staleMs)
   ) {
     const snapshot = await prisma.trustScoreSnapshot.create({
       data: {

@@ -1,16 +1,24 @@
 import { NextResponse } from "next/server";
-import { getAppSession } from "@/lib/supabase/app-session";
+import { getActiveImpersonation } from "@/lib/impersonation";
+import { getAppSession, getOperatorSession } from "@/lib/supabase/app-session";
 import { prisma } from "@/lib/prisma";
 
+/**
+ * The bell's contents — a read, so it follows a view-as session the same way
+ * the pages do. Resolved explicitly rather than through `requireUser()`,
+ * which redirects; a fetch wants a 401, not a 307.
+ */
 export async function GET() {
-  const session = await getAppSession();
+  const session = await getOperatorSession();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
+  const active = await getActiveImpersonation(session.db.id);
+  const userId = active ? active.target.id : session.user.id;
 
   const [items, unreadCount] = await Promise.all([
     prisma.notification.findMany({
-      where: { userId: session.user.id },
+      where: { userId },
       orderBy: { createdAt: "desc" },
       take: 20,
       select: { id: true, type: true, payload: true, readAt: true, createdAt: true },
