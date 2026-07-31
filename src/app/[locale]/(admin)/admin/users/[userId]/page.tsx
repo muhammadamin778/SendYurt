@@ -119,7 +119,6 @@ export default async function User360Page({
         currency: true,
         status: true,
         date: true,
-        note: true,
         provider: { select: { name: true } },
       },
     }),
