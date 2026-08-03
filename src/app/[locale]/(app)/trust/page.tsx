@@ -160,9 +160,12 @@ export default async function TrustPage({
                       <div className="flex-1">
                         <h4 className="text-sm font-semibold text-[#0f172a]">{t(a.titleKey)}</h4>
                         <p className="mt-1 text-xs text-[#64748b]">{t(a.descKey)}</p>
-                        <Link href={a.href} className="mt-3 flex items-center justify-between rounded-lg bg-[#0a7c53]/10 px-3 py-2 text-xs font-bold text-[#0a7c53] transition-all hover:bg-[#0a7c53] hover:text-white">
-                          <span>{t(a.ctaKey)}</span>
-                          <span className="rounded bg-[#0a7c53] px-2 py-0.5 text-[10px] text-white">{t("ptsBadge", { n: a.pts })}</span>
+                        {/* gap-2 plus min-w-0/shrink-0: neither span could give
+                            way before, so on a narrow card the label and the
+                            points badge overlapped instead of one yielding. */}
+                        <Link href={a.href} className="mt-3 flex items-center justify-between gap-2 rounded-lg bg-[#0a7c53]/10 px-3 py-2 text-xs font-bold text-[#0a7c53] transition-all hover:bg-[#0a7c53] hover:text-white">
+                          <span className="min-w-0 truncate">{t(a.ctaKey)}</span>
+                          <span className="shrink-0 whitespace-nowrap rounded bg-[#0a7c53] px-2 py-0.5 text-[10px] text-white">{t("ptsBadge", { n: a.pts })}</span>
                         </Link>
                       </div>
                     </div>
