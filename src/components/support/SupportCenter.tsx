@@ -230,9 +230,19 @@ export function SupportCenter({
                     <button key={i} type="button" className="hidden rounded-lg p-2 transition-colors hover:bg-[#e6e8ea] sm:block"><Icon d={d} className="h-5 w-5" /></button>
                   ))}
                 </div>
-                <button type="button" onClick={send} disabled={draft.trim().length === 0} className="ml-auto flex shrink-0 items-center gap-1.5 rounded-lg bg-[#0a7c53] px-3 py-1.5 text-[13px] font-bold text-white transition-all hover:bg-[#065f3e] active:scale-95 disabled:opacity-40 sm:gap-2 sm:rounded-xl sm:px-6 sm:py-2 sm:text-sm sm:shadow-lg sm:shadow-[#0a7c53]/20">
-                  {t("send")}
-                  <Icon d={I.send} className="h-[18px] w-[18px]" />
+                {/* Icon only, as in a messaging app. The word "Send" beside a
+                    paper plane is the plane saying it twice, and it cost width
+                    the conversation could use. The label stays on aria-label,
+                    so screen readers still announce it. */}
+                <button
+                  type="button"
+                  onClick={send}
+                  disabled={draft.trim().length === 0}
+                  aria-label={t("send")}
+                  title={t("send")}
+                  className="ml-auto grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#0a7c53] text-white transition-all hover:bg-[#065f3e] active:scale-95 disabled:opacity-40 sm:h-10 sm:w-10"
+                >
+                  <Icon d={I.send} className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
                 </button>
               </div>
             </div>
