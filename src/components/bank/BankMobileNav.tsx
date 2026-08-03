@@ -49,7 +49,7 @@ export function BankMobileNav() {
                   // one-line label.
                   "relative flex min-h-[56px] flex-col items-center justify-center gap-1 px-1 py-2 text-[10px] font-medium leading-tight transition-colors",
                   active
-                    ? "text-[#0a7c53] before:absolute before:inset-x-6 before:top-0 before:h-[3px] before:rounded-full before:bg-[#0a7c53]"
+                    ? "text-[#0a7c53] before:absolute before:inset-x-3 before:top-0 before:h-[3px] before:rounded-full before:bg-[#0a7c53]"
                     : "text-[#b1b1b1]",
                 )}
               >
