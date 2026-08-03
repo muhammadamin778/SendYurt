@@ -89,9 +89,18 @@ export default async function DashboardPage({
 
   // Real linked cards drive the "My Cards" panel when present, showing each
   // card's stored last-4, holder, expiry and (debitable) balance.
+  /**
+   * Card balances are hidden while an operator is viewing the account.
+   *
+   * A read-only session exists to see what the customer sees — a layout
+   * problem, a missing transaction, a confusing label. None of that needs the
+   * balance, and an operator who never has to read one cannot repeat it. The
+   * masked figure keeps the card's shape so the page still looks right.
+   */
+  const hideMoney = user.impersonating !== null;
   const realCards = cards.map((c) => ({
     id: c.id,
-    balance: formatMoney(toMinor(c.balance), "UZS", currentLocale),
+    balance: hideMoney ? "••• •••" : formatMoney(toMinor(c.balance), "UZS", currentLocale),
     holder: c.holderName,
     valid: c.expiry,
     number: `•••• •••• •••• ${c.last4}`,

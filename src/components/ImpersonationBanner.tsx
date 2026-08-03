@@ -37,21 +37,30 @@ export function ImpersonationBanner({
   return (
     <div
       role="status"
-      className="sticky top-0 z-50 flex flex-wrap items-center gap-x-4 gap-y-2 border-b-2 border-[#8c1d18] bg-[#ba1a1a] px-4 py-2.5 text-white sm:px-8"
+      className="sticky top-0 z-50 flex items-center gap-2 border-b-2 border-[#8c1d18] bg-[#ba1a1a] px-3 py-1.5 text-white sm:gap-4 sm:px-8 sm:py-2.5"
     >
-      <span className="flex items-center gap-2 text-[13px] font-bold uppercase tracking-wide">
-        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <span className="flex shrink-0 items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide sm:text-[13px] sm:gap-2">
+        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
           <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z" strokeLinecap="round" strokeLinejoin="round" />
           <circle cx="12" cy="12" r="3" />
         </svg>
         Read-only
       </span>
 
-      <span className="min-w-0 flex-1 text-[13px]">
-        <strong>{operatorName}</strong> is viewing <strong>{targetName}</strong>&rsquo;s account.
-        Nothing can be changed here.{" "}
+      {/* One line on a phone: the target and the countdown are what an operator
+          needs mid-session. The full sentence, the operator's own name and the
+          reason wrapped to five lines and pushed the app down the screen; they
+          stay from sm up, where there is room. */}
+      <span className="min-w-0 flex-1 truncate text-[11px] sm:text-[13px]">
+        <span className="hidden sm:inline">
+          <strong>{operatorName}</strong> is viewing{" "}
+        </span>
+        <strong>{targetName}</strong>
+        <span className="hidden sm:inline">&rsquo;s account. Nothing can be changed here.</span>
         <span className="text-white/80">
-          {minutesLeft > 0 ? `Ends in ${minutesLeft} min` : "Ending now"} · {reason}
+          {" · "}
+          {minutesLeft > 0 ? `${minutesLeft} min` : "ending"}
+          <span className="hidden sm:inline"> · {reason}</span>
         </span>
       </span>
 
@@ -59,9 +68,9 @@ export function ImpersonationBanner({
         type="button"
         onClick={exit}
         disabled={busy}
-        className="shrink-0 rounded-full bg-white px-3.5 py-1.5 text-[12px] font-bold text-[#8c1d18] transition-opacity hover:opacity-90 disabled:opacity-60"
+        className="shrink-0 rounded-full bg-white px-3 py-1 text-[11px] font-bold text-[#8c1d18] transition-opacity hover:opacity-90 disabled:opacity-60 sm:px-3.5 sm:py-1.5 sm:text-[12px]"
       >
-        {busy ? "Exiting…" : "Exit"}
+        {busy ? "…" : "Exit"}
       </button>
     </div>
   );
