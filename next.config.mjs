@@ -6,9 +6,13 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const nextConfig = {
   reactStrictMode: true,
   // Allows CI/local verification to build into an isolated directory so a
-  // running dev server can't clobber the production output. Defaults to
-  // the standard .next.
-  distDir: process.env.NEXT_DIST_DIR || ".next",
+  // running dev server can't clobber the production output.
+  //
+  // Deliberately ignored on Vercel: the platform looks for output in .next,
+  // so if NEXT_DIST_DIR ever ends up in the project's environment variables
+  // the build would succeed while writing somewhere Vercel cannot find,
+  // producing a deploy failure with no obvious cause.
+  distDir: process.env.VERCEL ? ".next" : process.env.NEXT_DIST_DIR || ".next",
   experimental: {
     // recharts is a large barrel package; without this every chart page pulls
     // in the whole library (hundreds of modules), which slows the dev
