@@ -103,7 +103,7 @@ export function SupportCenter({
   return (
     <div className="mx-auto max-w-[1400px]">
       {/* In-page header */}
-      <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+      <div className="mb-4 hidden flex-wrap items-center gap-x-4 gap-y-2 sm:flex">
         <h1 className="text-[20px] font-bold text-[#0f172a]">{t("title")}</h1>
         <span className="hidden h-6 w-px bg-[#e2e8f0] md:block" />
         <span className="hidden items-center gap-1.5 text-sm text-[#64748b] md:flex">
@@ -117,7 +117,11 @@ export function SupportCenter({
       </div>
 
       {/* Three-pane shell */}
-      <div className="flex h-[76vh] overflow-hidden rounded-2xl border border-[#e2e8f0] bg-white shadow-sm">
+      {/* Full-bleed on phones: the shell spans the viewport minus the header
+          and bottom nav, with no rounding or border to waste edge pixels.
+          100dvh, not 100vh — the latter sits under the mobile URL bar and
+          hides the composer. */}
+      <div className="-mx-5 flex h-[calc(100dvh-72px-84px)] overflow-hidden border-y border-[#e2e8f0] bg-white sm:mx-0 sm:h-[76vh] sm:rounded-2xl sm:border sm:shadow-sm">
         {/* Conversations */}
         <aside className="hidden w-72 shrink-0 flex-col border-r border-[#e2e8f0] bg-[#f8fafc] lg:flex">
           <div className="border-b border-[#e2e8f0] p-4">
@@ -155,7 +159,7 @@ export function SupportCenter({
 
         {/* Chat */}
         <section className="flex flex-1 flex-col bg-white">
-          <div className="flex h-14 items-center justify-between border-b border-[#e2e8f0] px-6">
+          <div className="flex h-14 items-center justify-between gap-2 border-b border-[#e2e8f0] px-4 sm:px-6">
             <div className="flex items-center gap-3">
               <span className="relative grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-[#0a7c53] to-[#065f3e] text-sm font-bold text-white">
                 {agentName.charAt(0)}
@@ -166,14 +170,12 @@ export function SupportCenter({
                 <p className="text-[10px] font-medium text-[#0a7c53]">{t("activeNow")}</p>
               </div>
             </div>
-            <div className="flex items-center gap-4 text-[#94a3b8]">
-              <button type="button" className="transition-colors hover:text-[#0a7c53]"><Icon d={I.phone} className="h-5 w-5" /></button>
-              <button type="button" className="transition-colors hover:text-[#0a7c53]"><Icon d={I.video} className="h-5 w-5" /></button>
-              <button type="button" className="transition-colors hover:text-[#0a7c53]"><Icon d={I.more} className="h-5 w-5" /></button>
-            </div>
+            {/* The phone / video / more icons that used to sit here had no
+                handlers — three dead controls whose only effect was to push
+                this row past the right edge of a phone. */}
           </div>
 
-          <div ref={scrollRef} className="flex-1 space-y-5 overflow-y-auto p-6">
+          <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-4 sm:space-y-5 sm:p-6">
             {active.messages.map((m, i) =>
               m.system ? (
                 <div key={i} className="flex justify-center">
@@ -183,7 +185,7 @@ export function SupportCenter({
                   </span>
                 </div>
               ) : m.from === "agent" ? (
-                <div key={i} className="flex max-w-[80%] items-start gap-3">
+                <div key={i} className="flex max-w-[88%] items-start gap-2.5 sm:max-w-[80%] sm:gap-3">
                   <span className="mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#0a7c53] to-[#065f3e] text-xs font-bold text-white">{agentName.charAt(0)}</span>
                   <div>
                     <div className="rounded-2xl rounded-bl-sm bg-[#f1f5f9] p-4 text-[#0f172a] shadow-sm"><p className="text-sm leading-relaxed">{m.text}</p></div>
@@ -191,7 +193,7 @@ export function SupportCenter({
                   </div>
                 </div>
               ) : (
-                <div key={i} className="ml-auto flex max-w-[80%] flex-row-reverse items-start gap-3">
+                <div key={i} className="ml-auto flex max-w-[88%] flex-row-reverse items-start gap-2.5 sm:max-w-[80%] sm:gap-3">
                   <span className="mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#131b2e] text-[10px] font-bold text-white">{user.initial}</span>
                   <div className="flex flex-col items-end">
                     <div className="rounded-2xl rounded-br-sm bg-[#0a7c53] p-4 text-white shadow-sm"><p className="text-sm leading-relaxed">{m.text}</p></div>
@@ -207,7 +209,7 @@ export function SupportCenter({
 
           {/* Composer */}
           <div className="p-6">
-            <div className="rounded-2xl border border-[#e2e8f0] bg-[#f8fafc] p-4 shadow-sm">
+            <div className="rounded-2xl border border-[#e2e8f0] bg-[#f8fafc] p-3 shadow-sm sm:p-4">
               <textarea
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
@@ -217,11 +219,13 @@ export function SupportCenter({
               />
               <div className="mt-2 flex items-center justify-between border-t border-[#eef2f7] pt-3">
                 <div className="flex items-center gap-1 text-[#94a3b8]">
+                  {/* Attachment controls are desktop-only until there is an
+                      upload path behind them; on a phone they only crowded Send. */}
                   {[I.plus, I.image, I.mood, I.attach].map((d, i) => (
-                    <button key={i} type="button" className="rounded-lg p-2 transition-colors hover:bg-[#e6e8ea]"><Icon d={d} className="h-5 w-5" /></button>
+                    <button key={i} type="button" className="hidden rounded-lg p-2 transition-colors hover:bg-[#e6e8ea] sm:block"><Icon d={d} className="h-5 w-5" /></button>
                   ))}
                 </div>
-                <button type="button" onClick={send} className="flex items-center gap-2 rounded-xl bg-[#0a7c53] px-6 py-2 text-sm font-bold text-white shadow-lg shadow-[#0a7c53]/20 transition-all hover:bg-[#065f3e] active:scale-95">
+                <button type="button" onClick={send} disabled={draft.trim().length === 0} className="ml-auto flex shrink-0 items-center gap-2 rounded-xl bg-[#0a7c53] px-4 py-2 text-sm font-bold text-white shadow-lg shadow-[#0a7c53]/20 transition-all hover:bg-[#065f3e] active:scale-95 disabled:opacity-40 sm:px-6">
                   {t("send")}
                   <Icon d={I.send} className="h-[18px] w-[18px]" />
                 </button>

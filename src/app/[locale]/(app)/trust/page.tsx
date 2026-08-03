@@ -170,10 +170,6 @@ export default async function TrustPage({
                 ))}
               </div>
             </div>
-            <div className="relative flex h-48 w-full shrink-0 items-end overflow-hidden rounded-xl bg-gradient-to-br from-[#1f2a44] to-[#0b1220] p-4 md:h-auto md:w-64 md:self-stretch">
-              <div aria-hidden="true" className="pointer-events-none absolute -right-6 -top-8 h-32 w-32 rounded-full bg-[#4edea3]/10" />
-              <p className="relative text-[12px] font-medium leading-tight text-white/90">{t("testimonial")}</p>
-            </div>
           </div>
         </div>
       </div>

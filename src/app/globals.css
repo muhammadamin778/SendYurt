@@ -752,10 +752,25 @@ html.has-custom-cursor * { cursor: none !important; }
 *::-webkit-scrollbar-thumb:hover {
   background-color: rgba(71, 85, 105, 0.55);
 }
-*::-webkit-scrollbar-button {
-  display: none;
+/* Every scrollbar-button variant, not just the default one. WebKit exposes
+   :start/:end and single/double-button pseudo-classes separately, and a rule
+   on the bare selector leaves the stepper arrows painted in some builds —
+   which is what put a pair of grey triangles in the top-right of the page. */
+*::-webkit-scrollbar-button,
+*::-webkit-scrollbar-button:start,
+*::-webkit-scrollbar-button:end,
+*::-webkit-scrollbar-button:vertical:start:decrement,
+*::-webkit-scrollbar-button:vertical:end:increment,
+*::-webkit-scrollbar-button:horizontal:start:decrement,
+*::-webkit-scrollbar-button:horizontal:end:increment,
+*::-webkit-scrollbar-button:single-button,
+*::-webkit-scrollbar-button:double-button {
+  display: none !important;
   width: 0;
   height: 0;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
 }
 *::-webkit-scrollbar-corner {
   background: transparent;

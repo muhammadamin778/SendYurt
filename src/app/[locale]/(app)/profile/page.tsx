@@ -8,7 +8,10 @@ import { SecurityToggle } from "@/components/profile/SecurityToggle";
 import { EditProfileForm, type ReadOnlyField } from "@/components/bank/EditProfileForm";
 import { SettingTabs } from "@/components/bank/SettingTabs";
 import { prisma } from "@/lib/prisma";
+import { createServerSupabase } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/session";
+import { isStaff } from "@/lib/permissions";
+import { NAV, NavGlyph } from "@/components/bank/nav-items";
 
 export async function generateMetadata({
   params: { locale },
@@ -67,6 +70,38 @@ export default async function ProfilePage({
     select: { name: true, inviteCode: true, users: { orderBy: { createdAt: "asc" }, select: { id: true, name: true } } },
   });
 
+  /**
+   * Real recent activity for the Security tab.
+   *
+   * Read under the user's own Supabase session, so RLS returns only their
+   * rows — a customer can never see anyone else's. Distinct paths, newest
+   * first, so a burst of reloads on one page does not fill the list.
+   */
+  const supabase = createServerSupabase();
+  const { data: activityRows } = await supabase
+    .from("activity_logs")
+    .select("id,path,created_at")
+    .order("created_at", { ascending: false })
+    .limit(25);
+
+  const seenPaths = new Set<string>();
+  const recentActivity = (activityRows ?? [])
+    .filter((r) => {
+      const key = r.path ?? "/";
+      if (seenPaths.has(key)) return false;
+      seenPaths.add(key);
+      return true;
+    })
+    .slice(0, 5)
+    .map((r) => ({
+      id: String(r.id),
+      path: r.path ?? "/",
+      when: new Date(r.created_at as string).toLocaleString(currentLocale, {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }),
+    }));
+
   const isSender = user.role === "SENDER";
   const initial = (user.name ?? "?").trim().charAt(0).toUpperCase();
   const roleLabel = isSender ? tp("roleSenderTitle") : tp("roleReceiverTitle");
@@ -91,12 +126,57 @@ export default async function ProfilePage({
     />
   );
 
+  /**
+   * Destinations the bottom bar has no room for.
+   *
+   * The mobile drawer that used to carry these is gone, and the sidebar that
+   * carries them on a laptop is hidden under lg — so without this block
+   * Family, History and Help would have no route on a phone at all. Settings
+   * is reachable from the avatar in the header, which makes it the one place
+   * every screen can get to.
+   */
+  const bottomBarHrefs = new Set(["/dashboard", "/wallet", "/rates", "/budget", "/trust", "/support"]);
+  const moreLinks = NAV.filter((item) => !bottomBarHrefs.has(item.href));
+
   const preferences = (
-    <div className="max-w-2xl divide-y divide-[#eef2f7]">
+    <div className="max-w-2xl">
+      <section className="mb-6 lg:hidden">
+        <h3 className="text-[15px] font-semibold text-[#0f172a]">{tp("moreTitle")}</h3>
+        <p className="mb-3 text-xs text-[#94a3b8]">{tp("moreDesc")}</p>
+        <ul className="grid grid-cols-2 gap-2">
+          {moreLinks.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                className="flex items-center gap-2.5 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-3 py-3 text-[14px] font-medium text-[#0f172a] transition-colors hover:bg-[#f1f5f9]"
+              >
+                <span className="text-[#0a7c53]"><NavGlyph name={item.icon} /></span>
+                <span className="truncate">{t(item.key)}</span>
+              </Link>
+            </li>
+          ))}
+          {isStaff(user.adminRole) && (
+            <li className="col-span-2">
+              <Link
+                href="/admin"
+                className="flex items-center justify-center gap-2 rounded-xl bg-[#0f172a] px-3 py-3 text-[14px] font-semibold text-white transition-colors hover:bg-[#1f2a44]"
+              >
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                  <path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6zM9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Admin panel
+              </Link>
+            </li>
+          )}
+        </ul>
+      </section>
+
+      <div className="divide-y divide-[#eef2f7]">
       <Row icon="M3 5h12M9 3v2m1.5 14L15 9l4.5 10M12 19h6M5 9c2.5 4 6 7 10 9" title={tp("language")} desc={LOCALE_LABELS[currentLocale]} trailing={<LanguageSwitcher />} />
       <Row icon="M12 3v2m0 14v2M5.6 5.6l1.4 1.4m10 10l1.4 1.4M3 12h2m14 0h2M5.6 18.4l1.4-1.4m10-10l1.4-1.4M12 8a4 4 0 100 8 4 4 0 000-8z" title={tp("theme")} trailing={<ThemeToggle />} />
       <Row icon="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" title={tp("currency")} desc="UZS · soʻm" trailing={<span className="rounded-full bg-[#dcfce7] px-3 py-1 text-[13px] font-semibold text-[#0a7c53]">UZS</span>} />
       <Row icon="M18 9a6 6 0 10-12 0c0 5-2 6-2 6h16s-2-1-2-6M10.3 19a2 2 0 003.4 0" title={tp("notifications")} desc={tp("notificationsOn")} trailing={<span className="rounded-full bg-[#dcfce7] px-3 py-1 text-[13px] font-semibold text-[#059669]">{tp("on")}</span>} />
+      </div>
     </div>
   );
 
@@ -126,23 +206,35 @@ export default async function ProfilePage({
         </div>
       </section>
 
-      {/* Login Activity */}
+      {/* Login Activity — real rows from the account's own activity log.
+          It records user_id, email, path and a timestamp; there is no user
+          agent and no IP, so the device names and "Tashkent, Uzbekistan"
+          that used to sit here were invented. Showing a fabricated device on
+          a security screen is worse than showing nothing: it is exactly the
+          panel someone checks to see whether an account was used by someone
+          else. */}
       <section>
         <h3 className="mb-3 text-[20px] font-semibold text-[#0f172a]">{tp("secLoginActivity")}</h3>
-        <div className="space-y-2">
-          {[
-            { icon: "M4 5h16v11H4zM8 20h8M12 16v4", title: tp("secDeviceDesktop"), sub: `${tp("secLocation")} (${tp("secCurrent")})` },
-            { icon: "M7 3h10v18H7zM11 18h2", title: tp("secDeviceMobile"), sub: tp("secLocation") },
-          ].map((d) => (
-            <div key={d.title} className="flex items-center gap-3 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-4 transition-colors hover:bg-[#f1f5f9]">
-              <svg viewBox="0 0 24 24" className="h-6 w-6 text-[#64748b]" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d={d.icon} strokeLinecap="round" strokeLinejoin="round" /></svg>
-              <div className="flex-1">
-                <p className="text-[15px] font-medium text-[#0f172a]">{d.title}</p>
-                <p className="text-xs text-[#94a3b8]">{d.sub}</p>
+        {recentActivity.length === 0 ? (
+          <p className="rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-4 text-sm text-[#94a3b8]">
+            {tp("secActivityEmpty")}
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {recentActivity.map((a) => (
+              <div key={a.id} className="flex items-center gap-3 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-4">
+                <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0 text-[#64748b]" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
+                  <path d="M3 12a9 9 0 109-9 9 9 0 00-8 5M3 4v4h4M12 8v4l3 2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[15px] font-medium text-[#0f172a]">{a.path}</p>
+                  <p className="text-xs text-[#94a3b8]">{a.when}</p>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
+        <p className="mt-2 text-xs leading-relaxed text-[#94a3b8]">{tp("secActivityNote")}</p>
       </section>
 
       {/* Account Privacy */}
@@ -156,10 +248,6 @@ export default async function ProfilePage({
           <SecurityToggle label={tp("secHideSavings")} />
         </div>
       </section>
-
-      <div className="border-t border-[#e2e8f0] pt-4">
-        <button type="button" className="text-sm font-semibold text-[#ef4444] hover:underline">{tp("secDeactivate")}</button>
-      </div>
 
       <SignOutPanel />
     </div>
