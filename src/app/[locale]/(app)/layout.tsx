@@ -46,7 +46,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <BankTopbar image={user.image ?? null} initial={initial} />
 
           {/* pb clears the fixed mobile nav (~60px + safe area) and no more. */}
-          <main className="flex-1 px-5 py-6 pb-20 sm:px-8 lg:pb-10">{children}</main>
+          <main className="min-w-0 flex-1 overflow-x-clip px-5 py-6 pb-20 sm:px-8 lg:pb-10">{children}</main>
         </div>
       </div>
 
