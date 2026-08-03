@@ -65,7 +65,7 @@ export function BankTopbar({
           <Link
             href="/profile"
             aria-label={bank("setting")}
-            className="grid h-[50px] w-[50px] shrink-0 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-[#0a7c53] to-[#34d399] font-sans text-base font-bold text-white shadow-sm transition-transform hover:scale-105 lg:hidden"
+            className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-[#0a7c53] to-[#34d399] font-sans text-[13px] font-bold text-white shadow-sm transition-transform hover:scale-105 sm:h-10 sm:w-10 sm:text-sm lg:hidden"
           >
             {image ? (
               // eslint-disable-next-line @next/next/no-img-element

@@ -121,7 +121,11 @@ export function SupportCenter({
           and bottom nav, with no rounding or border to waste edge pixels.
           100dvh, not 100vh — the latter sits under the mobile URL bar and
           hides the composer. */}
-      <div className="-mx-5 flex h-[calc(100dvh-72px-84px)] overflow-hidden border-y border-[#e2e8f0] bg-white sm:mx-0 sm:h-[76vh] sm:rounded-2xl sm:border sm:shadow-sm">
+      {/* Truly edge to edge on a phone. The negative margins cancel main's own
+          px-5 py-6 pb-20; cancelling only the horizontal left a 24px band under
+          the header and 80px above the nav. Height is the viewport minus the
+          72px topbar and the ~60px tab bar. */}
+      <div className="-mx-5 -mb-20 -mt-6 flex h-[calc(100dvh-132px)] overflow-hidden border-y border-[#e2e8f0] bg-white sm:mx-0 sm:mb-0 sm:mt-0 sm:h-[76vh] sm:rounded-2xl sm:border sm:shadow-sm">
         {/* Conversations */}
         <aside className="hidden w-72 shrink-0 flex-col border-r border-[#e2e8f0] bg-[#f8fafc] lg:flex">
           <div className="border-b border-[#e2e8f0] p-4">
@@ -175,7 +179,7 @@ export function SupportCenter({
                 this row past the right edge of a phone. */}
           </div>
 
-          <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-4 sm:space-y-5 sm:p-6">
+          <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto px-4 py-3 sm:space-y-5 sm:p-6">
             {active.messages.map((m, i) =>
               m.system ? (
                 <div key={i} className="flex justify-center">
@@ -209,15 +213,16 @@ export function SupportCenter({
 
           {/* Composer */}
           <div className="p-6">
-            <div className="rounded-2xl border border-[#e2e8f0] bg-[#f8fafc] p-3 shadow-sm sm:p-4">
+            <div className="rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-2 shadow-sm sm:rounded-2xl sm:p-4">
               <textarea
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-                className="h-12 w-full resize-none border-none bg-transparent text-sm outline-none placeholder:text-[#94a3b8]"
+                rows={1}
+                className="h-9 w-full resize-none border-none bg-transparent px-1 text-[13px] outline-none placeholder:text-[#94a3b8] sm:h-12 sm:text-sm"
                 placeholder={t("typeMessage")}
               />
-              <div className="mt-2 flex items-center justify-between border-t border-[#eef2f7] pt-3">
+              <div className="mt-1.5 flex items-center justify-between border-t border-[#eef2f7] pt-2 sm:mt-2 sm:pt-3">
                 <div className="flex items-center gap-1 text-[#94a3b8]">
                   {/* Attachment controls are desktop-only until there is an
                       upload path behind them; on a phone they only crowded Send. */}
@@ -225,7 +230,7 @@ export function SupportCenter({
                     <button key={i} type="button" className="hidden rounded-lg p-2 transition-colors hover:bg-[#e6e8ea] sm:block"><Icon d={d} className="h-5 w-5" /></button>
                   ))}
                 </div>
-                <button type="button" onClick={send} disabled={draft.trim().length === 0} className="ml-auto flex shrink-0 items-center gap-2 rounded-xl bg-[#0a7c53] px-4 py-2 text-sm font-bold text-white shadow-lg shadow-[#0a7c53]/20 transition-all hover:bg-[#065f3e] active:scale-95 disabled:opacity-40 sm:px-6">
+                <button type="button" onClick={send} disabled={draft.trim().length === 0} className="ml-auto flex shrink-0 items-center gap-1.5 rounded-lg bg-[#0a7c53] px-3 py-1.5 text-[13px] font-bold text-white transition-all hover:bg-[#065f3e] active:scale-95 disabled:opacity-40 sm:gap-2 sm:rounded-xl sm:px-6 sm:py-2 sm:text-sm sm:shadow-lg sm:shadow-[#0a7c53]/20">
                   {t("send")}
                   <Icon d={I.send} className="h-[18px] w-[18px]" />
                 </button>

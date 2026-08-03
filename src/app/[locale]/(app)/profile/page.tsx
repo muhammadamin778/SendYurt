@@ -63,6 +63,10 @@ export default async function ProfilePage({
   const user = await requireUser();
   const t = await getTranslations("bank");
   const tp = await getTranslations("profile");
+  // The nav labels live in their own namespace. Reading them through the
+  // "bank" translator threw MISSING_MESSAGE for history/help/profile, which
+  // next-intl surfaces as a 500 — the "Something went wrong" on this page.
+  const tn = await getTranslations("nav");
   const currentLocale = await getLocale();
 
   const household = await prisma.household.findUnique({
@@ -151,7 +155,7 @@ export default async function ProfilePage({
                 className="flex items-center gap-2.5 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-3 py-3 text-[14px] font-medium text-[#0f172a] transition-colors hover:bg-[#f1f5f9]"
               >
                 <span className="text-[#0a7c53]"><NavGlyph name={item.icon} /></span>
-                <span className="truncate">{t(item.key)}</span>
+                <span className="truncate">{tn(item.key)}</span>
               </Link>
             </li>
           ))}
