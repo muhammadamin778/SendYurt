@@ -3,16 +3,9 @@
   "configurations": [
     {
       "name": "sendyurt-dev",
-      "cwd": "D:\\My code\\sendyurt",
-      "runtimeExecutable": "D:\\tools\\node\\npm.cmd",
+      "cwd": "D:\\Sendyurt\\SendYurt",
+      "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
-      "port": 3000
-    },
-    {
-      "name": "sendyurt-webpack",
-      "cwd": "D:\\My code\\sendyurt",
-      "runtimeExecutable": "D:\\tools\\node\\npm.cmd",
-      "runtimeArgs": ["run", "dev:webpack"],
       "port": 3000
     }
   ]
