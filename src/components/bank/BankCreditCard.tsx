@@ -28,7 +28,7 @@ export function BankCreditCard({
   return (
     <div
       className={clsx(
-        "relative flex aspect-[1.9/1] w-full flex-col justify-between overflow-hidden rounded-[25px]",
+        "relative flex min-h-[11rem] w-full flex-col justify-between overflow-hidden rounded-[25px] sm:aspect-[1.9/1] sm:min-h-0",
         filled
           ? "bg-gradient-to-br from-[#1f2a44] to-[#0b1220] text-white"
           : "border border-[#e2e8f0] bg-white text-[#0f172a]",

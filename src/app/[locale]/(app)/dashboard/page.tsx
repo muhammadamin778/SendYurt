@@ -31,8 +31,8 @@ function Card({
 }) {
   return (
     <section className={className}>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-[18px] font-semibold text-[#0f172a]">{title}</h2>
+      <div className="mb-3 flex flex-col items-start gap-2 sm:mb-4 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+        <h2 className="text-[15px] font-semibold leading-tight text-[#0f172a] sm:text-[18px]">{title}</h2>
         {action}
       </div>
       <div className={`bank-card ${bodyClassName}`}>{children}</div>
@@ -139,10 +139,10 @@ export default async function DashboardPage({
           className="xl:col-span-2"
           bodyClassName="!bg-transparent !shadow-none"
           action={
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <AddCardButton />
               {goalsLite.length > 0 && <AddFundsButton goals={goalsLite} />}
-              <Link href="/budget/manage" className="text-[15px] font-semibold text-[#0f172a] hover:text-[#0a7c53]">
+              <Link href="/budget/manage" className="whitespace-nowrap text-[13px] font-semibold text-[#0f172a] hover:text-[#0a7c53] sm:text-[15px]">
                 {t("seeAll")}
               </Link>
             </div>
