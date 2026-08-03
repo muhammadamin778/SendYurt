@@ -29,7 +29,8 @@
     "menu": "Menyu",
     "closeMenu": "Menyuni yopish",
     "ratesShort": "Kurslar",
-    "trustShort": "Ishonch"
+    "trustShort": "Ishonch",
+    "supportShort": "Yordam"
   },
   "profile": {
     "title": "Profilingiz",
@@ -133,7 +134,14 @@
     "cardSecure": "2FA yoqilgan",
     "cardSecureDesc": "Hisobingiz yuqori darajada himoyalangan",
     "cardNeedHelp": "Yordam kerakmi?",
-    "cardHelpDesc": "24/7 qo‘llab-quvvatlash"
+    "cardHelpDesc": "24/7 qo‘llab-quvvatlash",
+    "signOutTitle": "Hisob",
+    "signOutDesc": "Ushbu qurilmadagi seansni yakunlash.",
+    "signOutConfirm": "SendYurt hisobidan chiqasizmi?",
+    "signOutConfirmDesc": "Qayta kirish uchun email va parol kerak bo‘ladi.",
+    "signOutYes": "Ha, chiqish",
+    "signOutCancel": "Bekor qilish",
+    "signOutBusy": "Chiqilmoqda…"
   },
   "quickpay": {
     "title": "Tezkor toʻlov",

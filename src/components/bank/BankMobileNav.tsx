@@ -5,11 +5,17 @@ import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 
 /**
- * Five primary destinations. It was six, which gave each label 62px on a
- * 375px screen — "Rate finder" rendered as "finder" and "Trust score" as
- * "score". Profile moved to the drawer (it is also the topbar avatar), and
- * the two longest labels use dedicated short forms here; the sidebar and
- * drawer keep the full wording, where there is room for it.
+ * The six primary destinations.
+ *
+ * Profile is deliberately absent: the avatar in the header already goes there,
+ * so the tab was a duplicate. Support takes its place, which puts "reach a
+ * human" one tap away from every screen — the thing someone actually hunts for
+ * on a phone.
+ *
+ * Labels use short forms. At six columns each tab gets ~62px on a 375px
+ * screen, which is why "Rate finder" once rendered as "finder" and "Trust
+ * score" as "score". The sidebar and drawer keep the full wording, where
+ * there is room for it.
  */
 const ITEMS = [
   { href: "/dashboard", key: "dashboard", d: "M4 21V10l8-6 8 6v11M9 21v-7h6v7" },
@@ -17,6 +23,7 @@ const ITEMS = [
   { href: "/rates", key: "ratesShort", d: "M4 17l5-5 4 4 7-8M15 8h5v5" },
   { href: "/budget", key: "budget", d: "M3 6h18v13H3zM3 10h18" },
   { href: "/trust", key: "trustShort", d: "M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6zM9 12l2 2 4-4" },
+  { href: "/support", key: "supportShort", d: "M21 11.5a8.4 8.4 0 01-9 8.4 9 9 0 01-3.9-.9L3 20l1.3-3.9A8.4 8.4 0 013.6 12a8.4 8.4 0 018.4-8.4 8.4 8.4 0 019 7.9z" },
 ] as const;
 
 export function BankMobileNav() {
@@ -28,7 +35,7 @@ export function BankMobileNav() {
       aria-label="Main"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-[#e2e8f0] bg-white pb-[env(safe-area-inset-bottom)] print:hidden lg:hidden"
     >
-      <ul className="grid grid-cols-5">
+      <ul className="grid grid-cols-6">
         {ITEMS.map((item) => {
           const active =
             pathname === item.href || pathname.startsWith(`${item.href}/`);

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { SignOutPanel } from "@/components/SignOutPanel";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SecurityToggle } from "@/components/profile/SecurityToggle";
@@ -159,6 +160,8 @@ export default async function ProfilePage({
       <div className="border-t border-[#e2e8f0] pt-4">
         <button type="button" className="text-sm font-semibold text-[#ef4444] hover:underline">{tp("secDeactivate")}</button>
       </div>
+
+      <SignOutPanel />
     </div>
   );
 
