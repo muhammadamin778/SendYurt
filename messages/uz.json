@@ -121,14 +121,9 @@
     "sec2faState": "2FA yoqilgan",
     "sec2faDesc": "Hisobingizga qo‘shimcha himoya qatlamini qo‘shadi",
     "secLoginActivity": "Kirish faoliyati",
-    "secDeviceDesktop": "MacOS’dagi Chrome",
-    "secDeviceMobile": "Mobil ilova — iPhone 13",
-    "secCurrent": "Joriy",
-    "secLocation": "Toshkent, O‘zbekiston",
     "secPrivacy": "Hisob maxfiyligi",
     "secHideSavings": "Jamg‘arma holatini yashirish",
     "secHideSavingsDesc": "Maqsadlaringizni oila a’zolariga ko‘rsatmaslik",
-    "secDeactivate": "Hisobni o‘chirish",
     "cardTrustLevel": "Ishonch darajasi: {level}",
     "cardVerifiedBy": "{count} oila a’zosi tomonidan tasdiqlangan",
     "cardSecure": "2FA yoqilgan",
@@ -141,7 +136,9 @@
     "signOutConfirmDesc": "Qayta kirish uchun email va parol kerak bo‘ladi.",
     "signOutYes": "Ha, chiqish",
     "signOutCancel": "Bekor qilish",
-    "signOutBusy": "Chiqilmoqda…"
+    "signOutBusy": "Chiqilmoqda…",
+    "secActivityEmpty": "Hozircha faoliyat yozuvi yo‘q.",
+    "secActivityNote": "Hisobingiz faoliyat jurnalidagi so‘nggi ochilgan sahifalar. Qurilma va joylashuv yozilmaydi, shuning uchun ko‘rsatilmaydi."
   },
   "quickpay": {
     "title": "Tezkor toʻlov",

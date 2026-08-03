@@ -121,14 +121,9 @@
     "sec2faState": "2FA is currently Enabled",
     "sec2faDesc": "Adds an extra layer of security to your account",
     "secLoginActivity": "Login Activity",
-    "secDeviceDesktop": "Chrome on MacOS",
-    "secDeviceMobile": "Mobile App - iPhone 13",
-    "secCurrent": "Current",
-    "secLocation": "Tashkent, Uzbekistan",
     "secPrivacy": "Account Privacy",
     "secHideSavings": "Hide Savings Progress",
     "secHideSavingsDesc": "Don’t show your goals to family members",
-    "secDeactivate": "Deactivate Account",
     "cardTrustLevel": "Trust Level: {level}",
     "cardVerifiedBy": "Verified by {count} family members",
     "cardSecure": "2FA Enabled",
@@ -141,7 +136,9 @@
     "signOutConfirmDesc": "You will need your email and password to sign back in.",
     "signOutYes": "Yes, sign out",
     "signOutCancel": "Cancel",
-    "signOutBusy": "Signing out…"
+    "signOutBusy": "Signing out…",
+    "secActivityEmpty": "No recent activity recorded yet.",
+    "secActivityNote": "Recent pages you opened, from this account's own activity log. Device and location are not recorded, so they are not shown."
   },
   "quickpay": {
     "title": "Quick pay",
