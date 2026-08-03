@@ -194,8 +194,8 @@ export default async function HistoryPage({
       {/* Header */}
       <header className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
         <div className="space-y-1">
-          <h1 className="text-[32px] font-bold text-[#0f172a]">{t("title")}</h1>
-          <p className="max-w-2xl text-[18px] text-[#64748b]">{t("subtitle")}</p>
+          <h1 className="text-[22px] font-bold leading-tight text-[#0f172a] sm:text-[28px] lg:text-[32px]">{t("title")}</h1>
+          <p className="max-w-2xl text-[14px] leading-snug text-[#64748b] sm:text-[16px] lg:text-[18px]">{t("subtitle")}</p>
         </div>
         <ExportCsvButton headers={csvHeaders} rows={csvRows} />
       </header>
@@ -248,8 +248,9 @@ export default async function HistoryPage({
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between border-t border-[#e2e8f0] bg-[#f8fafc] px-4 py-4">
-          <span className="text-sm text-[#64748b]">{t("showing", { shown: pageRows.length, total })}</span>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#e2e8f0] bg-[#f8fafc] px-3 py-3 sm:px-4 sm:py-4">
+          {/* "Показано 0 из 0 операций" broke across two lines at 14px. */}
+          <span className="text-[12px] text-[#64748b] sm:text-sm">{t("showing", { shown: pageRows.length, total })}</span>
           <div className="flex items-center gap-2">
             <PageBtn href={pageHref(clampedPage - 1)} disabled={clampedPage <= 1} icon="M15 18l-6-6 6-6" />
             {Array.from({ length: totalPages }, (_, i) => i + 1).slice(0, 6).map((p) => (
