@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+
+// A model completion can take longer than Vercel's default function limit,
+// which surfaces as a 504 with nothing logged server-side. 60s is comfortably
+// above a normal response and still bounded.
+export const maxDuration = 60;
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { getAppSession } from "@/lib/supabase/app-session";
