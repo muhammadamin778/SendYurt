@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Creative "comet" cursor — a bright cyan dot that tracks the pointer exactly
@@ -12,11 +12,20 @@ import { useEffect, useRef } from "react";
 export function CustomCursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
+  /**
+   * The effect below already bailed on touch devices, but the two ring
+   * elements were still rendered — so a phone got a stray circle parked
+   * wherever the CSS left it, with nothing moving it. They are now not
+   * mounted at all. Starts false so the server render and the first client
+   * render agree; a fine pointer turns it on after mount.
+   */
+  const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
     const finePointer = window.matchMedia("(pointer: fine)").matches;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!finePointer || reduce) return;
+    setEnabled(true);
 
     const dot = dotRef.current;
     const ring = ringRef.current;
@@ -77,8 +86,12 @@ export function CustomCursor() {
 
   return (
     <>
-      <div ref={ringRef} className="cursor-ring" aria-hidden="true" />
-      <div ref={dotRef} className="cursor-dot" aria-hidden="true" />
+      {enabled && (
+        <>
+          <div ref={ringRef} className="cursor-ring" aria-hidden="true" />
+          <div ref={dotRef} className="cursor-dot" aria-hidden="true" />
+        </>
+      )}
     </>
   );
 }

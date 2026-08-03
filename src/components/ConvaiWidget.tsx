@@ -1,47 +1,120 @@
 "use client";
 
 import Script from "next/script";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 /**
  * ElevenLabs Conversational AI widget — floating text + voice agent.
  *
- * The embed pins a fairly large launcher to the bottom-right corner, which can
- * cover page content. We make it (a) smaller and (b) draggable by applying a
- * CSS `transform` to the custom element: a transform on the host reparents any
- * `position: fixed` shadow-DOM descendants to it, so translating/scaling the
- * host reliably moves and shrinks the whole widget without touching its
- * internal layout. A small grip button drives the same transform vars.
+ * The embed pins a fairly large launcher to the bottom-right corner where it
+ * covers page content, so we shrink it and let the user move it out of the way.
+ * Both are done with a CSS `transform` on the custom element: a transform on
+ * the host reparents any `position: fixed` shadow-DOM descendants to it, so
+ * translating/scaling the host moves the whole widget without touching its
+ * internal layout.
+ *
+ * **Dragging the widget itself**, with no separate grip. A handle button to
+ * move a floating thing is just a second floating thing, so instead we listen
+ * on a wrapper: pointer events raised inside the widget's shadow DOM are
+ * composed, so they bubble out to an ancestor in the light DOM even though the
+ * widget paints somewhere else entirely.
+ *
+ * A tap and a drag start identically, so they are told apart by distance:
+ * under DRAG_THRESHOLD the gesture is left completely alone and reaches "Start
+ * a call" normally; past it the widget moves, and the click that the browser
+ * fires afterwards is swallowed once so releasing a drag over the button does
+ * not also place a call.
  */
-export function ConvaiWidget() {
-  const drag = useRef<{ sx: number; sy: number; bx: number; by: number } | null>(null);
-  const cur = useRef({ x: 0, y: 0 });
 
-  const onMove = useCallback((e: PointerEvent) => {
-    if (!drag.current) return;
-    // Widget is anchored bottom-right, so only negative offsets move it on-screen.
-    const x = Math.min(0, Math.max(-(window.innerWidth - 140), drag.current.bx + (e.clientX - drag.current.sx)));
-    const y = Math.min(0, Math.max(-(window.innerHeight - 180), drag.current.by + (e.clientY - drag.current.sy)));
+/** Pixels of travel before a press becomes a drag rather than a tap. */
+const DRAG_THRESHOLD = 6;
+
+/** Keeps a dragged widget from being pushed fully off-screen. */
+const KEEP_VISIBLE = { x: 140, y: 180 };
+
+export function ConvaiWidget() {
+  const hostRef = useRef<HTMLDivElement>(null);
+  const start = useRef<{ sx: number; sy: number; bx: number; by: number } | null>(null);
+  const cur = useRef({ x: 0, y: 0 });
+  const dragging = useRef(false);
+
+  const apply = useCallback((x: number, y: number) => {
     cur.current = { x, y };
-    const r = document.documentElement.style;
-    r.setProperty("--convai-x", `${x}px`);
-    r.setProperty("--convai-y", `${y}px`);
+    const root = document.documentElement.style;
+    root.setProperty("--convai-x", `${x}px`);
+    root.setProperty("--convai-y", `${y}px`);
   }, []);
 
+  const onMove = useCallback(
+    (e: PointerEvent) => {
+      const s = start.current;
+      if (!s) return;
+
+      const dx = e.clientX - s.sx;
+      const dy = e.clientY - s.sy;
+
+      if (!dragging.current) {
+        if (Math.hypot(dx, dy) < DRAG_THRESHOLD) return; // still a tap
+        dragging.current = true;
+        // Only suppress text selection etc. once this is definitely a drag.
+        document.body.style.userSelect = "none";
+      }
+
+      // Anchored bottom-right, so only negative offsets move it on-screen.
+      apply(
+        Math.min(0, Math.max(-(window.innerWidth - KEEP_VISIBLE.x), s.bx + dx)),
+        Math.min(0, Math.max(-(window.innerHeight - KEEP_VISIBLE.y), s.by + dy)),
+      );
+    },
+    [apply],
+  );
+
   const onUp = useCallback(() => {
-    drag.current = null;
+    const wasDrag = dragging.current;
+    start.current = null;
+    dragging.current = false;
+    document.body.style.userSelect = "";
     window.removeEventListener("pointermove", onMove);
     window.removeEventListener("pointerup", onUp);
+    window.removeEventListener("pointercancel", onUp);
+
+    if (wasDrag) {
+      // The browser still fires a click after the drag's pointerup. Eat exactly
+      // one, in the capture phase, so letting go over "Start a call" doesn't
+      // start a call.
+      const swallow = (ev: Event) => {
+        ev.stopPropagation();
+        ev.preventDefault();
+      };
+      window.addEventListener("click", swallow, { capture: true, once: true });
+      // If no click follows (a drag ending outside the widget), don't leave the
+      // listener armed to eat an unrelated click later.
+      setTimeout(() => window.removeEventListener("click", swallow, { capture: true }), 0);
+    }
   }, [onMove]);
 
-  const onDown = useCallback(
-    (e: React.PointerEvent) => {
-      drag.current = { sx: e.clientX, sy: e.clientY, bx: cur.current.x, by: cur.current.y };
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+
+    const onDown = (e: PointerEvent) => {
+      // Left button / touch / pen only.
+      if (e.button !== 0) return;
+      start.current = { sx: e.clientX, sy: e.clientY, bx: cur.current.x, by: cur.current.y };
+      dragging.current = false;
       window.addEventListener("pointermove", onMove);
       window.addEventListener("pointerup", onUp);
-    },
-    [onMove, onUp],
-  );
+      window.addEventListener("pointercancel", onUp);
+    };
+
+    host.addEventListener("pointerdown", onDown);
+    return () => {
+      host.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+  }, [onMove, onUp]);
 
   return (
     <>
@@ -52,27 +125,21 @@ export function ConvaiWidget() {
         elevenlabs-convai {
           transform: translate(var(--convai-x, 0px), var(--convai-y, calc(-1 * var(--convai-lift, 0px)))) scale(0.6) !important;
           transform-origin: bottom right;
+          /* Without this a touch-drag scrolls the page instead of moving the
+             widget. Safe on an element this small — there is nothing to scroll
+             inside it. */
+          touch-action: none;
         }
         :root { --convai-lift: 76px; }
         @media (min-width: 1024px) { :root { --convai-lift: 0px; } }
       `}</style>
 
-      <elevenlabs-convai agent-id="agent_8801kxdgf200ebx8aj1x01pa8xp0"></elevenlabs-convai>
-
-      {/* Drag grip — sits just above the launcher and moves with it. */}
-      <button
-        type="button"
-        onPointerDown={onDown}
-        aria-label="Move assistant"
-        title="Drag to move the assistant"
-        className="fixed z-[51] hidden cursor-grab touch-none items-center gap-1 rounded-full border border-[#e2e8f0] bg-white/95 px-2 py-0.5 text-[10px] font-semibold text-[#64748b] shadow-md backdrop-blur-sm active:cursor-grabbing lg:flex print:hidden"
-        style={{ right: 16, bottom: 80, transform: "translate(var(--convai-x, 0px), var(--convai-y, 0px))" }}
-      >
-        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden="true">
-          <circle cx="9" cy="6" r="1.4" /><circle cx="15" cy="6" r="1.4" /><circle cx="9" cy="12" r="1.4" /><circle cx="15" cy="12" r="1.4" /><circle cx="9" cy="18" r="1.4" /><circle cx="15" cy="18" r="1.4" />
-        </svg>
-        Move
-      </button>
+      {/* `display: contents` generates no box, so this wrapper changes nothing
+          visually — it exists purely to catch pointer events bubbling out of
+          the widget's shadow DOM. */}
+      <div ref={hostRef} style={{ display: "contents" }}>
+        <elevenlabs-convai agent-id="agent_8801kxdgf200ebx8aj1x01pa8xp0"></elevenlabs-convai>
+      </div>
 
       <Script
         src="https://unpkg.com/@elevenlabs/convai-widget-embed"

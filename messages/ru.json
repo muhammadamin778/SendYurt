@@ -25,7 +25,12 @@
     "sendMoney": "Отправить деньги",
     "support": "Поддержка",
     "history": "История",
-    "wallet": "Кошелёк"
+    "wallet": "Кошелёк",
+    "menu": "Меню",
+    "closeMenu": "Закрыть меню",
+    "ratesShort": "Курсы",
+    "trustShort": "Доверие",
+    "supportShort": "Помощь"
   },
   "profile": {
     "title": "Ваш профиль",
@@ -129,7 +134,14 @@
     "cardSecure": "2FA включена",
     "cardSecureDesc": "Ваш аккаунт надёжно защищён",
     "cardNeedHelp": "Нужна помощь?",
-    "cardHelpDesc": "Поддержка 24/7"
+    "cardHelpDesc": "Поддержка 24/7",
+    "signOutTitle": "Аккаунт",
+    "signOutDesc": "Завершить сеанс на этом устройстве.",
+    "signOutConfirm": "Выйти из SendYurt?",
+    "signOutConfirmDesc": "Для входа снова понадобятся почта и пароль.",
+    "signOutYes": "Да, выйти",
+    "signOutCancel": "Отмена",
+    "signOutBusy": "Выходим…"
   },
   "quickpay": {
     "title": "Быстрая оплата",

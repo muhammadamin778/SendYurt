@@ -57,20 +57,24 @@ export function QuickTransfer({ members }: { members: TransferMember[] }) {
         </div>
       )}
 
-      <div className="mt-5 flex items-center gap-4">
-        <span className="text-[15px] text-[#64748b]">{t("writeAmount")}</span>
-        <div className="flex flex-1 items-center rounded-full bg-[#eef2f7] pl-5 pr-1">
+      {/* Stacked on phones. Side by side, the label wrapped onto two lines and
+          squeezed the input to almost nothing, so there was visibly nowhere to
+          type an amount. */}
+      <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+        <span className="shrink-0 text-[13px] text-[#64748b] sm:text-[15px]">{t("writeAmount")}</span>
+        <div className="flex min-w-0 flex-1 items-center rounded-full bg-[#eef2f7] pl-4 pr-1 sm:pl-5">
           <input
             inputMode="numeric"
             value={amount}
             onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, ""))}
             placeholder="525.50"
-            className="w-full bg-transparent py-3 text-[15px] text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none"
+            aria-label={t("writeAmount")}
+            className="w-full min-w-0 bg-transparent py-3 text-[15px] text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none"
           />
           <button
             type="button"
             onClick={start}
-            className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#065f3e] px-5 py-3 text-[15px] font-medium text-white transition-opacity hover:opacity-90"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#065f3e] px-4 py-2.5 text-[14px] font-medium text-white transition-opacity hover:opacity-90 sm:gap-2 sm:px-5 sm:py-3 sm:text-[15px]"
           >
             {t("send")}
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden="true">

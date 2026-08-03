@@ -25,7 +25,12 @@
     "sendMoney": "Send Money",
     "support": "Support",
     "history": "History",
-    "wallet": "Wallet"
+    "wallet": "Wallet",
+    "menu": "Menu",
+    "closeMenu": "Close menu",
+    "ratesShort": "Rates",
+    "trustShort": "Trust",
+    "supportShort": "Support"
   },
   "profile": {
     "title": "Your profile",
@@ -129,7 +134,14 @@
     "cardSecure": "2FA Enabled",
     "cardSecureDesc": "Your account is highly secure",
     "cardNeedHelp": "Need help?",
-    "cardHelpDesc": "Support available 24/7"
+    "cardHelpDesc": "Support available 24/7",
+    "signOutTitle": "Account",
+    "signOutDesc": "End this session on this device.",
+    "signOutConfirm": "Sign out of SendYurt?",
+    "signOutConfirmDesc": "You will need your email and password to sign back in.",
+    "signOutYes": "Yes, sign out",
+    "signOutCancel": "Cancel",
+    "signOutBusy": "Signing out…"
   },
   "quickpay": {
     "title": "Quick pay",

@@ -60,7 +60,6 @@ export default async function WalletPage({ params: { locale } }: { params: { loc
 
   return (
     <div className="mx-auto max-w-5xl">
-      <p className="mb-6 text-[14px] text-[#64748b]">Send money instantly to any SendYurt account by email — funds move in real time.</p>
       <WalletBoard
         locale={locale}
         userEmail={user.email ?? ""}

@@ -178,32 +178,19 @@ export default async function TrustPage({
         </div>
       </div>
 
-      {/* Credit-history use case */}
-      <section className="relative overflow-hidden rounded-xl bg-gradient-to-br from-[#1f2a44] to-[#0b1220] p-6 text-white">
-        <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full bg-[#4edea3]/10" />
-        <div className="relative flex items-start gap-4">
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white/10 text-[#4edea3]">
-            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M3 6h18v12H3zM3 10h18M7 15h4" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          </span>
-          <div>
-            <h3 className="text-[18px] font-semibold">{t("creditTitle")}</h3>
-            <p className="mt-1 max-w-3xl text-sm leading-relaxed text-white/75">{t("creditBody")}</p>
-          </div>
-        </div>
-      </section>
 
       {/* Score history */}
       <section>
         <h3 className="mb-4 text-[20px] font-semibold text-[#0f172a]">{t("scoreHistory")}</h3>
         <div className="overflow-hidden rounded-xl border border-[#e2e8f0] bg-white shadow-sm">
-          <div className="overflow-x-auto">
+          <div>
             <table className="w-full text-left text-sm">
               <thead className="border-b border-[#e2e8f0] bg-[#f8fafc] text-[#64748b]">
                 <tr>
-                  <th className="px-6 py-4 font-bold">{t("thMonth")}</th>
-                  <th className="px-6 py-4 font-bold">{t("thScore")}</th>
-                  <th className="px-6 py-4 font-bold">{t("thChange")}</th>
-                  <th className="px-6 py-4 font-bold">{t("thStatus")}</th>
+                  <th className="px-3 py-3 font-bold sm:px-6 sm:py-4">{t("thMonth")}</th>
+                  <th className="px-3 py-3 font-bold sm:px-6 sm:py-4">{t("thScore")}</th>
+                  <th className="px-3 py-3 font-bold sm:px-6 sm:py-4">{t("thChange")}</th>
+                  <th className="hidden px-6 py-4 font-bold sm:table-cell">{t("thStatus")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#eef2f7]">
@@ -215,9 +202,9 @@ export default async function TrustPage({
                   const up = (h.change ?? 0) >= 0;
                   return (
                     <tr key={i}>
-                      <td className="px-6 py-4 text-[#0f172a]">{formatMonth(h.date, currentLocale)} {h.date.getFullYear()}</td>
-                      <td className="px-6 py-4 font-bold text-[#0f172a]">{h.score}</td>
-                      <td className={`px-6 py-4 ${up ? "text-[#0a7c53]" : "text-[#ef4444]"}`}>
+                      <td className="whitespace-nowrap px-3 py-3 text-[#0f172a] sm:px-6 sm:py-4">{formatMonth(h.date, currentLocale)} {h.date.getFullYear()}</td>
+                      <td className="px-3 py-3 font-bold text-[#0f172a] sm:px-6 sm:py-4">{h.score}</td>
+                      <td className={`px-3 py-3 sm:px-6 sm:py-4 ${up ? "text-[#0a7c53]" : "text-[#ef4444]"}`}>
                         {h.change === null ? (
                           <span className="text-[#94a3b8]">—</span>
                         ) : (
@@ -227,7 +214,7 @@ export default async function TrustPage({
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4"><span className={`rounded-full px-3 py-1 text-[12px] font-bold ${st.chip}`}>{t(st.key)}</span></td>
+                      <td className="hidden px-6 py-4 sm:table-cell"><span className={`rounded-full px-3 py-1 text-[12px] font-bold ${st.chip}`}>{t(st.key)}</span></td>
                     </tr>
                   );
                 })}
@@ -237,7 +224,6 @@ export default async function TrustPage({
         </div>
       </section>
 
-      <p className="text-xs leading-relaxed text-[#94a3b8]">{t("disclaimer")}</p>
     </div>
   );
 }

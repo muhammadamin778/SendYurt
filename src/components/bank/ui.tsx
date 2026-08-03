@@ -32,8 +32,8 @@ export function BankCard({
   return (
     <section className={className}>
       {(title || action) && (
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          {title && <h2 className="text-[15px] font-semibold text-[#0f172a] sm:text-[18px]">{title}</h2>}
+        <div className="mb-3 flex flex-col items-start gap-1.5 sm:mb-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-3">
+          {title && <h2 className="min-w-0 text-[15px] font-semibold leading-tight text-[#0f172a] sm:text-[18px]">{title}</h2>}
           {action}
         </div>
       )}

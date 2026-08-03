@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { BackButton } from "@/components/BackButton";
 import { NotificationBell } from "@/components/NotificationBell";
-import { LogoutButton } from "@/components/LogoutButton";
+import { BankMobileMenu } from "@/components/bank/BankMobileMenu";
 
 function useTitle(): string {
   const pathname = usePathname();
@@ -24,9 +24,16 @@ function useTitle(): string {
 export function BankTopbar({
   image,
   initial,
+  name,
+  roleLabel,
+  isAdmin = false,
 }: {
   image: string | null;
   initial: string;
+  /** Passed through to the mobile drawer, which shows who is signed in. */
+  name: string;
+  roleLabel: string;
+  isAdmin?: boolean;
 }) {
   const title = useTitle();
   const bank = useTranslations("bank");
@@ -54,19 +61,27 @@ export function BankTopbar({
             />
           </label>
 
-          <NotificationBell />
+          {/* Mobile only: on a laptop both of these now live in the sidebar,
+              beside the user card. */}
+          <div className="lg:hidden">
+            <NotificationBell />
+          </div>
 
-          {/* Mobile-only logout — on desktop this lives in the sidebar. */}
-          <LogoutButton className="grid h-[50px] w-[50px] shrink-0 place-items-center rounded-full text-[#64748b] transition-colors hover:bg-[#e2e8f0] hover:text-[#0f172a] disabled:opacity-60 lg:hidden">
-            <svg viewBox="0 0 24 24" className="h-[22px] w-[22px]" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-              <path d="M15 12H3m0 0l4-4m-4 4l4 4M13 4h6a2 2 0 012 2v12a2 2 0 01-2 2h-6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </LogoutButton>
+          {/* Replaces the mobile-only logout button: sign-out now lives inside
+              the drawer, along with the five destinations the phone had no
+              route to at all. */}
+          <BankMobileMenu
+            name={name}
+            initial={initial}
+            image={image}
+            roleLabel={roleLabel}
+            isAdmin={isAdmin}
+          />
 
           <Link
             href="/profile"
             aria-label={bank("setting")}
-            className="grid h-[50px] w-[50px] shrink-0 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-[#0a7c53] to-[#34d399] font-sans text-base font-bold text-white shadow-sm transition-transform hover:scale-105"
+            className="grid h-[50px] w-[50px] shrink-0 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-[#0a7c53] to-[#34d399] font-sans text-base font-bold text-white shadow-sm transition-transform hover:scale-105 lg:hidden"
           >
             {image ? (
               // eslint-disable-next-line @next/next/no-img-element
