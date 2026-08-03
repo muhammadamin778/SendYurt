@@ -7,6 +7,7 @@ import { YurtMark } from "@/components/Logo";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LogoutButton } from "@/components/LogoutButton";
+import { NotificationBell } from "@/components/NotificationBell";
 import { NAV, NavGlyph } from "@/components/bank/nav-items";
 
 export function BankSidebar({
@@ -41,7 +42,9 @@ export function BankSidebar({
       </div>
 
       {/* Nav */}
-      <nav className="scroll-slim scroll-hover-reveal flex-1 overflow-y-auto px-3 py-1" aria-label="Main">
+      {/* No scroller. Dropping Profile and tightening the rows leaves the
+          list short enough to fit, so the sidebar is one static column. */}
+      <nav className="flex-1 px-3 py-1" aria-label="Main">
         <ul className="space-y-1">
           {NAV.map((item) => {
             const active =
@@ -52,7 +55,7 @@ export function BankSidebar({
                   href={item.href}
                   aria-current={active ? "page" : undefined}
                   className={clsx(
-                    "flex items-center gap-3.5 rounded-xl px-4 py-3 text-[15px] font-medium transition-colors",
+                    "flex items-center gap-3.5 rounded-xl px-4 py-2.5 text-[15px] font-medium transition-colors",
                     active
                       ? "bg-[#0a7c53] text-white shadow-sm"
                       : "text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#0f172a]",
@@ -91,19 +94,26 @@ export function BankSidebar({
           {t("sendMoney")}
         </Link>
 
-        <div className="flex items-center gap-3 rounded-xl bg-[#f1f5f9] px-3 py-2.5">
-          {image ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={image} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />
-          ) : (
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#0a7c53] to-[#065f3e] text-sm font-bold text-white">
-              {initial}
-            </span>
-          )}
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-semibold text-[#0f172a]">{name}</div>
-            <div className="truncate text-[11px] text-[#64748b]">{roleLabel}</div>
-          </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/profile"
+            className="flex min-w-0 flex-1 items-center gap-2.5 rounded-xl bg-[#f1f5f9] px-2.5 py-2 transition-colors hover:bg-[#e2e8f0]"
+          >
+            {image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={image} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
+            ) : (
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#0a7c53] to-[#065f3e] text-[13px] font-bold text-white">
+                {initial}
+              </span>
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[13px] font-semibold text-[#0f172a]">{name}</div>
+              <div className="truncate text-[11px] text-[#64748b]">{roleLabel}</div>
+            </div>
+          </Link>
+          {/* Moved off the header, where it sat beside a duplicate avatar. */}
+          <NotificationBell />
         </div>
 
         <div className="flex items-center justify-between gap-2 px-1">

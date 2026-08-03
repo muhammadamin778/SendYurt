@@ -30,7 +30,9 @@ export const NAV: { href: string; key: string; icon: IconName }[] = [
   { href: "/history", key: "history", icon: "history" },
   { href: "/support", key: "support", icon: "support" },
   { href: "/help", key: "help", icon: "help" },
-  { href: "/profile", key: "profile", icon: "profile" },
+  // Profile is deliberately absent: the user card in the sidebar footer and
+  // the avatar in the header both go there, so a third entry only made the
+  // list long enough to need a scrollbar.
 ];
 
 export function NavGlyph({ name }: { name: IconName }) {

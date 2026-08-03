@@ -61,7 +61,11 @@ export function BankTopbar({
             />
           </label>
 
-          <NotificationBell />
+          {/* Mobile only: on a laptop both of these now live in the sidebar,
+              beside the user card. */}
+          <div className="lg:hidden">
+            <NotificationBell />
+          </div>
 
           {/* Replaces the mobile-only logout button: sign-out now lives inside
               the drawer, along with the five destinations the phone had no
@@ -77,7 +81,7 @@ export function BankTopbar({
           <Link
             href="/profile"
             aria-label={bank("setting")}
-            className="grid h-[50px] w-[50px] shrink-0 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-[#0a7c53] to-[#34d399] font-sans text-base font-bold text-white shadow-sm transition-transform hover:scale-105"
+            className="grid h-[50px] w-[50px] shrink-0 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-[#0a7c53] to-[#34d399] font-sans text-base font-bold text-white shadow-sm transition-transform hover:scale-105 lg:hidden"
           >
             {image ? (
               // eslint-disable-next-line @next/next/no-img-element
