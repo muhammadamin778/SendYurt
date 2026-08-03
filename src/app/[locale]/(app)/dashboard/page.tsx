@@ -231,9 +231,9 @@ export default async function DashboardPage({
           className="xl:col-span-2"
           bodyClassName="px-5 py-6"
           action={
-            <div className="flex items-center gap-5 text-[13px]">
-              <span className="flex items-center gap-2 text-[#64748b]"><span className="h-3 w-3 rounded-full bg-[#0a7c53]" />{t("deposit")}</span>
-              <span className="flex items-center gap-2 text-[#64748b]"><span className="h-3 w-3 rounded-full bg-[#34d399]" />{t("withdraw")}</span>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] sm:gap-x-5 sm:text-[13px]">
+              <span className="flex items-center gap-1.5 whitespace-nowrap text-[#64748b]"><span className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#0a7c53] sm:h-3 sm:w-3" />{t("deposit")}</span>
+              <span className="flex items-center gap-1.5 whitespace-nowrap text-[#64748b]"><span className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#34d399] sm:h-3 sm:w-3" />{t("withdraw")}</span>
             </div>
           }
         >

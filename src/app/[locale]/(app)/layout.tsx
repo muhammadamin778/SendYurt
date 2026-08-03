@@ -1,7 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { CustomCursor } from "@/components/CustomCursor";
 import { ImpersonationBanner } from "@/components/ImpersonationBanner";
-import { ConvaiWidget } from "@/components/ConvaiWidget";
 import { VisitLogger } from "@/components/VisitLogger";
 import { BankSidebar } from "@/components/bank/BankSidebar";
 import { BankTopbar } from "@/components/bank/BankTopbar";
@@ -53,7 +52,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </div>
 
       <BankMobileNav />
-      <ConvaiWidget />
       <CustomCursor />
       <VisitLogger />
     </div>

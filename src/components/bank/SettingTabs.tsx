@@ -24,7 +24,7 @@ export function SettingTabs({
 
   return (
     <div>
-      <div className="flex gap-8 border-b border-[#eef2f7]" role="tablist">
+      <div className="flex gap-4 overflow-x-auto border-b border-[#eef2f7] sm:gap-8" role="tablist">
         {tabs.map((x) => (
           <button
             key={x.id}
@@ -33,7 +33,7 @@ export function SettingTabs({
             aria-selected={tab === x.id}
             onClick={() => setTab(x.id)}
             className={clsx(
-              "relative -mb-px pb-3 text-[15px] font-medium transition-colors",
+              "relative -mb-px whitespace-nowrap pb-3 text-[14px] font-medium transition-colors sm:text-[15px]",
               tab === x.id ? "text-[#0a7c53]" : "text-[#64748b] hover:text-[#0f172a]",
             )}
           >

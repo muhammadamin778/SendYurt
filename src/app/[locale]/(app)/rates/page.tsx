@@ -201,64 +201,49 @@ export default async function RatesPage({
       {/* Calculator bento grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
         {/* Input card */}
-        <div className="rounded-2xl border border-[#e2e8f0] bg-white p-6 shadow-sm md:col-span-7">
+        <div className="rounded-2xl border border-[#e2e8f0] bg-white p-5 shadow-sm sm:p-6 md:col-span-12">
           <RateForm
             currencies={SOURCE_CURRENCIES}
             initialAmount={amount}
             initialCurrency={currency}
             isUsual={isUsual}
           />
-          <div className="mt-6 flex items-center justify-between rounded-xl border border-[#0a7c53]/30 bg-[#0a7c53]/[0.06] p-4">
-            <div className="flex items-center gap-3">
-              <span className="text-[#0a7c53]"><Glyph d={ICON.trend} className="h-6 w-6" /></span>
-              <div>
-                <p className="text-xs font-bold uppercase text-[#64748b]">{t("bestMarketRate")}</p>
-                <p className="font-semibold tabular-nums tracking-wide text-[#065f3e]">
+          {/* The badge sits beside the figure only when there is room. Side by
+              side at 375px, "1 USD = 11,921 UZS" and "Live rate" both broke
+              across two lines. */}
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-xl border border-[#0a7c53]/30 bg-[#0a7c53]/[0.06] p-4">
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="shrink-0 text-[#0a7c53]"><Glyph d={ICON.trend} className="h-6 w-6" /></span>
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-[#64748b] sm:text-xs">{t("bestMarketRate")}</p>
+                <p className="whitespace-nowrap text-[15px] font-semibold tabular-nums text-[#065f3e] sm:tracking-wide">
                   1 {currency} = {rateStr} UZS
                 </p>
               </div>
             </div>
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#64748b]">
-              <span className={`h-2 w-2 rounded-full ${fx.live ? "bg-[#0a7c53]" : "bg-[#d9a441]"}`} aria-hidden="true" />
+            <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[11px] font-semibold text-[#64748b] sm:text-xs">
+              <span className={`h-2 w-2 shrink-0 rounded-full ${fx.live ? "bg-[#0a7c53]" : "bg-[#d9a441]"}`} aria-hidden="true" />
               {fx.live ? t("liveBadge") : t("sampleBadge")}
             </span>
           </div>
         </div>
 
-        {/* Why SendYurt navy card */}
-        <div className="relative flex flex-col justify-between gap-6 overflow-hidden rounded-2xl bg-gradient-to-br from-[#1f2a44] to-[#0b1220] p-6 text-white md:col-span-5">
-          <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full bg-white/5" />
-          <div className="relative">
-            <p className="text-sm font-medium text-white/60">{t("whyTitle")}</p>
-            <h3 className="mt-1 text-[20px] font-semibold leading-snug">{t("whyHeadline")}</h3>
-          </div>
-          <div className="relative space-y-3">
-            <div className="flex items-center gap-3">
-              <span className="text-[#4edea3]"><Glyph d={ICON.shield} className="h-5 w-5" /></span>
-              <span className="text-sm">{t("whyVerified")}</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-[#4edea3]"><Glyph d={ICON.clock} className="h-5 w-5" /></span>
-              <span className="text-sm">{t("whyDelivery")}</span>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Sorting */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-1">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold uppercase text-[#64748b]">{t("sortedBy")}:</span>
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-1">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="shrink-0 whitespace-nowrap text-[10px] font-bold uppercase text-[#64748b] sm:text-xs">{t("sortedBy")}:</span>
           <div className="flex gap-1 rounded-lg bg-[#eef2f6] p-1">
             <Link
               href={`/rates?${qs}&sort=received`}
-              className={`rounded-md px-3 py-1 text-xs font-bold transition-colors ${sort === "received" ? "bg-white text-[#0f172a] shadow-sm" : "text-[#64748b] hover:text-[#0f172a]"}`}
+              className={`whitespace-nowrap rounded-md px-2.5 py-1.5 text-[11px] font-bold transition-colors sm:px-3 sm:text-xs ${sort === "received" ? "bg-white text-[#0f172a] shadow-sm" : "text-[#64748b] hover:text-[#0f172a]"}`}
             >
               {t("sortReceived")}
             </Link>
             <Link
               href={`/rates?${qs}&sort=fee`}
-              className={`rounded-md px-3 py-1 text-xs font-bold transition-colors ${sort === "fee" ? "bg-white text-[#0f172a] shadow-sm" : "text-[#64748b] hover:text-[#0f172a]"}`}
+              className={`whitespace-nowrap rounded-md px-2.5 py-1.5 text-[11px] font-bold transition-colors sm:px-3 sm:text-xs ${sort === "fee" ? "bg-white text-[#0f172a] shadow-sm" : "text-[#64748b] hover:text-[#0f172a]"}`}
             >
               {t("sortFee")}
             </Link>
@@ -272,41 +257,6 @@ export default async function RatesPage({
       {/* Provider list */}
       <ProviderList quotes={quotes} bestId={bestId} locale={currentLocale} />
 
-      {/* Trust & security */}
-      <section className="grid grid-cols-1 items-center gap-8 rounded-3xl border border-[#0a7c53]/15 bg-[#0a7c53]/[0.04] p-8 md:grid-cols-2">
-        <div>
-          <h3 className="mb-4 text-[24px] font-bold text-[#065f3e]">{t("trustTitle")}</h3>
-          <p className="mb-6 text-[#64748b]">{t("trustBody")}</p>
-          <div className="space-y-4">
-            <div className="flex items-start gap-4">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#dcfce7] text-[#065f3e]">
-                <Glyph d={ICON.lock} className="h-5 w-5" />
-              </span>
-              <div>
-                <p className="font-bold text-[#0f172a]">{t("trustEncTitle")}</p>
-                <p className="text-sm text-[#64748b]">{t("trustEncBody")}</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#dcfce7] text-[#065f3e]">
-                <Glyph d={ICON.headset} className="h-5 w-5" />
-              </span>
-              <div>
-                <p className="font-bold text-[#0f172a]">{t("trustSupportTitle")}</p>
-                <p className="text-sm text-[#64748b]">{t("trustSupportBody")}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="relative flex h-64 items-end overflow-hidden rounded-2xl bg-gradient-to-br from-[#1f2a44] to-[#0b1220] p-6 shadow-xl md:h-80">
-          <div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-10 h-44 w-44 rounded-full bg-[#4edea3]/10" />
-          <div aria-hidden="true" className="pointer-events-none absolute right-16 top-16 h-24 w-24 rounded-full bg-white/5" />
-          <div className="relative">
-            <p className="text-3xl font-bold text-white">{t("whyDelivery")}</p>
-            <p className="mt-1 text-sm text-white/60">{t("whyVerified")}</p>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

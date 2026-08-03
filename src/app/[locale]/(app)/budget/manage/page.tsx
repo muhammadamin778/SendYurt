@@ -163,11 +163,14 @@ export default async function BudgetPage({
             </svg>
             {t("downloadSummary")}
           </Link>
-          <nav aria-label={t("monthNav")} className="flex items-center gap-2">
+          {/* Arrows pinned to the two edges with the month centred between them:
+              `justify-between` plus a flex-1 label, so the month stays put as
+              its width changes month to month instead of shuffling sideways. */}
+          <nav aria-label={t("monthNav")} className="flex w-full items-center justify-between gap-2 sm:w-auto sm:min-w-[16rem]">
             <Link href={{ pathname: "/budget/manage", query: { month: shiftPeriod(period, -1) } }} aria-label={t("prevMonth")} className={iconBtn}>
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M15 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </Link>
-            <span className="min-w-36 text-center text-sm font-semibold capitalize text-[#0f172a]">{monthLabel}</span>
+            <span className="flex-1 whitespace-nowrap text-center text-sm font-semibold capitalize text-[#0f172a]">{monthLabel}</span>
             <Link
               href={{ pathname: "/budget/manage", query: { month: shiftPeriod(period, 1) } }}
               aria-label={t("nextMonth")}

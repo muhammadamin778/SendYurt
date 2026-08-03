@@ -59,14 +59,14 @@ export function BankCreditCard({
 
       <div
         className={clsx(
-          "mt-4 flex items-center justify-between gap-3 px-4 py-3.5 sm:px-6 sm:py-4",
+          "mt-4 flex items-center justify-between gap-4 px-5 py-4 sm:px-6",
           filled ? "bg-white/10" : "border-t border-[#e2e8f0]",
         )}
       >
-        <p className="min-w-0 truncate font-mono text-[13px] font-semibold tracking-[0.08em] tabular-nums sm:text-[16px] sm:tracking-[0.12em]">{number}</p>
+        <p className="min-w-0 truncate font-mono text-[14px] font-semibold uppercase tracking-[0.14em] tabular-nums sm:text-[16px] sm:tracking-[0.18em]">{number}</p>
         <span className="relative flex shrink-0 items-center" aria-hidden="true">
-          <span className={clsx("h-6 w-6 rounded-full", filled ? "bg-white/60" : "bg-[#94a3b8]/60")} />
-          <span className={clsx("-ml-2.5 h-6 w-6 rounded-full", filled ? "bg-white/40" : "bg-[#94a3b8]/40")} />
+          <span className={clsx("h-7 w-7 rounded-full", filled ? "bg-white/70" : "bg-[#94a3b8]/60")} />
+          <span className={clsx("-ml-3 h-7 w-7 rounded-full", filled ? "bg-white/45" : "bg-[#94a3b8]/40")} />
         </span>
       </div>
     </div>
