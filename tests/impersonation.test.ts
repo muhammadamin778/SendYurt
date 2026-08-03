@@ -88,7 +88,8 @@ vi.mock("@/lib/prisma", () => ({
 const { getAppSession, getOperatorSession } = await import("@/lib/supabase/app-session");
 const { requireUser } = await import("@/lib/session");
 const { assertPermission } = await import("@/lib/admin");
-const { getActiveImpersonation, isReadOnlyRequest } = await import("@/lib/impersonation");
+const { formatCountdown, getActiveImpersonation, isReadOnlyRequest, minutesLeft } =
+  await import("@/lib/impersonation");
 
 /** A live grant from op_1 to cust_1, unless overridden. */
 function grant(overrides: Row = {}): string {
@@ -216,5 +217,35 @@ describe("writes that happen on read", () => {
     expect(await isReadOnlyRequest()).toBe(false);
     cookieValue = grant({ expiresAt: new Date(Date.now() - 1_000) });
     expect(await isReadOnlyRequest()).toBe(false);
+  });
+});
+
+describe("the countdown an operator watches", () => {
+  it("pads seconds so the width never jumps mid-session", () => {
+    expect(formatCountdown(30 * 60)).toBe("30:00");
+    expect(formatCountdown(605)).toBe("10:05");
+    expect(formatCountdown(59)).toBe("0:59");
+    expect(formatCountdown(9)).toBe("0:09");
+  });
+
+  it("shows 1:30 draining, not a static \"1 min\"", () => {
+    // The point of a countdown is watching it move; rounding to whole minutes
+    // leaves it frozen for sixty seconds at a time.
+    expect(formatCountdown(90)).toBe("1:30");
+    expect(formatCountdown(89)).toBe("1:29");
+  });
+
+  it("floors at zero rather than counting into negatives", () => {
+    // Clocks drift and a tab can sleep; the banner must never read "-0:07".
+    expect(formatCountdown(0)).toBe("0:00");
+    expect(formatCountdown(-42)).toBe("0:00");
+  });
+
+  it("agrees with minutesLeft at the moment of hand-off", () => {
+    // The banner seeds its state from the server's minutesLeft, then switches
+    // to its own clock. If the two disagreed the number would visibly jump.
+    const expires = new Date(Date.now() + 30 * 60_000);
+    expect(minutesLeft(expires)).toBe(30);
+    expect(formatCountdown(minutesLeft(expires) * 60)).toBe("30:00");
   });
 });

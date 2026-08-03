@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { endImpersonation } from "@/app/actions/impersonation";
+import { formatCountdown } from "@/lib/impersonation";
 
 /**
  * Always-visible marker that this is someone else's account.
@@ -19,13 +20,41 @@ export function ImpersonationBanner({
   targetName,
   reason,
   minutesLeft,
+  expiresAtIso,
 }: {
   operatorName: string;
   targetName: string;
   reason: string;
   minutesLeft: number;
+  expiresAtIso: string;
 }) {
   const [busy, setBusy] = useState(false);
+  /**
+   * Seeded from the server's figure so the first paint is correct and matches
+   * the server render, then replaced by a real countdown once mounted.
+   */
+  const [secondsLeft, setSecondsLeft] = useState(minutesLeft * 60);
+
+  useEffect(() => {
+    const expiry = new Date(expiresAtIso).getTime();
+    const tick = () => setSecondsLeft(Math.max(0, Math.round((expiry - Date.now()) / 1000)));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [expiresAtIso]);
+
+  // The server already refuses an expired grant, so once the clock runs out the
+  // page is showing something the next request will not honour. Reload to land
+  // the operator back in their own session rather than leaving a stale view up.
+  useEffect(() => {
+    if (secondsLeft > 0) return;
+    const id = setTimeout(() => window.location.reload(), 1500);
+    return () => clearTimeout(id);
+  }, [secondsLeft]);
+
+  // Under two minutes the bar pulses — a countdown that only reads as urgent
+  // when you happen to look at it is not much of a warning.
+  const urgent = secondsLeft <= 120;
 
   async function exit() {
     setBusy(true);
@@ -37,7 +66,9 @@ export function ImpersonationBanner({
   return (
     <div
       role="status"
-      className="sticky top-0 z-50 flex items-center gap-2 border-b-2 border-[#8c1d18] bg-[#ba1a1a] px-3 py-1.5 text-white sm:gap-4 sm:px-8 sm:py-2.5"
+      className={`sticky top-0 z-50 flex items-center gap-2 border-b-2 border-[#8c1d18] px-3 py-1.5 text-white sm:gap-4 sm:px-8 sm:py-2.5 ${
+        urgent ? "bg-[#8c1d18] motion-safe:animate-pulse" : "bg-[#ba1a1a]"
+      }`}
     >
       <span className="flex shrink-0 items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide sm:text-[13px] sm:gap-2">
         <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -59,7 +90,9 @@ export function ImpersonationBanner({
         <span className="hidden sm:inline">&rsquo;s account. Nothing can be changed here.</span>
         <span className="text-white/80">
           {" · "}
-          {minutesLeft > 0 ? `${minutesLeft} min` : "ending"}
+          <span className={urgent ? "font-bold text-white" : undefined}>
+            {secondsLeft > 0 ? formatCountdown(secondsLeft) : "expired"}
+          </span>
           <span className="hidden sm:inline"> · {reason}</span>
         </span>
       </span>

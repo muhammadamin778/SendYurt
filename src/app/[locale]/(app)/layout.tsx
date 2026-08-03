@@ -30,6 +30,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           targetName={user.impersonating.targetName}
           reason={user.impersonating.reason}
           minutesLeft={user.impersonating.minutesLeft}
+          expiresAtIso={user.impersonating.expiresAtIso}
         />
       )}
 

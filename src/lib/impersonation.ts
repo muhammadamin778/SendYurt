@@ -128,6 +128,18 @@ export const isReadOnlyRequest = cache(async (): Promise<boolean> => {
   return !row.endedAt && row.expiresAt.getTime() > Date.now();
 });
 
+/**
+ * Seconds → `m:ss` for the banner's countdown.
+ *
+ * Seconds are padded so the width never jumps, and a whole minute reads as
+ * "1:30" rather than "1 min" — an operator with ninety seconds left should be
+ * able to see it draining.
+ */
+export function formatCountdown(totalSeconds: number): string {
+  const s = Math.max(0, Math.floor(totalSeconds));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+
 /** Minutes remaining, floored at 0 — for the countdown in the banner. */
 export function minutesLeft(expiresAt: Date, now: Date = new Date()): number {
   return Math.max(0, Math.ceil((expiresAt.getTime() - now.getTime()) / 60_000));
