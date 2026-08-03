@@ -56,7 +56,9 @@ export function HistoryControls({ filter, range, q }: { filter: string; range: s
               type="button"
               onClick={() => apply({ filter: f.key === "all" ? "" : f.key })}
               className={clsx(
-                "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                // Russian labels run long ("События рейтинга"); at px-4/14px
+                // the four chips wrapped onto three rows.
+                "whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors sm:px-4 sm:py-2 sm:text-sm",
                 filter === f.key ? "bg-[#0a7c53] text-white" : "bg-[#eef2f6] text-[#64748b] hover:bg-[#e2e8f0]",
               )}
             >

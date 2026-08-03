@@ -212,17 +212,20 @@ export function SupportCenter({
           </div>
 
           {/* Composer */}
-          <div className="p-6">
-            <div className="rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-2 shadow-sm sm:rounded-2xl sm:p-4">
+          <div className="p-3 sm:p-6">
+            {/* One row: the field grows, Send sits beside it. It used to sit on
+                a second row under a divider, which spent vertical space the
+                conversation could have had. */}
+            <div className="flex items-end gap-2 rounded-2xl border border-[#e2e8f0] bg-[#f8fafc] p-2 shadow-sm">
               <textarea
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
                 rows={1}
-                className="h-9 w-full resize-none border-none bg-transparent px-1 text-[13px] outline-none placeholder:text-[#94a3b8] sm:h-12 sm:text-sm"
+                className="h-9 min-w-0 flex-1 resize-none self-center border-none bg-transparent px-2 text-[13px] outline-none placeholder:text-[#94a3b8] sm:text-sm"
                 placeholder={t("typeMessage")}
               />
-              <div className="mt-1.5 flex items-center justify-between border-t border-[#eef2f7] pt-2 sm:mt-2 sm:pt-3">
+              <div className="flex shrink-0 items-center gap-1">
                 <div className="flex items-center gap-1 text-[#94a3b8]">
                   {/* Attachment controls are desktop-only until there is an
                       upload path behind them; on a phone they only crowded Send. */}

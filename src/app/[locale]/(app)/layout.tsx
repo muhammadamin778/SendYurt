@@ -19,9 +19,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const roleLabel = t(user.role === "SENDER" ? "roleSender" : "roleReceiver");
 
   return (
-    <div className="bankdash flex min-h-screen w-full">
-      {/* Outside the scroll container and above the sidebar, so it is the
-          first thing seen on every page of a view-as session. */}
+    /* Column at the top level so the view-as banner is a BAR above everything.
+       It previously sat directly inside the row-direction shell, which made it
+       a flex item beside the sidebar — a full-height red column instead of a
+       strip across the top. */
+    <div className="bankdash flex min-h-screen w-full flex-col">
       {user.impersonating && (
         <ImpersonationBanner
           operatorName={user.impersonating.operatorName}
@@ -30,20 +32,22 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           minutesLeft={user.impersonating.minutesLeft}
         />
       )}
-      <BankSidebar
-        name={user.name ?? "SendYurt"}
-        initial={initial}
-        image={user.image ?? null}
-        roleLabel={roleLabel}
-        isAdmin={isStaff(user.adminRole)}
-      />
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <BankTopbar image={user.image ?? null} initial={initial} />
+      <div className="flex w-full flex-1">
+        <BankSidebar
+          name={user.name ?? "SendYurt"}
+          initial={initial}
+          image={user.image ?? null}
+          roleLabel={roleLabel}
+          isAdmin={isStaff(user.adminRole)}
+        />
 
-        {/* pb clears the fixed mobile bottom nav */}
-        {/* pb clears the fixed mobile nav (~60px + safe area) and no more. */}
-        <main className="flex-1 px-5 py-6 pb-20 sm:px-8 lg:pb-10">{children}</main>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <BankTopbar image={user.image ?? null} initial={initial} />
+
+          {/* pb clears the fixed mobile nav (~60px + safe area) and no more. */}
+          <main className="min-w-0 flex-1 overflow-x-clip px-5 py-6 pb-20 sm:px-8 lg:pb-10">{children}</main>
+        </div>
       </div>
 
       <BankMobileNav />

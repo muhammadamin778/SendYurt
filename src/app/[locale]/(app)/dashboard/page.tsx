@@ -30,7 +30,9 @@ function Card({
   bodyClassName?: string;
 }) {
   return (
-    <section className={className}>
+    // min-w-0: without it this grid item sizes to its content, and a chart
+    // inside can force the cell — and the page — wider than the viewport.
+    <section className={`min-w-0 ${className}`}>
       <div className="mb-3 flex flex-col items-start gap-2 sm:mb-4 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         <h2 className="text-[15px] font-semibold leading-tight text-[#0f172a] sm:text-[18px]">{title}</h2>
         {action}

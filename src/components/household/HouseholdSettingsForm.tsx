@@ -1,15 +1,12 @@
 "use client";
 
 import { clsx } from "clsx";
-import { useLocale, useTranslations } from "next-intl";
-import { useParams } from "next/navigation";
-import { useState, useTransition } from "react";
-import { usePathname, useRouter } from "@/i18n/navigation";
-import { routing } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
+import { useState } from "react";
+import { useRouter } from "@/i18n/navigation";
 import { updateHouseholdSettings } from "@/app/actions/household";
 import { toast } from "@/components/ui/toast";
 
-const LOCALE_LABELS: Record<string, string> = { uz: "Oʻzbek", ru: "Русский", en: "English" };
 const CURRENCIES = ["UZS", "USD", "EUR"] as const;
 const CURRENCY_LABELS: Record<string, string> = {
   UZS: "UZS - Uzbekistani soʻm",
@@ -34,22 +31,25 @@ function Toggle({ on, onClick, disabled, label }: { on: boolean; onClick: () => 
       disabled={disabled}
       onClick={onClick}
       className={clsx(
-        "relative inline-block h-6 w-12 shrink-0 rounded-full transition-colors disabled:opacity-60",
+        // 44x24 track, 20px knob, 2px inset: travel is 44 - 20 - 2 - 2 = 20px.
+        // Stated together so the three cannot drift apart again.
+        "relative inline-block h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-60",
         on ? "bg-[#0a7c53]" : "bg-[#cbd5e1]",
       )}
     >
-      <span className={clsx("absolute top-1 h-4 w-4 rounded-full bg-white transition-transform", on ? "translate-x-7" : "translate-x-1")} />
+      <span
+        className={clsx(
+          "absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform",
+          on ? "translate-x-5" : "translate-x-0",
+        )}
+      />
     </button>
   );
 }
 
 export function HouseholdSettingsForm({ initial, canEdit }: { initial: Settings; canEdit: boolean }) {
   const t = useTranslations("household");
-  const locale = useLocale();
   const router = useRouter();
-  const pathname = usePathname();
-  const params = useParams();
-  const [, startTransition] = useTransition();
 
   const [name, setName] = useState(initial.name);
   const [currency, setCurrency] = useState(initial.currency);
@@ -80,13 +80,6 @@ export function HouseholdSettingsForm({ initial, canEdit }: { initial: Settings;
     } else {
       toast(t("saveFailed"), "error");
     }
-  }
-
-  function switchLocale(next: string) {
-    startTransition(() => {
-      // @ts-expect-error params are compatible with the typed route
-      router.replace({ pathname, params }, { locale: next });
-    });
   }
 
   return (
@@ -125,26 +118,6 @@ export function HouseholdSettingsForm({ initial, canEdit }: { initial: Settings;
           </select>
         </div>
 
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-[#64748b]">{t("languagePrefs")}</label>
-          <div className="flex gap-2">
-            {routing.locales.map((l) => (
-              <button
-                key={l}
-                type="button"
-                onClick={() => switchLocale(l)}
-                className={clsx(
-                  "flex-1 rounded-lg py-2 text-sm transition-colors",
-                  l === locale
-                    ? "border-2 border-[#0a7c53] bg-[#0a7c53]/10 font-bold text-[#0a7c53]"
-                    : "border border-[#e2e8f0] text-[#64748b] hover:bg-[#f1f5f9]",
-                )}
-              >
-                {LOCALE_LABELS[l]}
-              </button>
-            ))}
-          </div>
-        </div>
       </section>
 
       {/* Security & Access */}
