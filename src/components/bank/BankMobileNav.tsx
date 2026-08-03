@@ -7,6 +7,11 @@ import { Link, usePathname } from "@/i18n/navigation";
 /**
  * The six primary destinations.
  *
+ * Family sits here rather than Trust score: it is somewhere a household member
+ * goes repeatedly, where the score is a thing you check occasionally. Trust
+ * moves to the "More" block in Settings, which is where the bottom bar's
+ * overflow lives.
+ *
  * Profile is deliberately absent: the avatar in the header already goes there,
  * so the tab was a duplicate. Support takes its place, which puts "reach a
  * human" one tap away from every screen — the thing someone actually hunts for
@@ -22,7 +27,7 @@ const ITEMS = [
   { href: "/wallet", key: "wallet", d: "M3 7a2 2 0 012-2h13a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2zM16 12h4v-2h-4a1 1 0 000 2z" },
   { href: "/rates", key: "ratesShort", d: "M4 17l5-5 4 4 7-8M15 8h5v5" },
   { href: "/budget", key: "budget", d: "M3 6h18v13H3zM3 10h18" },
-  { href: "/trust", key: "trustShort", d: "M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6zM9 12l2 2 4-4" },
+  { href: "/household", key: "household", d: "M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2M10 8a4 4 0 108 0 4 4 0 00-8 0M20 21v-2a4 4 0 00-3-3.87" },
   { href: "/support", key: "supportShort", d: "M21 11.5a8.4 8.4 0 01-9 8.4 9 9 0 01-3.9-.9L3 20l1.3-3.9A8.4 8.4 0 013.6 12a8.4 8.4 0 018.4-8.4 8.4 8.4 0 019 7.9z" },
 ] as const;
 

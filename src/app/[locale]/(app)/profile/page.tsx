@@ -139,7 +139,7 @@ export default async function ProfilePage({
    * is reachable from the avatar in the header, which makes it the one place
    * every screen can get to.
    */
-  const bottomBarHrefs = new Set(["/dashboard", "/wallet", "/rates", "/budget", "/trust", "/support"]);
+  const bottomBarHrefs = new Set(["/dashboard", "/wallet", "/rates", "/budget", "/household", "/support"]);
   const moreLinks = NAV.filter((item) => !bottomBarHrefs.has(item.href));
 
   const preferences = (
