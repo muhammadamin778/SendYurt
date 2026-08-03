@@ -21,6 +21,11 @@ export const AUDIT_ACTIONS = [
   "TRANSACTION_REVERSE",
   "TRUST_OVERRIDE_APPLY",
   "TRUST_OVERRIDE_REVOKE",
+  "TICKET_ASSIGN",
+  "TICKET_KYC_REQUEST",
+  "TICKET_REPLY",
+  "TICKET_RESOLVE",
+  "TICKET_REOPEN",
   "IMPERSONATION_START",
   "IMPERSONATION_END",
 ] as const;
@@ -40,7 +45,7 @@ export interface AuditEntry {
   role?: AdminRole | string;
   /** The record acted upon, when applicable. */
   targetUserId?: string;
-  targetType?: "User" | "Transaction" | "Household";
+  targetType?: "User" | "Transaction" | "Household" | "SupportTicket";
   /** Snapshot before the change — render as a diff against `after`. */
   before?: Prisma.InputJsonValue;
   /** Snapshot after the change. */
