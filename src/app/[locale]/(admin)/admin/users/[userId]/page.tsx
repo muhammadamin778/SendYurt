@@ -12,6 +12,7 @@ import { readPrisma } from "@/lib/prisma-read";
 import { getTrustData } from "@/lib/trust-data";
 import { ViewAsUserButton } from "@/components/admin/ViewAsUserButton";
 import { TrustOverrideForm } from "@/components/admin/TrustOverrideForm";
+import { StaffRoleSelect } from "@/components/admin/StaffRoleSelect";
 
 /**
  * User 360 — everything the platform knows about one customer, on one screen.
@@ -76,6 +77,7 @@ export default async function User360Page({
   const canSeePii = staff.can("customer.pii.view");
   const canImpersonate = staff.can("customer.impersonate");
   const canOverrideTrust = staff.can("trustscore.override");
+  const canManageStaff = staff.can("staff.manage");
 
   const user = await readPrisma.user.findUnique({
     where: { id: userId },
@@ -436,9 +438,19 @@ export default async function User360Page({
 
           <Card title="Access">
             <dl className="space-y-2.5 text-[13px]">
-              <div className="flex justify-between gap-2">
+              <div className="flex items-center justify-between gap-2">
                 <dt className="text-[#6f7a72]">Platform tier</dt>
-                <dd className="font-semibold text-[#191c1d]">{ROLE_LABELS[user.adminRole]}</dd>
+                <dd className="font-semibold text-[#191c1d]">
+                  {canManageStaff ? (
+                    <StaffRoleSelect
+                      userId={user.id}
+                      currentRole={user.adminRole}
+                      isSelf={user.id === staff.id}
+                    />
+                  ) : (
+                    ROLE_LABELS[user.adminRole]
+                  )}
+                </dd>
               </div>
               <div className="flex justify-between gap-2">
                 <dt className="text-[#6f7a72]">Household role</dt>

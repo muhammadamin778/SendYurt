@@ -1,7 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Link, usePathname } from "@/i18n/navigation";
+import { useState, type FormEvent } from "react";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { BackButton } from "@/components/BackButton";
 import { NotificationBell } from "@/components/NotificationBell";
 
@@ -29,6 +30,15 @@ export function BankTopbar({
 }) {
   const title = useTitle();
   const bank = useTranslations("bank");
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+
+  function onSearch(e: FormEvent) {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    router.push(`/history?q=${encodeURIComponent(q)}`);
+  }
 
   return (
     <header className="sticky top-0 z-40 border-b border-[#e2e8f0] bg-[#f1f5f9]/85 backdrop-blur-md supports-[backdrop-filter]:bg-[#f1f5f9]/70 print:hidden">
@@ -41,17 +51,28 @@ export function BankTopbar({
         </div>
 
         <div className="flex shrink-0 items-center gap-1 sm:gap-3 lg:gap-4">
-          <label className="relative hidden md:block">
+          {/* Submits to History, which already filters transactions by `q`.
+              This was an input with no handler: typing and pressing Enter did
+              nothing at all. */}
+          <form onSubmit={onSearch} role="search" className="relative hidden md:block">
             <span className="sr-only">{bank("search")}</span>
             <svg viewBox="0 0 24 24" className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#94a3b8]" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
               <circle cx="11" cy="11" r="7" /><path d="m20 20-3-3" strokeLinecap="round" />
             </svg>
+            <span className="sr-only">{bank("search")}</span>
             <input
               type="search"
+              name="q"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              aria-label={bank("search")}
               placeholder={bank("search")}
               className="h-[50px] w-[200px] rounded-full border-0 bg-[#f1f5f9] pl-12 pr-4 text-[15px] text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#0a7c53]/25 xl:w-[260px]"
             />
-          </label>
+            <button type="submit" className="sr-only">
+              {bank("search")}
+            </button>
+          </form>
 
           {/* Mobile only: on a laptop both of these now live in the sidebar,
               beside the user card. */}
