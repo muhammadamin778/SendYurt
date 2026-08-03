@@ -7,6 +7,7 @@ import { setRequestLocale } from "next-intl/server";
 import { toMinor, ZERO, type Minor } from "@/lib/money";
 import { formatMoney } from "@/lib/format";
 import { readPrisma } from "@/lib/prisma-read";
+import { checkDependencies } from "@/lib/health";
 
 function Icon({ d, className = "h-5 w-5" }: { d: string; className?: string }) {
   return (
@@ -36,6 +37,9 @@ export default async function AdminDashboardPage({ params: { locale } }: { param
   // page that did. Server Actions on it (the export) are reachable
   // independently, so it re-checks like every other page.
   const staff = await requireStaff("transaction.view");
+  // Measured on every load — the panel below reports what this returns, not a
+  // hardcoded "everything is fine".
+  const health = await checkDependencies();
 
   // Real aggregates via the read client (Neon replica when DATABASE_READ_URL
   // is set). Wrapped so a transient DB blip (e.g. Neon waking from suspend)
@@ -234,25 +238,39 @@ export default async function AdminDashboardPage({ params: { locale } }: { param
             </Link>
           </div>
 
-          {/* Network status — illustrative */}
+          {/* Dependency health — measured, not asserted. See src/lib/health.ts */}
           <div className="relative overflow-hidden rounded-xl bg-[#005136] p-5 text-white shadow-lg shadow-[#005136]/10">
             <h5 className="mb-4 flex items-center gap-2 text-[16px] font-semibold">
               <Icon d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z" />
-              Network Status
+              System Status
             </h5>
-            <div className="space-y-4">
-              {[
-                ["Fiat Gateways", "ONLINE", true],
-                ["Crypto Bridges", "ONLINE", true],
-                ["Compliance API", "LOCKED", false],
-              ].map(([label, state, ok]) => (
-                <div key={label as string} className="flex items-center justify-between">
-                  <span className="text-[13px] opacity-80">{label as string}</span>
-                  <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${ok ? "border-[#22c55e]/30 bg-[#22c55e]/20 text-[#86efac]" : "border-[#fed65b]/30 bg-[#fed65b]/20 text-[#fed65b]"}`}>{state as string}</span>
+            <div className="space-y-3.5">
+              {health.map((h) => (
+                <div key={h.key} className="flex items-start justify-between gap-3">
+                  <span className="min-w-0">
+                    <span className="block text-[13px] opacity-90">{h.label}</span>
+                    <span className="block text-[10px] leading-tight opacity-60">{h.detail}</span>
+                  </span>
+                  <span
+                    className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold ${
+                      h.state === "ONLINE"
+                        ? "border-[#22c55e]/30 bg-[#22c55e]/20 text-[#86efac]"
+                        : h.state === "CONFIGURED"
+                          ? "border-white/25 bg-white/10 text-white/80"
+                          : h.state === "DEGRADED"
+                            ? "border-[#fed65b]/30 bg-[#fed65b]/20 text-[#fed65b]"
+                            : "border-[#ff8a80]/30 bg-[#ba1a1a]/25 text-[#ffb4ab]"
+                    }`}
+                  >
+                    {h.state.replace("_", " ")}
+                  </span>
                 </div>
               ))}
             </div>
-            <IllustrativeTag className="mt-4 border-white/20 bg-white/10 text-white/70" />
+            <p className="mt-4 border-t border-white/15 pt-3 text-[10px] leading-relaxed opacity-60">
+              Only the database is round-tripped on load. The rest report whether credentials
+              are present — configured is not the same as reachable.
+            </p>
           </div>
         </div>
       </div>

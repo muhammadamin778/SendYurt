@@ -82,6 +82,10 @@ model User {
   notifications    Notification[]
   auditLogs        AuditLog[]    @relation("AdminAuditLogs")
   transactionEvents TransactionEvent[] @relation("TransactionEventActor")
+  ticketsRaised    SupportTicket[]  @relation("TicketCustomer")
+  ticketsAssigned  SupportTicket[]  @relation("TicketAssignee")
+  ticketsResolved  SupportTicket[]  @relation("TicketResolver")
+  ticketMessages   TicketMessage[]  @relation("TicketMessageAuthor")
   trustOverridesMade    TrustScoreOverride[] @relation("TrustOverrideActor")
   trustOverridesRevoked TrustScoreOverride[] @relation("TrustOverrideRevoker")
   impersonationsMade ImpersonationSession[] @relation("ImpersonationOperator")
@@ -384,6 +388,71 @@ model SavingsGoal {
 ///
 /// Rows are never deleted. An override is retired by setting `revokedAt`, so
 /// the history of every adjustment survives.
+/// A customer support conversation.
+///
+/// The support console was an illustrative mock until this landed: the
+/// ticket.* permissions existed, the screen existed, but Assign / Request KYC
+/// / Resolve had nothing to act on. This is the record those controls move.
+///
+/// Status is a string constrained by src/lib/ticket-state.ts rather than a
+/// Postgres enum, matching how Transaction.status is handled — see the
+/// enum-like-fields convention in CLAUDE.md.
+model SupportTicket {
+  id          String    @id @default(cuid())
+  /// Human-facing handle shown in the console and quoted to customers.
+  reference   String    @unique
+  /// The customer who raised it.
+  userId      String
+  householdId String
+  subject     String
+  /// "Compliance" | "Payments" | "Account" | "Technical"
+  category    String    @default("Account")
+  /// "HIGH" | "MEDIUM" | "LOW"
+  priority    String    @default("MEDIUM")
+  /// "OPEN" | "IN_PROGRESS" | "RESOLVED" — see src/lib/ticket-state.ts
+  status      String    @default("OPEN")
+  /// The staff member who owns it, once assigned.
+  assignedToId String?
+  /// Set when an operator asks the customer for identity documents. There is
+  /// no KYC model yet, so this timestamp IS the request record.
+  kycRequestedAt DateTime?
+  resolvedAt  DateTime?
+  resolvedById String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user       User  @relation("TicketCustomer", fields: [userId], references: [id], onDelete: Cascade)
+  assignedTo User? @relation("TicketAssignee", fields: [assignedToId], references: [id])
+  resolvedBy User? @relation("TicketResolver", fields: [resolvedById], references: [id])
+  messages   TicketMessage[]
+
+  @@index([status, updatedAt])
+  @@index([userId, createdAt])
+  @@index([assignedToId, status])
+}
+
+/// One entry in a ticket thread.
+///
+/// `kind` separates what the customer can see from what they cannot:
+/// CUSTOMER and AGENT are the conversation, INTERNAL is a staff-only note
+/// (gated by ticket.note.internal), and SYSTEM records actions like an
+/// assignment or a KYC request so the thread explains itself.
+model TicketMessage {
+  id        String   @id @default(cuid())
+  ticketId  String
+  /// Null for SYSTEM entries, which no human authored.
+  authorId  String?
+  /// "CUSTOMER" | "AGENT" | "INTERNAL" | "SYSTEM"
+  kind      String
+  body      String
+  createdAt DateTime @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author User?         @relation("TicketMessageAuthor", fields: [authorId], references: [id])
+
+  @@index([ticketId, createdAt])
+}
+
 model TrustScoreOverride {
   id          String    @id @default(cuid())
   householdId String

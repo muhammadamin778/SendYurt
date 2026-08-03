@@ -37,7 +37,7 @@ export function BankCreditCard({
       <div className="flex items-start justify-between px-6 pt-5">
         <div>
           <p className={clsx("text-[12px]", filled ? "text-white/70" : "text-[#94a3b8]")}>{balanceLabel}</p>
-          <p className="mt-1 text-[20px] font-bold tabular-nums leading-none sm:text-[22px]">{balance}</p>
+          <p className="mt-1 text-[18px] font-bold tabular-nums leading-none sm:text-[22px]">{balance}</p>
         </div>
         {/* chip */}
         <svg viewBox="0 0 36 30" className="mt-1 h-7 w-8" aria-hidden="true">
@@ -59,12 +59,12 @@ export function BankCreditCard({
 
       <div
         className={clsx(
-          "mt-4 flex items-center justify-between px-6 py-4",
+          "mt-4 flex items-center justify-between gap-3 px-4 py-3.5 sm:px-6 sm:py-4",
           filled ? "bg-white/10" : "border-t border-[#e2e8f0]",
         )}
       >
-        <p className="font-mono text-[17px] font-semibold tracking-[0.12em] tabular-nums">{number}</p>
-        <span className="relative flex items-center" aria-hidden="true">
+        <p className="min-w-0 truncate font-mono text-[13px] font-semibold tracking-[0.08em] tabular-nums sm:text-[16px] sm:tracking-[0.12em]">{number}</p>
+        <span className="relative flex shrink-0 items-center" aria-hidden="true">
           <span className={clsx("h-6 w-6 rounded-full", filled ? "bg-white/60" : "bg-[#94a3b8]/60")} />
           <span className={clsx("-ml-2.5 h-6 w-6 rounded-full", filled ? "bg-white/40" : "bg-[#94a3b8]/40")} />
         </span>

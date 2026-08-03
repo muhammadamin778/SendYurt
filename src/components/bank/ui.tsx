@@ -9,8 +9,8 @@ export function BankPage({ children, className = "" }: { children: React.ReactNo
 export function BankHeading({ title, sub }: { title: string; sub?: string }) {
   return (
     <div>
-      <h1 className="text-[24px] font-bold text-[#0f172a]">{title}</h1>
-      {sub && <p className="mt-1 text-[15px] text-[#64748b]">{sub}</p>}
+      <h1 className="text-[19px] font-bold text-[#0f172a] sm:text-[24px]">{title}</h1>
+      {sub && <p className="mt-1 text-[13px] text-[#64748b] sm:text-[15px]">{sub}</p>}
     </div>
   );
 }
@@ -33,7 +33,7 @@ export function BankCard({
     <section className={className}>
       {(title || action) && (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          {title && <h2 className="text-[18px] font-semibold text-[#0f172a]">{title}</h2>}
+          {title && <h2 className="text-[15px] font-semibold text-[#0f172a] sm:text-[18px]">{title}</h2>}
           {action}
         </div>
       )}

@@ -46,10 +46,15 @@ export function ConvaiWidget() {
   return (
     <>
       <style>{`
+        /* Small enough to stay out of the way. On a phone the launcher sat on
+           top of the bottom nav and the last row of content, so it is scaled
+           down further and lifted clear of the nav bar. */
         elevenlabs-convai {
-          transform: translate(var(--convai-x, 0px), var(--convai-y, 0px)) scale(0.8) !important;
+          transform: translate(var(--convai-x, 0px), var(--convai-y, calc(-1 * var(--convai-lift, 0px)))) scale(0.6) !important;
           transform-origin: bottom right;
         }
+        :root { --convai-lift: 76px; }
+        @media (min-width: 1024px) { :root { --convai-lift: 0px; } }
       `}</style>
 
       <elevenlabs-convai agent-id="agent_8801kxdgf200ebx8aj1x01pa8xp0"></elevenlabs-convai>
@@ -60,8 +65,8 @@ export function ConvaiWidget() {
         onPointerDown={onDown}
         aria-label="Move assistant"
         title="Drag to move the assistant"
-        className="fixed z-[51] flex cursor-grab touch-none items-center gap-1 rounded-full border border-[#e2e8f0] bg-white/95 px-2.5 py-1 text-[11px] font-semibold text-[#64748b] shadow-md backdrop-blur-sm active:cursor-grabbing print:hidden"
-        style={{ right: 16, bottom: 92, transform: "translate(var(--convai-x, 0px), var(--convai-y, 0px))" }}
+        className="fixed z-[51] hidden cursor-grab touch-none items-center gap-1 rounded-full border border-[#e2e8f0] bg-white/95 px-2 py-0.5 text-[10px] font-semibold text-[#64748b] shadow-md backdrop-blur-sm active:cursor-grabbing lg:flex print:hidden"
+        style={{ right: 16, bottom: 80, transform: "translate(var(--convai-x, 0px), var(--convai-y, 0px))" }}
       >
         <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden="true">
           <circle cx="9" cy="6" r="1.4" /><circle cx="15" cy="6" r="1.4" /><circle cx="9" cy="12" r="1.4" /><circle cx="15" cy="12" r="1.4" /><circle cx="9" cy="18" r="1.4" /><circle cx="15" cy="18" r="1.4" />

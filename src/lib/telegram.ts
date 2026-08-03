@@ -58,6 +58,44 @@ function isCategoryEnabled(category: LogCategory): boolean {
   return true;
 }
 
+/**
+ * Identities whose activity is kept out of the Telegram group — founder and
+ * test accounts, whose logins and page visits are noise rather than signal.
+ *
+ * Comma-separated in `TELEGRAM_LOG_MUTED_EMAILS`, so the list changes without
+ * a redeploy and no personal address is committed to a public repository.
+ *
+ * IMPORTANT: this mutes the *notification only*. `AuditLog` and
+ * `TransactionEvent` rows are written by `logAudit()` inside the caller's
+ * database transaction, entirely separately from `notifyAudit()` — so a muted
+ * account is quieter, never unaudited. Making an account genuinely invisible
+ * to the record is not something this switch can do, and shouldn't be.
+ */
+function mutedEmails(): string[] {
+  return (process.env.TELEGRAM_LOG_MUTED_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+/**
+ * Whether this event names a muted identity.
+ *
+ * Scans the title and every field value rather than a dedicated `email` key,
+ * because the address arrives in different shapes at different call sites —
+ * bare in the login events, and as `Name <email>` in sign-ups and investor
+ * inquiries. Substring matching catches both.
+ */
+function isMuted({ title, fields }: TelegramLog): boolean {
+  const muted = mutedEmails();
+  if (muted.length === 0) return false;
+
+  const haystack = [title, ...Object.values(fields ?? {}).map((v) => String(v ?? ""))]
+    .join(" ")
+    .toLowerCase();
+  return muted.some((email) => haystack.includes(email));
+}
+
 function timestamp(): string {
   // Team is in Uzbekistan — stamp events in Tashkent time.
   const formatted = new Intl.DateTimeFormat("en-GB", {
@@ -98,6 +136,7 @@ export async function sendTelegramLog(log: TelegramLog): Promise<void> {
     const chatId = process.env.TELEGRAM_LOG_CHAT_ID;
     if (!token || !chatId) return; // not wired up yet — stay silent
     if (!isCategoryEnabled(log.category)) return;
+    if (isMuted(log)) return; // founder/test account — noise, not signal
 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), SEND_TIMEOUT_MS);

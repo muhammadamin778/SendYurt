@@ -33,15 +33,15 @@ export function BankTopbar({
 
   return (
     <header className="sticky top-0 z-40 border-b border-[#e2e8f0] bg-[#f1f5f9]/85 backdrop-blur-md supports-[backdrop-filter]:bg-[#f1f5f9]/70 print:hidden">
-      <div className="flex h-[90px] items-center justify-between gap-4 px-5 sm:px-8">
+      <div className="flex h-[72px] items-center justify-between gap-2 px-4 sm:h-[90px] sm:gap-4 sm:px-8">
         <div className="flex min-w-0 items-center gap-3">
           <BackButton />
-          <h1 className="truncate font-sans text-[22px] font-bold text-[#0f172a] sm:text-[28px]">
+          <h1 className="truncate font-sans text-[17px] font-bold text-[#0f172a] sm:text-[24px] lg:text-[28px]">
             {title}
           </h1>
         </div>
 
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-3 lg:gap-4">
           <label className="relative hidden md:block">
             <span className="sr-only">{bank("search")}</span>
             <svg viewBox="0 0 24 24" className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#94a3b8]" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
