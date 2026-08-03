@@ -138,7 +138,8 @@
     "signOutCancel": "Bekor qilish",
     "signOutBusy": "Chiqilmoqda…",
     "secActivityEmpty": "Hozircha faoliyat yozuvi yo‘q.",
-    "secActivityNote": "Hisobingiz faoliyat jurnalidagi so‘nggi ochilgan sahifalar. Qurilma va joylashuv yozilmaydi, shuning uchun ko‘rsatilmaydi."
+    "secActivityNote": "Hisobingiz faoliyat jurnalidagi so‘nggi ochilgan sahifalar. Qurilma va joylashuv yozilmaydi, shuning uchun ko‘rsatilmaydi.",
+    "moreDesc": "Pastki panelda ko‘rsatilmagan bo‘limlar."
   },
   "quickpay": {
     "title": "Tezkor toʻlov",

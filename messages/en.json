@@ -138,7 +138,8 @@
     "signOutCancel": "Cancel",
     "signOutBusy": "Signing out…",
     "secActivityEmpty": "No recent activity recorded yet.",
-    "secActivityNote": "Recent pages you opened, from this account's own activity log. Device and location are not recorded, so they are not shown."
+    "secActivityNote": "Recent pages you opened, from this account's own activity log. Device and location are not recorded, so they are not shown.",
+    "moreDesc": "Sections not shown in the bottom bar."
   },
   "quickpay": {
     "title": "Quick pay",

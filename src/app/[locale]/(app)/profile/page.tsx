@@ -10,6 +10,8 @@ import { SettingTabs } from "@/components/bank/SettingTabs";
 import { prisma } from "@/lib/prisma";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/session";
+import { isStaff } from "@/lib/permissions";
+import { NAV, NavGlyph } from "@/components/bank/nav-items";
 
 export async function generateMetadata({
   params: { locale },
@@ -124,12 +126,57 @@ export default async function ProfilePage({
     />
   );
 
+  /**
+   * Destinations the bottom bar has no room for.
+   *
+   * The mobile drawer that used to carry these is gone, and the sidebar that
+   * carries them on a laptop is hidden under lg — so without this block
+   * Family, History and Help would have no route on a phone at all. Settings
+   * is reachable from the avatar in the header, which makes it the one place
+   * every screen can get to.
+   */
+  const bottomBarHrefs = new Set(["/dashboard", "/wallet", "/rates", "/budget", "/trust", "/support"]);
+  const moreLinks = NAV.filter((item) => !bottomBarHrefs.has(item.href));
+
   const preferences = (
-    <div className="max-w-2xl divide-y divide-[#eef2f7]">
+    <div className="max-w-2xl">
+      <section className="mb-6 lg:hidden">
+        <h3 className="text-[15px] font-semibold text-[#0f172a]">{tp("moreTitle")}</h3>
+        <p className="mb-3 text-xs text-[#94a3b8]">{tp("moreDesc")}</p>
+        <ul className="grid grid-cols-2 gap-2">
+          {moreLinks.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                className="flex items-center gap-2.5 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-3 py-3 text-[14px] font-medium text-[#0f172a] transition-colors hover:bg-[#f1f5f9]"
+              >
+                <span className="text-[#0a7c53]"><NavGlyph name={item.icon} /></span>
+                <span className="truncate">{t(item.key)}</span>
+              </Link>
+            </li>
+          ))}
+          {isStaff(user.adminRole) && (
+            <li className="col-span-2">
+              <Link
+                href="/admin"
+                className="flex items-center justify-center gap-2 rounded-xl bg-[#0f172a] px-3 py-3 text-[14px] font-semibold text-white transition-colors hover:bg-[#1f2a44]"
+              >
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                  <path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6zM9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Admin panel
+              </Link>
+            </li>
+          )}
+        </ul>
+      </section>
+
+      <div className="divide-y divide-[#eef2f7]">
       <Row icon="M3 5h12M9 3v2m1.5 14L15 9l4.5 10M12 19h6M5 9c2.5 4 6 7 10 9" title={tp("language")} desc={LOCALE_LABELS[currentLocale]} trailing={<LanguageSwitcher />} />
       <Row icon="M12 3v2m0 14v2M5.6 5.6l1.4 1.4m10 10l1.4 1.4M3 12h2m14 0h2M5.6 18.4l1.4-1.4m10-10l1.4-1.4M12 8a4 4 0 100 8 4 4 0 000-8z" title={tp("theme")} trailing={<ThemeToggle />} />
       <Row icon="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" title={tp("currency")} desc="UZS · soʻm" trailing={<span className="rounded-full bg-[#dcfce7] px-3 py-1 text-[13px] font-semibold text-[#0a7c53]">UZS</span>} />
       <Row icon="M18 9a6 6 0 10-12 0c0 5-2 6-2 6h16s-2-1-2-6M10.3 19a2 2 0 003.4 0" title={tp("notifications")} desc={tp("notificationsOn")} trailing={<span className="rounded-full bg-[#dcfce7] px-3 py-1 text-[13px] font-semibold text-[#059669]">{tp("on")}</span>} />
+      </div>
     </div>
   );
 

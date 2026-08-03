@@ -4,7 +4,6 @@ import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { BackButton } from "@/components/BackButton";
 import { NotificationBell } from "@/components/NotificationBell";
-import { BankMobileMenu } from "@/components/bank/BankMobileMenu";
 
 function useTitle(): string {
   const pathname = usePathname();
@@ -24,16 +23,9 @@ function useTitle(): string {
 export function BankTopbar({
   image,
   initial,
-  name,
-  roleLabel,
-  isAdmin = false,
 }: {
   image: string | null;
   initial: string;
-  /** Passed through to the mobile drawer, which shows who is signed in. */
-  name: string;
-  roleLabel: string;
-  isAdmin?: boolean;
 }) {
   const title = useTitle();
   const bank = useTranslations("bank");
@@ -67,16 +59,8 @@ export function BankTopbar({
             <NotificationBell />
           </div>
 
-          {/* Replaces the mobile-only logout button: sign-out now lives inside
-              the drawer, along with the five destinations the phone had no
-              route to at all. */}
-          <BankMobileMenu
-            name={name}
-            initial={initial}
-            image={image}
-            roleLabel={roleLabel}
-            isAdmin={isAdmin}
-          />
+          {/* No drawer. The destinations it carried live in Settings, under
+              "More" — reachable from the avatar beside this. */}
 
           <Link
             href="/profile"

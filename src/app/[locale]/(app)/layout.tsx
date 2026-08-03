@@ -39,13 +39,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <BankTopbar
-          image={user.image ?? null}
-          initial={initial}
-          name={user.name ?? "SendYurt"}
-          roleLabel={roleLabel}
-          isAdmin={isStaff(user.adminRole)}
-        />
+        <BankTopbar image={user.image ?? null} initial={initial} />
 
         {/* pb clears the fixed mobile bottom nav */}
         {/* pb clears the fixed mobile nav (~60px + safe area) and no more. */}
