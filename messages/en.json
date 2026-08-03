@@ -25,7 +25,11 @@
     "sendMoney": "Send Money",
     "support": "Support",
     "history": "History",
-    "wallet": "Wallet"
+    "wallet": "Wallet",
+    "menu": "Menu",
+    "closeMenu": "Close menu",
+    "ratesShort": "Rates",
+    "trustShort": "Trust"
   },
   "profile": {
     "title": "Your profile",

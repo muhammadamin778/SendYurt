@@ -25,7 +25,11 @@
     "sendMoney": "Отправить деньги",
     "support": "Поддержка",
     "history": "История",
-    "wallet": "Кошелёк"
+    "wallet": "Кошелёк",
+    "menu": "Меню",
+    "closeMenu": "Закрыть меню",
+    "ratesShort": "Курсы",
+    "trustShort": "Доверие"
   },
   "profile": {
     "title": "Ваш профиль",

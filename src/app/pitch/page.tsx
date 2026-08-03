@@ -1,6 +1,7 @@
 import { HeroVideo } from "@/components/pitch/HeroVideo";
 import { InvestorForm } from "@/components/pitch/InvestorForm";
 import { Reveal } from "@/components/pitch/Reveal";
+import { PitchNav } from "@/app/pitch/PitchNav";
 import { DemoButton } from "./DemoButton";
 import { PITCH, PITCH_LANGS, resolveLang, type PitchLang } from "./content";
 
@@ -160,7 +161,7 @@ export default function PitchPage({
       {/* 1 · Sticky nav */}
       <header className="hairline sticky top-0 z-50 border-b bg-[#f7f9fb]/85 backdrop-blur-md">
         <nav aria-label="Main" className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:gap-3 sm:px-5">
-          <a href="#top" aria-label="SendYurt — back to top">
+          <a href="#top" aria-label="SendYurt — back to top" className="min-w-0 shrink">
             <Wordmark />
           </a>
           <div className="hidden items-center gap-8 text-[14px] font-medium text-[#5A6B82] lg:flex">
@@ -169,14 +170,32 @@ export default function PitchPage({
             <a href="#features" className="transition-colors hover:text-[#0B1A30]">{c.nav.features}</a>
             <a href="#investors" className="transition-colors hover:text-[#0B1A30]">{c.nav.investors}</a>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <LangSwitch lang={lang} />
-            <a href={href("/login")} className="whitespace-nowrap text-[13px] font-semibold text-[#0B1A30] transition-colors hover:text-[#0a7c53] sm:text-[14px]">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            {/* Language switch and the login link move into the drawer below
+                `lg` — four items in this row overflowed a 375px screen and
+                pushed the CTA off the edge entirely. */}
+            <div className="hidden lg:block">
+              <LangSwitch lang={lang} />
+            </div>
+            <a href={href("/login")} className="hidden whitespace-nowrap text-[13px] font-semibold text-[#0B1A30] transition-colors hover:text-[#0a7c53] sm:text-[14px] lg:inline">
               {c.nav.login}
             </a>
-            <DemoButton locale={lang} className="btn btn-coral px-3.5 py-2 text-[13px] sm:px-5 sm:py-2.5 sm:text-[14px]">
+            <DemoButton locale={lang} className="btn btn-coral whitespace-nowrap px-3 py-2 text-[12px] sm:px-5 sm:py-2.5 sm:text-[14px]">
               {c.nav.cta}
             </DemoButton>
+            <PitchNav
+              links={[
+                { href: "#problem", label: c.nav.problem },
+                { href: "#how", label: c.nav.how },
+                { href: "#features", label: c.nav.features },
+                { href: "#investors", label: c.nav.investors },
+              ]}
+              loginHref={href("/login")}
+              loginLabel={c.nav.login}
+              langs={[...PITCH_LANGS]}
+              currentLang={lang}
+              menuLabel="Menu"
+            />
           </div>
         </nav>
       </header>

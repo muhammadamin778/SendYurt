@@ -25,7 +25,11 @@
     "sendMoney": "Pul yuborish",
     "support": "Yordam markazi",
     "history": "Tarix",
-    "wallet": "Hamyon"
+    "wallet": "Hamyon",
+    "menu": "Menyu",
+    "closeMenu": "Menyuni yopish",
+    "ratesShort": "Kurslar",
+    "trustShort": "Ishonch"
   },
   "profile": {
     "title": "Profilingiz",
