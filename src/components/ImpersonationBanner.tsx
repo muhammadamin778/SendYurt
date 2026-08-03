@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { endImpersonation } from "@/app/actions/impersonation";
-import { formatCountdown } from "@/lib/impersonation";
+import { formatCountdown } from "@/lib/countdown";
 
 /**
  * Always-visible marker that this is someone else's account.

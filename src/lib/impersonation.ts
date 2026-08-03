@@ -2,6 +2,10 @@ import { cache } from "react";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import type { BridgedUser } from "@/lib/supabase/bridge";
+// Re-exported so server callers keep one import site. The implementations live
+// in a module with no server imports, because the banner is a Client Component
+// and reaching into this file from the client pulls in next/headers.
+export { formatCountdown, minutesLeft } from "@/lib/countdown";
 
 /**
  * "View as user" — letting an operator see a customer's screens exactly as the
@@ -127,20 +131,3 @@ export const isReadOnlyRequest = cache(async (): Promise<boolean> => {
   if (!row) return false;
   return !row.endedAt && row.expiresAt.getTime() > Date.now();
 });
-
-/**
- * Seconds → `m:ss` for the banner's countdown.
- *
- * Seconds are padded so the width never jumps, and a whole minute reads as
- * "1:30" rather than "1 min" — an operator with ninety seconds left should be
- * able to see it draining.
- */
-export function formatCountdown(totalSeconds: number): string {
-  const s = Math.max(0, Math.floor(totalSeconds));
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-}
-
-/** Minutes remaining, floored at 0 — for the countdown in the banner. */
-export function minutesLeft(expiresAt: Date, now: Date = new Date()): number {
-  return Math.max(0, Math.ceil((expiresAt.getTime() - now.getTime()) / 60_000));
-}

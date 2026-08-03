@@ -88,8 +88,8 @@ vi.mock("@/lib/prisma", () => ({
 const { getAppSession, getOperatorSession } = await import("@/lib/supabase/app-session");
 const { requireUser } = await import("@/lib/session");
 const { assertPermission } = await import("@/lib/admin");
-const { formatCountdown, getActiveImpersonation, isReadOnlyRequest, minutesLeft } =
-  await import("@/lib/impersonation");
+const { getActiveImpersonation, isReadOnlyRequest } = await import("@/lib/impersonation");
+const { formatCountdown, minutesLeft } = await import("@/lib/countdown");
 
 /** A live grant from op_1 to cust_1, unless overridden. */
 function grant(overrides: Row = {}): string {
