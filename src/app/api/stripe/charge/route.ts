@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getAppSession } from "@/lib/supabase/app-session";
+import { LIMITS, rateLimit } from "@/lib/rate-limit";
 import { computePlatformFee, getStripe, isStripeConfigured, PLATFORM_FEE_BPS } from "@/lib/stripe";
 
 export const runtime = "nodejs";
@@ -30,6 +31,15 @@ export async function POST(request: Request) {
   const session = await getAppSession();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  // Keyed per user, so one account cannot exhaust anyone else's allowance.
+  const limit = rateLimit(`charge:${session.user.id}`, LIMITS.stripeCharge);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "rate_limited" },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } },
+    );
   }
 
   let body: unknown;

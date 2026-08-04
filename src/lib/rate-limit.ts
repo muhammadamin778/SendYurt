@@ -90,6 +90,14 @@ export const LIMITS = {
   resetPassword: { max: 5, windowMs: 15 * 60 * 1000 },
   assistant: { max: 30, windowMs: 60 * 60 * 1000 },
   investor: { max: 5, windowMs: 60 * 60 * 1000 },
+  // Stripe money paths. These require a session, but a session is not a rate
+  // limit: a stolen cookie or a runaway client could otherwise hammer
+  // PaymentIntent creation and payouts. Sized for a human confirming a
+  // payment, not for a script.
+  stripeCharge: { max: 10, windowMs: 5 * 60 * 1000 },
+  stripePayout: { max: 5, windowMs: 60 * 60 * 1000 },
+  stripeConnect: { max: 5, windowMs: 60 * 60 * 1000 },
+  stripeSetupIntent: { max: 10, windowMs: 15 * 60 * 1000 },
   // Client → Telegram log relay (login + page-visit events). Generous, since
   // an active session legitimately navigates many pages, but capped so a
   // misbehaving client can't flood the logs group.
