@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAppSession } from "@/lib/supabase/app-session";
+import { LIMITS, rateLimit } from "@/lib/rate-limit";
 import { getStripe, isStripeConfigured } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 
@@ -17,6 +18,15 @@ export async function POST() {
   const session = await getAppSession();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  // Keyed per user, so one account cannot exhaust anyone else's allowance.
+  const limit = rateLimit(`setup-intent:${session.user.id}`, LIMITS.stripeSetupIntent);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "rate_limited" },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } },
+    );
   }
 
   try {

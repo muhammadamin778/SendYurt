@@ -77,6 +77,7 @@ const { transitionTransaction } = await import("@/app/actions/transaction-ops");
 const { applyTrustOverride, revokeTrustOverride } = await import("@/app/actions/trust-override");
 const { startImpersonation } = await import("@/app/actions/impersonation");
 const { assertPermission } = await import("@/lib/admin");
+const { LIMITS: LIMITS_SNAPSHOT } = await import("@/lib/rate-limit");
 
 beforeEach(() => {
   currentRole = "SUPPORT";
@@ -231,5 +232,26 @@ describe("assertPermission", () => {
   it("refuses a plain USER", async () => {
     currentRole = "USER";
     await expect(assertPermission("customer.view")).rejects.toThrow("forbidden");
+  });
+});
+
+describe("money endpoints are rate limited", () => {
+  it("every Stripe money route declares a limit", async () => {
+    // A session is not a rate limit. These four create PaymentIntents, payouts
+    // and Connect accounts; a stolen cookie or a runaway client could otherwise
+    // hammer them. This asserts the limits exist rather than trusting review.
+    const { LIMITS } = await import("@/lib/rate-limit");
+    for (const key of ["stripeCharge", "stripePayout", "stripeConnect", "stripeSetupIntent"] as const) {
+      expect(LIMITS[key], key).toBeDefined();
+      expect(LIMITS[key].max).toBeGreaterThan(0);
+      expect(LIMITS[key].windowMs).toBeGreaterThan(0);
+    }
+  });
+
+  it("payouts and Connect onboarding are tighter than card charges", () => {
+    // Moving money out and creating accounts are rarer and more consequential
+    // than confirming a payment, so they get less headroom.
+    expect(LIMITS_SNAPSHOT.stripePayout.max).toBeLessThan(LIMITS_SNAPSHOT.stripeCharge.max);
+    expect(LIMITS_SNAPSHOT.stripeConnect.max).toBeLessThan(LIMITS_SNAPSHOT.stripeCharge.max);
   });
 });

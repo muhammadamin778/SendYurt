@@ -10,7 +10,13 @@ export interface ImpersonationContext {
   operatorName: string;
   targetName: string;
   reason: string;
+  /**
+   * Minutes remaining at render. Kept for a correct first paint before the
+   * client's interval starts; the banner counts down from `expiresAtIso`.
+   */
   minutesLeft: number;
+  /** Absolute expiry, so the countdown stays true across a slow render. */
+  expiresAtIso: string;
 }
 
 export type SessionUser = {
@@ -73,6 +79,7 @@ export const requireUser = cache(async (): Promise<SessionUser> => {
           targetName: active.target.name,
           reason: active.reason,
           minutesLeft: minutesLeft(active.expiresAt),
+          expiresAtIso: active.expiresAt.toISOString(),
         }
       : null,
   };
