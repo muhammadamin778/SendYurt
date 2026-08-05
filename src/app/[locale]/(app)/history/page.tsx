@@ -35,6 +35,8 @@ interface Row {
   amountTone: string;
   status: Status;
   search: string;
+  /** Set for real transactions — links the row to its receipt. */
+  href?: string;
 }
 
 const TYPE_STYLE: Record<Kind, { chip: string; icon: string; typeKey: string }> = {
@@ -109,6 +111,7 @@ export default async function HistoryPage({
         amountPlain: `-${formatMoney(amt, tx.currency, currentLocale)}`,
         amountTone: "text-[#ef4444]", status,
         search: `${description} ${sub ?? ""} ${member}`.toLowerCase(),
+        href: `/history/${tx.id}`,
       });
     } else {
       const description = tx.note ?? t("typeSavings");
@@ -118,6 +121,7 @@ export default async function HistoryPage({
         amountPlain: `+${formatMoney(amt, tx.currency, currentLocale)}`,
         amountTone: "text-[#0a7c53]", status: "completed",
         search: `${description} ${member}`.toLowerCase(),
+        href: `/history/${tx.id}`,
       });
     }
   }
@@ -233,7 +237,14 @@ export default async function HistoryPage({
                     </td>
                     <td className="max-w-xs px-4 py-5">
                       <div className="flex flex-col">
-                        <span className="font-medium text-[#0f172a]">{r.description}</span>
+                        {r.href ? (
+                          <Link href={r.href} className="group/link inline-flex items-center gap-1 font-medium text-[#0f172a] transition-colors hover:text-[#0a7c53]" title={t("viewReceipt")}>
+                            <span className="underline-offset-2 group-hover/link:underline">{r.description}</span>
+                            <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-[#cbd5e1] transition-colors group-hover/link:text-[#0a7c53]" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                          </Link>
+                        ) : (
+                          <span className="font-medium text-[#0f172a]">{r.description}</span>
+                        )}
                         {r.sub && <span className="text-xs text-[#94a3b8]">{r.sub}</span>}
                       </div>
                     </td>
